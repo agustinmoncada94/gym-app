@@ -3,10 +3,16 @@ const { Redis } = require('@upstash/redis');
 
 const app = express();
 
-// Usamos REDIS_URL que es la que aparece en tu Vercel
-const redis = Redis.fromConfig({
-  url: process.env.REDIS_URL, 
-  token: "fexzGkfQjGuYovrfhdxkrkhcYhsGmCxF", // Tu token de RedisLabs
+// CORRECCIÓN: Limpiamos la URL por si viene con "redis://"
+// Upstash Redis SDK necesita que empiece con "https://"
+let redisUrl = process.env.REDIS_URL || '';
+if (redisUrl.startsWith('redis://')) {
+    redisUrl = redisUrl.replace('redis://', 'https://');
+}
+
+const redis = new Redis({
+  url: redisUrl,
+  token: "fexzGkfQjGuYovrfhdxkrkhcYhsGmCxF", 
 });
 
 app.use(express.static('public'));
@@ -31,8 +37,8 @@ app.post('/api/registrar', async (req, res) => {
     };
 
     try {
-        // Guardamos el objeto como string JSON
-        await redis.set(`socio:${dni}`, JSON.stringify(nuevoSocio));
+        // Usamos set directamente. Upstash maneja objetos automáticamente.
+        await redis.set(`socio:${dni}`, nuevoSocio);
         res.status(201).json({ message: "Socio registrado con éxito" });
     } catch (error) {
         console.error("Error Redis:", error);
@@ -51,11 +57,9 @@ app.get('/api/checkin/:dni', async (req, res) => {
             return res.status(404).json({ message: "DNI no encontrado" });
         }
 
-        // Si Redis devuelve un string, lo convertimos a objeto
-        const datosSocio = typeof socio === 'string' ? JSON.parse(socio) : socio;
-
+        // La librería ya nos devuelve un objeto, no hace falta JSON.parse
         const hoy = new Date();
-        const fechaPago = new Date(datosSocio.fechaPago);
+        const fechaPago = new Date(socio.fechaPago);
         const vencimiento = new Date(fechaPago);
         vencimiento.setDate(vencimiento.getDate() + 30);
 
@@ -67,7 +71,7 @@ app.get('/api/checkin/:dni', async (req, res) => {
         } else {
             res.json({ 
                 estado: "OK", 
-                message: `¡Hola ${datosSocio.nombre}! Acceso concedido.` 
+                message: `¡Hola ${socio.nombre}! Acceso concedido.` 
             });
         }
     } catch (error) {
