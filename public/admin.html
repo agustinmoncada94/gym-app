@@ -4,28 +4,43 @@
     <meta charset="UTF-8">
     <title>Panel Admin - Gimnasio</title>
     <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
-        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; line-height: 1.6; background-color: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
         button:hover { background: #218838; }
-        .mensaje { margin-top: 20px; font-weight: bold; }
+        .mensaje { margin-top: 20px; font-weight: bold; text-align: center; padding: 10px; border-radius: 4px; }
+        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
-    <h2>Registrar Nuevo Socio</h2>
-    <form id="registroForm">
-        <input type="text" id="nombre" placeholder="Nombre Completo" required>
-        <input type="text" id="dni" placeholder="DNI (sin puntos)" required>
-        <input type="date" id="nacimiento" required>
-        <input type="text" id="direccion" placeholder="Dirección">
-        <input type="tel" id="telefono" placeholder="Teléfono">
-        <button type="submit">Dar de Alta</button>
-    </form>
-    <div id="resultado" class="mensaje"></div>
+    <div class="card">
+        <h2>Registrar Nuevo Socio</h2>
+        <form id="registroForm">
+            <input type="text" id="nombre" placeholder="Nombre Completo" required>
+            <input type="text" id="dni" placeholder="DNI (sin puntos)" required>
+            <input type="date" id="nacimiento" required>
+            <input type="text" id="direccion" placeholder="Dirección">
+            <input type="tel" id="telefono" placeholder="Teléfono">
+            <button type="submit" id="btnEnviar">Dar de Alta</button>
+        </form>
+        <div id="resultado" class="mensaje"></div>
+    </div>
 
     <script>
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('btnEnviar');
+            const divResultado = document.getElementById('resultado');
+            
+            // Bloqueamos el botón para evitar doble clic
+            btn.disabled = true;
+            btn.innerText = "Registrando...";
+            divResultado.className = "mensaje";
+            divResultado.innerText = "";
+
             const datos = {
                 nombre: document.getElementById('nombre').value,
                 dni: document.getElementById('dni').value,
@@ -34,15 +49,31 @@
                 telefono: document.getElementById('telefono').value
             };
 
-            const resp = await fetch('/api/registrar', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(datos)
-            });
+            try {
+                // IMPORTANTE: La ruta debe ser /api/registrar para que coincida con index.js
+                const response = await fetch('/api/registrar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(datos)
+                });
 
-            const res = await resp.json();
-            document.getElementById('resultado').innerText = res.mensaje;
-            if(resp.ok) e.target.reset(); // Limpia el formulario
+                const res = await response.json();
+
+                if (response.ok) {
+                    divResultado.innerText = res.message || "¡Socio registrado con éxito!";
+                    divResultado.classList.add('success');
+                    e.target.reset(); // Limpia el formulario
+                } else {
+                    divResultado.innerText = "Error: " + (res.error || res.message);
+                    divResultado.classList.add('error');
+                }
+            } catch (error) {
+                divResultado.innerText = "Error de conexión con el servidor.";
+                divResultado.classList.add('error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Dar de Alta";
+            }
         };
     </script>
 </body>
