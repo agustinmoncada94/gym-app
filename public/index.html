@@ -7,8 +7,9 @@
         body { font-family: sans-serif; text-align: center; margin-top: 100px; background: #f4f4f4; }
         .card { background: white; padding: 40px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         input { padding: 15px; font-size: 1.2rem; border-radius: 5px; border: 1px solid #ddd; }
-        button { padding: 15px; font-size: 1.2rem; background: #007bff; color: white; border: none; cursor: pointer; }
-        #mensajeAcceso { margin-top: 20px; font-size: 1.5rem; }
+        button { padding: 15px; font-size: 1.2rem; background: #007bff; color: white; border-radius: 5px; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #mensajeAcceso { margin-top: 20px; font-size: 1.5rem; font-weight: bold; }
         .ok { color: green; }
         .error { color: red; }
     </style>
@@ -18,21 +19,38 @@
         <h1>Control de Acceso</h1>
         <p>Ingresa tu DNI para entrar:</p>
         <input type="text" id="dniInput" placeholder="Tu DNI aquí">
-        <button onclick="checkIn()">Entrar</button>
+        <button id="btnEntrar">Entrar</button>
         <div id="mensajeAcceso"></div>
     </div>
 
     <script>
-        async function checkIn() {
+        document.getElementById('btnEntrar').onclick = async () => {
             const dni = document.getElementById('dniInput').value;
             const resDiv = document.getElementById('mensajeAcceso');
             
-            const resp = await fetch(`/api/checkin/${dni}`);
-            const data = await resp.json();
+            if(!dni) {
+                resDiv.innerText = "Por favor, ingresa un DNI";
+                resDiv.className = "error";
+                return;
+            }
 
-            resDiv.innerText = data.mensaje;
-            resDiv.className = data.estado === 'OK' ? 'ok' : 'error';
-        }
+            resDiv.innerText = "Verificando...";
+            resDiv.className = "";
+
+            try {
+                // Llamamos a la API de checkin
+                const resp = await fetch(`/api/checkin/${dni}`);
+                const data = await resp.json();
+
+                // IMPORTANTE: Cambiamos data.mensaje por data.message
+                resDiv.innerText = data.message || data.error;
+                resDiv.className = data.estado === 'OK' ? 'ok' : 'error';
+                
+            } catch (error) {
+                resDiv.innerText = "Error al conectar con el servidor";
+                resDiv.className = "error";
+            }
+        };
     </script>
 </body>
 </html>
