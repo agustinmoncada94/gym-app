@@ -1,16 +1,22 @@
 const express = require('express');
-const { kv } = require('@vercel/kv');
+// Cambiamos la forma de importar KV para configurar el cliente manualmente
+const { createClient } = require('@vercel/kv');
+
 const app = express();
 
-// Importante para que Vercel sirva los archivos de la carpeta public
+// Configuración manual del cliente KV (Plan B)
+const kv = createClient({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
+
 app.use(express.static('public'));
 app.use(express.json());
 
-// --- RUTA 1: Registro de Socios (Para el Admin) ---
+// --- RUTA 1: Registro de Socios ---
 app.post('/api/registrar', async (req, res) => {
     const { nombre, dni, nacimiento, direccion, telefono } = req.body;
 
-    // Validación básica para evitar guardar datos vacíos
     if (!dni || !nombre) {
         return res.status(400).json({ error: "Faltan datos obligatorios (Nombre y DNI)" });
     }
@@ -26,17 +32,16 @@ app.post('/api/registrar', async (req, res) => {
     };
 
     try {
-        // Guardamos en KV usando el DNI como clave única
+        // Usamos el cliente configurado arriba
         await kv.set(`socio:${dni}`, nuevoSocio);
-        // Enviamos una respuesta clara. Usamos "message" para evitar el undefined
-        res.status(201).json({ message: "Socio registrado con éxito", socio: nuevoSocio });
+        res.status(201).json({ message: "Socio registrado con éxito" });
     } catch (error) {
-        console.error("Error KV:", error);
-        res.status(500).json({ error: "Error al guardar en la base de datos" });
+        console.error("Error detallado de KV:", error);
+        res.status(500).json({ error: "Error de conexión con la base de datos KV" });
     }
 });
 
-// --- RUTA 2: Check-in (Para el Usuario) ---
+// --- RUTA 2: Check-in ---
 app.get('/api/checkin/:dni', async (req, res) => {
     const { dni } = req.params;
     
@@ -68,7 +73,6 @@ app.get('/api/checkin/:dni', async (req, res) => {
     }
 });
 
-// Esto es necesario para que funcione localmente y en Vercel
 const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
