@@ -1,6 +1,8 @@
 {
+  "version": 2,
   "rewrites": [
-    { "source": "/api/register", "destination": "/api/index.js" },
+    { "source": "/api/registrar", "destination": "/api/index.js" },
+    { "source": "/api/checkin/(.*)", "destination": "/api/index.js" },
     { "source": "/admin", "destination": "/public/admin.html" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ]
