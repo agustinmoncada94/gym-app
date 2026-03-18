@@ -3,10 +3,10 @@ const { Redis } = require('@upstash/redis');
 
 const app = express();
 
-// Configuración corregida para usar las variables de entorno de Vercel
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
+// Usamos REDIS_URL que es la que aparece en tu Vercel
+const redis = Redis.fromConfig({
+  url: process.env.REDIS_URL, 
+  token: "fexzGkfQjGuYovrfhdxkrkhcYhsGmCxF", // Tu token de RedisLabs
 });
 
 app.use(express.static('public'));
