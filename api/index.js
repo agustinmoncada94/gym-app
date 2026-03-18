@@ -3,7 +3,7 @@ const { Redis } = require('@upstash/redis');
 
 const app = express();
 
-// Configuración para la nueva base de datos Upstash
+// Configuración corregida para usar las variables de entorno de Vercel
 const redis = new Redis({
   url: process.env.KV_REST_API_URL,
   token: process.env.KV_REST_API_TOKEN,
@@ -31,7 +31,7 @@ app.post('/api/registrar', async (req, res) => {
     };
 
     try {
-        // Guardamos usando la nueva constante 'redis'
+        // Guardamos el objeto como string JSON
         await redis.set(`socio:${dni}`, JSON.stringify(nuevoSocio));
         res.status(201).json({ message: "Socio registrado con éxito" });
     } catch (error) {
@@ -51,8 +51,11 @@ app.get('/api/checkin/:dni', async (req, res) => {
             return res.status(404).json({ message: "DNI no encontrado" });
         }
 
+        // Si Redis devuelve un string, lo convertimos a objeto
+        const datosSocio = typeof socio === 'string' ? JSON.parse(socio) : socio;
+
         const hoy = new Date();
-        const fechaPago = new Date(socio.fechaPago);
+        const fechaPago = new Date(datosSocio.fechaPago);
         const vencimiento = new Date(fechaPago);
         vencimiento.setDate(vencimiento.getDate() + 30);
 
@@ -64,10 +67,11 @@ app.get('/api/checkin/:dni', async (req, res) => {
         } else {
             res.json({ 
                 estado: "OK", 
-                message: `¡Hola ${socio.nombre}! Acceso concedido.` 
+                message: `¡Hola ${datosSocio.nombre}! Acceso concedido.` 
             });
         }
     } catch (error) {
+        console.error("Error Checkin:", error);
         res.status(500).json({ error: "Error al consultar datos" });
     }
 });
