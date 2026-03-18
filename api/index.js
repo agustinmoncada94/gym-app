@@ -1,11 +1,10 @@
 const express = require('express');
-// Cambiamos la forma de importar KV para configurar el cliente manualmente
-const { createClient } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 
 const app = express();
 
-// Configuración manual del cliente KV (Plan B)
-const kv = createClient({
+// Configuración para la nueva base de datos Upstash
+const redis = new Redis({
   url: process.env.KV_REST_API_URL,
   token: process.env.KV_REST_API_TOKEN,
 });
@@ -32,12 +31,12 @@ app.post('/api/registrar', async (req, res) => {
     };
 
     try {
-        // Usamos el cliente configurado arriba
-        await kv.set(`socio:${dni}`, nuevoSocio);
+        // Guardamos usando la nueva constante 'redis'
+        await redis.set(`socio:${dni}`, JSON.stringify(nuevoSocio));
         res.status(201).json({ message: "Socio registrado con éxito" });
     } catch (error) {
-        console.error("Error detallado de KV:", error);
-        res.status(500).json({ error: "Error de conexión con la base de datos KV" });
+        console.error("Error Redis:", error);
+        res.status(500).json({ error: "Error de conexión con la base de datos" });
     }
 });
 
@@ -46,7 +45,7 @@ app.get('/api/checkin/:dni', async (req, res) => {
     const { dni } = req.params;
     
     try {
-        const socio = await kv.get(`socio:${dni}`);
+        const socio = await redis.get(`socio:${dni}`);
 
         if (!socio) {
             return res.status(404).json({ message: "DNI no encontrado" });
