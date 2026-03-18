@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin - Gimnasio</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background: #218838; }
+        .mensaje { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Registrar Nuevo Socio</h2>
+    <form id="registroForm">
+        <input type="text" id="nombre" placeholder="Nombre Completo" required>
+        <input type="text" id="dni" placeholder="DNI (sin puntos)" required>
+        <input type="date" id="nacimiento" required>
+        <input type="text" id="direccion" placeholder="Dirección">
+        <input type="tel" id="telefono" placeholder="Teléfono">
+        <button type="submit">Dar de Alta</button>
+    </form>
+    <div id="resultado" class="mensaje"></div>
+
+    <script>
+        document.getElementById('registroForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                dni: document.getElementById('dni').value,
+                nacimiento: document.getElementById('nacimiento').value,
+                direccion: document.getElementById('direccion').value,
+                telefono: document.getElementById('telefono').value
+            };
+
+            const resp = await fetch('/api/registrar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(datos)
+            });
+
+            const res = await resp.json();
+            document.getElementById('resultado').innerText = res.mensaje;
+            if(resp.ok) e.target.reset(); // Limpia el formulario
+        };
+    </script>
+</body>
+</html>

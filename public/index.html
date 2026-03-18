@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso Gimnasio</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 100px; background: #f4f4f4; }
+        .card { background: white; padding: 40px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { padding: 15px; font-size: 1.2rem; border-radius: 5px; border: 1px solid #ddd; }
+        button { padding: 15px; font-size: 1.2rem; background: #007bff; color: white; border: none; cursor: pointer; }
+        #mensajeAcceso { margin-top: 20px; font-size: 1.5rem; }
+        .ok { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Control de Acceso</h1>
+        <p>Ingresa tu DNI para entrar:</p>
+        <input type="text" id="dniInput" placeholder="Tu DNI aquí">
+        <button onclick="checkIn()">Entrar</button>
+        <div id="mensajeAcceso"></div>
+    </div>
+
+    <script>
+        async function checkIn() {
+            const dni = document.getElementById('dniInput').value;
+            const resDiv = document.getElementById('mensajeAcceso');
+            
+            const resp = await fetch(`/api/checkin/${dni}`);
+            const data = await resp.json();
+
+            resDiv.innerText = data.mensaje;
+            resDiv.className = data.estado === 'OK' ? 'ok' : 'error';
+        }
+    </script>
+</body>
+</html>
