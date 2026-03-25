@@ -41,10 +41,7 @@
                         </tr>
                     </thead>
                     <tbody id="listaSocios">
-                        <tr>
-                            <td colspan="4" style="text-align:center; color:gray; padding:20px;">Cargando socios...</td>
-                        </tr>
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -52,15 +49,63 @@
     </div>
 
     <script>
-        // --- FUNCIÓN PARA REGISTRAR ---
+        // 1. FUNCIÓN PARA CARGAR LOS SOCIOS DESDE REDIS
+        async function cargarSocios() {
+            const lista = document.getElementById('listaSocios');
+            lista.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando socios...</td></tr>';
+
+            try {
+                const respuesta = await fetch('/api/socios/todos');
+                const socios = await respuesta.json();
+
+                if (socios.length === 0) {
+                    lista.innerHTML = '<tr><td colspan="4" style="text-align:center; color:gray;">No hay socios registrados aún.</td></tr>';
+                    return;
+                }
+
+                lista.innerHTML = ''; // Limpiamos la tabla
+                socios.forEach(socio => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${socio.nombre}</td>
+                        <td>${socio.dni}</td>
+                        <td><span class="status-badge active">ACTIVO</span></td>
+                        <td>
+                            <button title="Eliminar" style="background:none; border:none; color:#e57373; cursor:pointer;" onclick="eliminarSocio('${socio.dni}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    lista.appendChild(fila);
+                });
+            } catch (error) {
+                console.error(error);
+                lista.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Error al conectar con el servidor.</td></tr>';
+            }
+        }
+
+        // 2. FUNCIÓN PARA ELIMINAR UN SOCIO
+        async function eliminarSocio(dni) {
+            if (!confirm(`¿Estás seguro de que querés eliminar al socio con DNI ${dni}?`)) return;
+
+            try {
+                const response = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                if (response.ok) {
+                    cargarSocios(); // Recargamos la lista
+                } else {
+                    alert("No se pudo eliminar al socio.");
+                }
+            } catch (error) {
+                alert("Error de red al intentar eliminar.");
+            }
+        }
+
+        // 3. FUNCIÓN PARA EL REGISTRO
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnEnviar');
-            const divResultado = document.getElementById('resultado');
-            
             btn.disabled = true;
             btn.innerText = "REGISTRANDO...";
-            divResultado.innerText = "";
 
             const datos = {
                 nombre: document.getElementById('nombre').value,
@@ -77,37 +122,24 @@
                     body: JSON.stringify(datos)
                 });
 
-                const res = await response.json();
-
                 if (response.ok) {
-                    alert("¡Socio registrado con éxito!");
+                    alert("¡Socio registrado!");
                     e.target.reset();
-                    // Aquí podrías llamar a una función para refrescar la lista
+                    cargarSocios(); // <--- RECARGA LA LISTA AL INSTANTE
                 } else {
-                    alert("Error: " + (res.error || res.message));
+                    const err = await response.json();
+                    alert("Error: " + err.error);
                 }
             } catch (error) {
-                alert("Error de conexión con el servidor.");
+                alert("Error de conexión.");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "DAR DE ALTA";
             }
         };
 
-        // --- MUESTRA DE SOCIO (Ejemplo visual como en las fotos) ---
-        // Esto lo haremos dinámico cuando creemos la ruta de "obtener socios"
-        const lista = document.getElementById('listaSocios');
-        lista.innerHTML = `
-            <tr>
-                <td>Benito Agustin Moncada</td>
-                <td>12345678</td>
-                <td><span class="status-badge active">ACTIVO</span></td>
-                <td>
-                    <button style="background:none; border:none; color:#c5e061; cursor:pointer; margin-right:10px;"><i class="fas fa-edit"></i></button>
-                    <button style="background:none; border:none; color:#e57373; cursor:pointer;"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        `;
+        // AL CARGAR LA PÁGINA, PEDIMOS LOS DATOS
+        window.onload = cargarSocios;
     </script>
 </body>
 </html>
