@@ -101,3 +101,65 @@ button:active {
     border: 1px solid #f44336;
     display: block !important;
 }
+/* --- ESTILOS ADICIONALES PARA PANTALLA DE ÉXITO (image_8.png vibe) --- */
+
+/* Contenedor principal que se superpone a todo */
+#success-screen {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #1e3a5f 0%, #101820 70%); /* Degradado radial sutil */
+    color: white;
+    z-index: 9999; /* Asegura que esté por encima de todo */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Cuando se activa la pantalla */
+#success-screen.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* El gran tilde verde centrado */
+.success-icon {
+    font-size: 8rem; /* Tamaño grande */
+    color: #4caf50; /* Verde de éxito */
+    margin-bottom: 20px;
+    animation: popIn 0.5s ease-out; /* Animación de aparición */
+}
+
+/* Texto principal "Acceso Concedido!" */
+.success-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+/* Texto secundario "Bienvenido, [Nombre]!" */
+.success-welcome {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 10px;
+}
+
+/* Estilo para el nombre específico del socio */
+.partner-name {
+    color: #c5e061; /* Usamos el verde neón para resaltar el nombre */
+    font-weight: bold;
+}
+
+/* Pequeña animación para el icono */
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}

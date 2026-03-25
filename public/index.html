@@ -3,28 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Check-in</title>
+    <title>Gym Check-in - Acceso</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="checkin-container">
+    
+    <div class="checkin-container" id="form-container">
         <div class="logo-placeholder">GYM</div>
-        
         <input type="text" id="dniInput" placeholder="Ingrese su DNI (sin puntos)" maxlength="8">
         <br>
         <button onclick="realizarCheckin()">LOG IN</button>
-        
         <div id="resultado"></div>
+    </div>
+
+    <div id="success-screen">
+        <i class="fas fa-check-circle success-icon"></i> <div class="success-title">Acceso Concedido!</div>
+        <div class="success-welcome">Bienvenido, <span id="partnerNameDisplay" class="partner-name">[Nombre]</span>!</div>
     </div>
 
     <script>
         async function realizarCheckin() {
             const dni = document.getElementById('dniInput').value;
             const resultadoDiv = document.getElementById('resultado');
+            const formContainer = document.getElementById('form-container');
+            const successScreen = document.getElementById('success-screen');
+            const nameDisplay = document.getElementById('partnerNameDisplay');
             
-            // Limpiamos resultados anteriores
-            resultadoDiv.innerHTML = 'Consultando...';
+            // Limpiamos resultados anteriores y aseguramos que el form esté visible
+            resultadoDiv.innerHTML = '';
             resultadoDiv.className = ''; 
+            formContainer.style.display = 'block';
+            successScreen.classList.remove('active');
 
             if(!dni) {
                 resultadoDiv.innerHTML = 'Por favor ingrese un DNI';
@@ -40,12 +50,31 @@
                 if (respuesta.status === 404) {
                     resultadoDiv.innerHTML = `❌ DNI ${dni} no encontrado. Por favor diríjase a recepción.`;
                     resultadoDiv.className = 'status-vencido';
-                } else if (datos.estado === "OK") {
-                    resultadoDiv.innerHTML = `✔️ ${datos.message}`;
-                    resultadoDiv.className = 'status-ok';
                 } else if (datos.estado === "VENCIDO") {
-                    resultadoDiv.innerHTML = `⚠️ ${datos.message}`;
+                    resultadoDiv.innerHTML = `⚠️ DNI ${dni} VENCIDO. Por favor regularice su cuota.`;
                     resultadoDiv.className = 'status-vencido';
+                } else if (datos.estado === "OK") {
+                    // ¡ÉXITO! FLUJO DE LA IMAGEN NUEVA
+                    
+                    // 1. Ocultamos el formulario
+                    formContainer.style.display = 'none';
+                    
+                    // 2. Ponemos el nombre del socio en la pantalla de éxito
+                    // (Tu API ya devuelve el mensaje con el nombre, lo limpiamos un poco)
+                    // datos.message es "¡Hola Benito Agustin Moncada! Acceso concedido."
+                    // Vamos a sacar solo el nombre.
+                    const nombreSocio = datos.message.replace('¡Hola ', '').replace('! Acceso concedido.', '');
+                    nameDisplay.innerText = nombreSocio;
+                    
+                    // 3. Activamos la pantalla de éxito
+                    successScreen.classList.add('active');
+
+                    // 4. (Opcional) Ocultamos la pantalla después de 3 segundos y volvemos al form
+                    // setTimeout(() => {
+                    //     successScreen.classList.remove('active');
+                    //     formContainer.style.display = 'block';
+                    //     document.getElementById('dniInput').value = ''; // Limpiamos el DNI
+                    // }, 3000);
                 }
             } catch (error) {
                 resultadoDiv.innerHTML = '❌ Error de conexión. Intente nuevamente.';
