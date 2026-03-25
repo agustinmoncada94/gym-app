@@ -2,55 +2,56 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Acceso Gimnasio</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; margin-top: 100px; background: #f4f4f4; }
-        .card { background: white; padding: 40px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input { padding: 15px; font-size: 1.2rem; border-radius: 5px; border: 1px solid #ddd; }
-        button { padding: 15px; font-size: 1.2rem; background: #007bff; color: white; border-radius: 5px; border: none; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        #mensajeAcceso { margin-top: 20px; font-size: 1.5rem; font-weight: bold; }
-        .ok { color: green; }
-        .error { color: red; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Check-in</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="card">
-        <h1>Control de Acceso</h1>
-        <p>Ingresa tu DNI para entrar:</p>
-        <input type="text" id="dniInput" placeholder="Tu DNI aquí">
-        <button id="btnEntrar">Entrar</button>
-        <div id="mensajeAcceso"></div>
+    <div class="checkin-container">
+        <div class="logo-placeholder">GYM</div>
+        
+        <input type="text" id="dniInput" placeholder="Ingrese su DNI (sin puntos)" maxlength="8">
+        <br>
+        <button onclick="realizarCheckin()">LOG IN</button>
+        
+        <div id="resultado"></div>
     </div>
 
     <script>
-        document.getElementById('btnEntrar').onclick = async () => {
+        async function realizarCheckin() {
             const dni = document.getElementById('dniInput').value;
-            const resDiv = document.getElementById('mensajeAcceso');
+            const resultadoDiv = document.getElementById('resultado');
             
+            // Limpiamos resultados anteriores
+            resultadoDiv.innerHTML = 'Consultando...';
+            resultadoDiv.className = ''; 
+
             if(!dni) {
-                resDiv.innerText = "Por favor, ingresa un DNI";
-                resDiv.className = "error";
+                resultadoDiv.innerHTML = 'Por favor ingrese un DNI';
+                resultadoDiv.className = 'status-vencido';
                 return;
             }
 
-            resDiv.innerText = "Verificando...";
-            resDiv.className = "";
-
             try {
-                // Llamamos a la API de checkin
-                const resp = await fetch(`/api/checkin/${dni}`);
-                const data = await resp.json();
+                // LLAMADA REAL A TU API EN VERCEL
+                const respuesta = await fetch(`/api/checkin/${dni}`);
+                const datos = await respuesta.json();
 
-                // IMPORTANTE: Cambiamos data.mensaje por data.message
-                resDiv.innerText = data.message || data.error;
-                resDiv.className = data.estado === 'OK' ? 'ok' : 'error';
-                
+                if (respuesta.status === 404) {
+                    resultadoDiv.innerHTML = `❌ DNI ${dni} no encontrado. Por favor diríjase a recepción.`;
+                    resultadoDiv.className = 'status-vencido';
+                } else if (datos.estado === "OK") {
+                    resultadoDiv.innerHTML = `✔️ ${datos.message}`;
+                    resultadoDiv.className = 'status-ok';
+                } else if (datos.estado === "VENCIDO") {
+                    resultadoDiv.innerHTML = `⚠️ ${datos.message}`;
+                    resultadoDiv.className = 'status-vencido';
+                }
             } catch (error) {
-                resDiv.innerText = "Error al conectar con el servidor";
-                resDiv.className = "error";
+                resultadoDiv.innerHTML = '❌ Error de conexión. Intente nuevamente.';
+                resultadoDiv.className = 'status-vencido';
             }
-        };
+        }
     </script>
 </body>
 </html>

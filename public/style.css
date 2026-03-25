@@ -1,0 +1,103 @@
+/* style.css */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Fondo oscuro con imagen de gimnasio (image_7.png vibe) */
+    background-color: #101820; /* Gris muy oscuro de base */
+    background-image: linear-gradient(rgba(16, 24, 32, 0.85), rgba(16, 24, 32, 0.95)), 
+                      url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070'); /* Imagen de gym genérica y oscura */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.checkin-container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05); /* Tarjeta sutilmente transparente */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(4px); /* Efecto esmerilado */
+    border: 1px rgba(255, 255, 255, 0.1) solid;
+}
+
+.logo-placeholder {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #c5e061; /* Verde lima/neón del botón */
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+input[type="text"] {
+    width: 300px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    color: white;
+    font-size: 1.1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+input[type="text"]:focus {
+    border-color: #c5e061; /* Brillo verde al enfocar */
+}
+
+button {
+    width: 334px; /* Un poco más ancho que el input */
+    padding: 15px;
+    background-color: #c5e061; /* El VERDE LIMA exacto */
+    color: #101820; /* Texto oscuro para contraste */
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+button:hover {
+    background-color: #d8f080; /* Un verde más claro al pasar el mouse */
+}
+
+button:active {
+    transform: scale(0.98); /* Efecto de hundimiento */
+}
+
+#resultado {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: none; /* Oculto por defecto */
+}
+
+/* Estilos para los mensajes de éxito/error */
+.status-ok {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+    border: 1px solid #4caf50;
+    display: block !important;
+}
+
+.status-vencido {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #e57373;
+    border: 1px solid #f44336;
+    display: block !important;
+}
