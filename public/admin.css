@@ -1,0 +1,94 @@
+/* admin.css - Estilos exclusivos para el Panel de Control */
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0b0e11; /* Un tono más oscuro tipo Dashboard */
+    color: white;
+    display: block; /* Importante: el admin no va centrado como el login */
+    padding-top: 40px;
+}
+
+.admin-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 25px;
+    padding: 20px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.card h2 {
+    color: #c5e061; /* El verde lima que nos gusta */
+    margin-top: 0;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Tabla de Socios */
+.tabla-socios {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-socios th {
+    text-align: left;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.tabla-socios td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.95rem;
+}
+
+/* Badges de Estado */
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.status-badge.active { background: rgba(0, 255, 127, 0.1); color: #00ff7f; }
+
+/* Inputs y Botones */
+.admin-input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: white;
+    box-sizing: border-box;
+}
+
+.btn-admin {
+    width: 100%;
+    background: #c5e061;
+    color: #0b0e11;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: transform 0.2s;
+}
+
+.btn-admin:hover { transform: translateY(-2px); }

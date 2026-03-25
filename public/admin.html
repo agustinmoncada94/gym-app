@@ -2,43 +2,64 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Admin - Gimnasio</title>
-    <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; line-height: 1.6; background-color: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button:hover { background: #218838; }
-        .mensaje { margin-top: 20px; font-weight: bold; text-align: center; padding: 10px; border-radius: 4px; }
-        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
-        .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - GYM Admin</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="card">
-        <h2>Registrar Nuevo Socio</h2>
-        <form id="registroForm">
-            <input type="text" id="nombre" placeholder="Nombre Completo" required>
-            <input type="text" id="dni" placeholder="DNI (sin puntos)" required>
-            <input type="date" id="nacimiento" required>
-            <input type="text" id="direccion" placeholder="Dirección">
-            <input type="tel" id="telefono" placeholder="Teléfono">
-            <button type="submit" id="btnEnviar">Dar de Alta</button>
-        </form>
-        <div id="resultado" class="mensaje"></div>
+
+    <div class="admin-layout">
+        
+        <div class="card">
+            <h2><i class="fas fa-user-plus"></i> Registrar Socio</h2>
+            <form id="registroForm">
+                <input type="text" id="nombre" class="admin-input" placeholder="Nombre Completo" required>
+                <input type="tel" id="dni" class="admin-input" placeholder="DNI (sin puntos)" required inputmode="numeric">
+                
+                <label style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-left: 5px;">Fecha de Nacimiento</label>
+                <input type="date" id="nacimiento" class="admin-input" required>
+                
+                <input type="text" id="direccion" class="admin-input" placeholder="Dirección">
+                <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono">
+                
+                <button type="submit" id="btnEnviar" class="btn-admin">DAR DE ALTA</button>
+            </form>
+            <div id="resultado" class="mensaje"></div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-users"></i> Lista de Clientes</h2>
+            <div style="overflow-x: auto;">
+                <table class="tabla-socios">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaSocios">
+                        <tr>
+                            <td colspan="4" style="text-align:center; color:gray; padding:20px;">Cargando socios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
+        // --- FUNCIÓN PARA REGISTRAR ---
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnEnviar');
             const divResultado = document.getElementById('resultado');
             
-            // Bloqueamos el botón para evitar doble clic
             btn.disabled = true;
-            btn.innerText = "Registrando...";
-            divResultado.className = "mensaje";
+            btn.innerText = "REGISTRANDO...";
             divResultado.innerText = "";
 
             const datos = {
@@ -50,7 +71,6 @@
             };
 
             try {
-                // IMPORTANTE: La ruta debe ser /api/registrar para que coincida con index.js
                 const response = await fetch('/api/registrar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -60,21 +80,34 @@
                 const res = await response.json();
 
                 if (response.ok) {
-                    divResultado.innerText = res.message || "¡Socio registrado con éxito!";
-                    divResultado.classList.add('success');
-                    e.target.reset(); // Limpia el formulario
+                    alert("¡Socio registrado con éxito!");
+                    e.target.reset();
+                    // Aquí podrías llamar a una función para refrescar la lista
                 } else {
-                    divResultado.innerText = "Error: " + (res.error || res.message);
-                    divResultado.classList.add('error');
+                    alert("Error: " + (res.error || res.message));
                 }
             } catch (error) {
-                divResultado.innerText = "Error de conexión con el servidor.";
-                divResultado.classList.add('error');
+                alert("Error de conexión con el servidor.");
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Dar de Alta";
+                btn.innerText = "DAR DE ALTA";
             }
         };
+
+        // --- MUESTRA DE SOCIO (Ejemplo visual como en las fotos) ---
+        // Esto lo haremos dinámico cuando creemos la ruta de "obtener socios"
+        const lista = document.getElementById('listaSocios');
+        lista.innerHTML = `
+            <tr>
+                <td>Benito Agustin Moncada</td>
+                <td>12345678</td>
+                <td><span class="status-badge active">ACTIVO</span></td>
+                <td>
+                    <button style="background:none; border:none; color:#c5e061; cursor:pointer; margin-right:10px;"><i class="fas fa-edit"></i></button>
+                    <button style="background:none; border:none; color:#e57373; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
     </script>
 </body>
 </html>
