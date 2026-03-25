@@ -101,7 +101,7 @@ button:active {
     border: 1px solid #f44336;
     display: block !important;
 }
-/* --- ESTILOS ADICIONALES PARA PANTALLA DE ÉXITO (image_8.png vibe) --- */
+/* --- ESTILOS ACTUALIZADOS PARA PANTALLA DE ÉXITO CON FONDO DE GYM (Mismo fondo que Login) --- */
 
 /* Contenedor principal que se superpone a todo */
 #success-screen {
@@ -111,7 +111,15 @@ button:active {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at center, #1e3a5f 0%, #101820 70%); /* Degradado radial sutil */
+    
+    /* MISMO FONDO OSCURO CON IMAGEN DE PESAS QUE EL LOGIN (image_7.png vibe) */
+    background-color: #101820; /* Gris muy oscuro de base */
+    background-image: linear-gradient(rgba(16, 24, 32, 0.90), rgba(16, 24, 32, 0.98)), /* Capa oscura */
+                      url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070'); /* Mismo fondo de gym */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    
     color: white;
     z-index: 9999; /* Asegura que esté por encima de todo */
     justify-content: center;
@@ -120,6 +128,18 @@ button:active {
     text-align: center;
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
+}
+
+/* Capa de degradado radial sutil SOBRE el fondo de pesas (Para el tilde y texto) */
+#success-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(30, 58, 95, 0.6) 0%, rgba(16, 24, 32, 0.9) 70%); /* Degradado radial sutil */
+    z-index: -1; /* Se superpone sutilmente al fondo de pesas */
 }
 
 /* Cuando se activa la pantalla */
