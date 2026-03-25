@@ -1,16 +1,15 @@
 const express = require('express');
-const { createClient } = require('redis'); // Cambiamos la librería aquí
+const { createClient } = require('redis');
 
 const app = express();
 
 // CONFIGURACIÓN DE CONEXIÓN
 const client = createClient({
-    url: process.env.REDIS_URL // Aquí usa tu redis:// de Vercel directamente
+    url: process.env.REDIS_URL
 });
 
 client.on('error', err => console.error('Redis Client Error', err));
 
-// Conexión inicial (Vercel la maneja, pero esto asegura que esté lista)
 async function connectRedis() {
     if (!client.isOpen) await client.connect();
 }
@@ -21,10 +20,7 @@ app.use(express.json());
 // --- RUTA 1: Registro de Socios ---
 app.post('/api/registrar', async (req, res) => {
     const { nombre, dni, nacimiento, direccion, telefono } = req.body;
-
-    if (!dni || !nombre) {
-        return res.status(400).json({ error: "Faltan datos obligatorios" });
-    }
+    if (!dni || !nombre) return res.status(400).json({ error: "Faltan datos obligatorios" });
 
     try {
         await connectRedis();
@@ -32,24 +28,56 @@ app.post('/api/registrar', async (req, res) => {
             nombre, dni, nacimiento, direccion, telefono,
             fechaPago: new Date().toISOString()
         };
-
-        // Guardamos como string
         await client.set(`socio:${dni}`, JSON.stringify(nuevoSocio));
         res.status(201).json({ message: "Socio registrado con éxito" });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error de conexión con la base de datos" });
+        res.status(500).json({ error: "Error de conexión" });
+    }
+});
+
+// --- NUEVA RUTA: Obtener todos los socios (Para la pestaña Socios) ---
+app.get('/api/socios/todos', async (req, res) => {
+    try {
+        await connectRedis();
+        // Buscamos todas las llaves que empiezan con "socio:"
+        const keys = await client.keys('socio:*');
+        
+        if (keys.length === 0) return res.json([]);
+
+        // Traemos los datos de cada llave encontrada
+        const socios = await Promise.all(
+            keys.map(async (key) => {
+                const data = await client.get(key);
+                return JSON.parse(data);
+            })
+        );
+
+        // Los ordenamos por nombre para que la lista se vea pro
+        socios.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        
+        res.json(socios);
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener la lista" });
+    }
+});
+
+// --- NUEVA RUTA: Eliminar Socio ---
+app.delete('/api/socios/:dni', async (req, res) => {
+    try {
+        await connectRedis();
+        await client.del(`socio:${req.params.dni}`);
+        res.json({ message: "Socio eliminado" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al eliminar" });
     }
 });
 
 // --- RUTA 2: Check-in ---
 app.get('/api/checkin/:dni', async (req, res) => {
     const { dni } = req.params;
-    
     try {
         await connectRedis();
         const data = await client.get(`socio:${dni}`);
-
         if (!data) return res.status(404).json({ message: "DNI no encontrado" });
 
         const socio = JSON.parse(data);
