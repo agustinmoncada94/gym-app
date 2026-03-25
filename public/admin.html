@@ -16,13 +16,10 @@
             <form id="registroForm">
                 <input type="text" id="nombre" class="admin-input" placeholder="Nombre Completo" required>
                 <input type="tel" id="dni" class="admin-input" placeholder="DNI (sin puntos)" required inputmode="numeric">
-                
                 <label style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-left: 5px;">Fecha de Nacimiento</label>
                 <input type="date" id="nacimiento" class="admin-input" required>
-                
                 <input type="text" id="direccion" class="admin-input" placeholder="Dirección">
                 <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono">
-                
                 <button type="submit" id="btnEnviar" class="btn-admin">DAR DE ALTA</button>
             </form>
             <div id="resultado" class="mensaje"></div>
@@ -45,25 +42,27 @@
                 </table>
             </div>
         </div>
-
     </div>
 
     <script>
-        // 1. FUNCIÓN PARA CARGAR LOS SOCIOS DESDE REDIS
+        // CARGAR LISTA
         async function cargarSocios() {
             const lista = document.getElementById('listaSocios');
-            lista.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando socios...</td></tr>';
+            lista.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando...</td></tr>';
 
             try {
-                const respuesta = await fetch('/api/socios/todos');
-                const socios = await respuesta.json();
+                // Forzamos la ruta absoluta para evitar errores de 404
+                const res = await fetch(window.location.origin + '/api/socios/todos');
+                if (!res.ok) throw new Error("Error " + res.status);
+                
+                const socios = await res.json();
 
                 if (socios.length === 0) {
-                    lista.innerHTML = '<tr><td colspan="4" style="text-align:center; color:gray;">No hay socios registrados aún.</td></tr>';
+                    lista.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay socios registrados.</td></tr>';
                     return;
                 }
 
-                lista.innerHTML = ''; // Limpiamos la tabla
+                lista.innerHTML = '';
                 socios.forEach(socio => {
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
@@ -71,7 +70,7 @@
                         <td>${socio.dni}</td>
                         <td><span class="status-badge active">ACTIVO</span></td>
                         <td>
-                            <button title="Eliminar" style="background:none; border:none; color:#e57373; cursor:pointer;" onclick="eliminarSocio('${socio.dni}')">
+                            <button style="background:none; border:none; color:#e57373; cursor:pointer;" onclick="eliminarSocio('${socio.dni}')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -79,33 +78,24 @@
                     lista.appendChild(fila);
                 });
             } catch (error) {
-                console.error(error);
-                lista.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Error al conectar con el servidor.</td></tr>';
+                lista.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Error de conexión.</td></tr>`;
             }
         }
 
-        // 2. FUNCIÓN PARA ELIMINAR UN SOCIO
+        // ELIMINAR
         async function eliminarSocio(dni) {
-            if (!confirm(`¿Estás seguro de que querés eliminar al socio con DNI ${dni}?`)) return;
-
+            if (!confirm("¿Eliminar socio?")) return;
             try {
-                const response = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                if (response.ok) {
-                    cargarSocios(); // Recargamos la lista
-                } else {
-                    alert("No se pudo eliminar al socio.");
-                }
-            } catch (error) {
-                alert("Error de red al intentar eliminar.");
-            }
+                await fetch(window.location.origin + `/api/socios/${dni}`, { method: 'DELETE' });
+                cargarSocios();
+            } catch (e) { alert("Error al eliminar"); }
         }
 
-        // 3. FUNCIÓN PARA EL REGISTRO
+        // REGISTRAR
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnEnviar');
             btn.disabled = true;
-            btn.innerText = "REGISTRANDO...";
 
             const datos = {
                 nombre: document.getElementById('nombre').value,
@@ -116,29 +106,19 @@
             };
 
             try {
-                const response = await fetch('/api/registrar', {
+                const res = await fetch(window.location.origin + '/api/registrar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(datos)
                 });
-
-                if (response.ok) {
-                    alert("¡Socio registrado!");
+                if (res.ok) {
                     e.target.reset();
-                    cargarSocios(); // <--- RECARGA LA LISTA AL INSTANTE
-                } else {
-                    const err = await response.json();
-                    alert("Error: " + err.error);
+                    cargarSocios();
                 }
-            } catch (error) {
-                alert("Error de conexión.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "DAR DE ALTA";
-            }
+            } catch (error) { alert("Error al registrar"); }
+            finally { btn.disabled = false; }
         };
 
-        // AL CARGAR LA PÁGINA, PEDIMOS LOS DATOS
         window.onload = cargarSocios;
     </script>
 </body>
