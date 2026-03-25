@@ -36,25 +36,40 @@ body {
     letter-spacing: 2px;
 }
 
-input[type="text"] {
+/* style.css - ARREGLO DEL INPUT (type="tel") */
+
+/* Estilo unificado para inputs de texto y teléfono (numérico) */
+input[type="text"], 
+input[type="tel"] { /* Agregamos type="tel" explícitamente */
     width: 300px;
     padding: 15px;
     margin-bottom: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    
+    /* Fondo oscuro sutilmente transparente (image_10.png vibe) */
+    background: rgba(255, 255, 255, 0.05); 
+    
+    /* Borde sutil y oscuro por defecto */
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    
     border-radius: 5px;
-    color: white;
+    color: white; /* Letras blancas */
     font-size: 1.1rem;
-    outline: none;
-    transition: border-color 0.3s;
+    outline: none; /* Saca el borde azul feo por defecto */
+    transition: all 0.3s; /* Animación suave para el borde */
+    text-align: center; /* Centra el número que ingresan */
 }
 
-input[type="text"]::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+/* Estilo para el placeholder ("Ingrese su DNI...") */
+input[type="text"]::placeholder,
+input[type="tel"]::placeholder {
+    color: rgba(255, 255, 255, 0.4); /* Blanco semi-transparente */
 }
 
-input[type="text"]:focus {
-    border-color: #c5e061; /* Brillo verde al enfocar */
+/* Efecto al hacer clic (focus) */
+input[type="text"]:focus,
+input[type="tel"]:focus {
+    border-color: #c5e061; /* Brillo verde neón del botón al enfocar */
+    background: rgba(255, 255, 255, 0.1); /* Fondo un poquito más claro */
 }
 
 button {
