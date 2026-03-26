@@ -7,16 +7,42 @@
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .search-container { margin-bottom: 20px; position: relative; }
-        .search-input { 
-            width: 100%; padding: 12px 40px 12px 15px; border-radius: 8px; 
-            border: 1px solid #444; background: #1a1a1a; color: white; font-size: 1rem;
+        /* ARREGLO DEL BUSCADOR */
+        .search-container { 
+            margin-bottom: 20px; 
+            position: relative; 
+            width: 100%; 
+            box-sizing: border-box; 
         }
-        .search-icon { position: absolute; right: 15px; top: 14px; color: #888; }
-        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; margin-right: 12px; font-size: 1.2rem; }
-        .btn-borrar { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.2rem; }
-        .btn-edit:hover { color: #fff; }
-        .btn-borrar:hover { color: #fff; }
+
+        .search-input { 
+            width: 100%; 
+            padding: 12px 40px 12px 15px; 
+            border-radius: 8px; 
+            border: 1px solid #444; 
+            background: #1a1a1a; 
+            color: white; 
+            font-size: 1rem;
+            box-sizing: border-box; /* Evita que el buscador se pase de largo */
+        }
+
+        .search-icon { 
+            position: absolute; 
+            right: 15px; 
+            top: 50%; 
+            transform: translateY(-50%); /* Centra el ícono verticalmente */
+            color: #888; 
+            pointer-events: none;
+        }
+
+        /* BOTONES DE ACCIONES */
+        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; margin-right: 12px; font-size: 1.2rem; transition: 0.2s; }
+        .btn-borrar { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .btn-edit:hover { color: #fff; transform: scale(1.1); }
+        .btn-borrar:hover { color: #fff; transform: scale(1.1); }
+
+        /* Estilo para scroll suave al editar */
+        html { scroll-behavior: smooth; }
     </style>
 </head>
 <body>
@@ -69,14 +95,14 @@
                 sociosGlobal = await r.json();
                 renderizarTabla(sociosGlobal);
             } catch (e) {
-                document.getElementById('lista').innerHTML = '<tr><td colspan="4" style="color:red;">Error de conexión.</td></tr>';
+                document.getElementById('lista').innerHTML = '<tr><td colspan="4" style="color:red; text-align:center;">Error de conexión con la base de datos.</td></tr>';
             }
         }
 
         function renderizarTabla(lista) {
             const tabla = document.getElementById('lista');
             if (lista.length === 0) {
-                tabla.innerHTML = '<tr><td colspan="4">No se encontraron socios registrados.</td></tr>';
+                tabla.innerHTML = '<tr><td colspan="4" style="text-align:center;">No se encontraron socios registrados.</td></tr>';
                 return;
             }
             tabla.innerHTML = lista.map(s => `
@@ -85,8 +111,8 @@
                     <td>${s.dni}</td>
                     <td>${s.telefono || '-'}</td>
                     <td>
-                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit" title="Editar"><i class="fas fa-edit"></i></button>
-                        <button onclick="borrarSocio('${s.dni}')" class="btn-borrar" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit" title="Editar Socio"><i class="fas fa-edit"></i></button>
+                        <button onclick="borrarSocio('${s.dni}')" class="btn-borrar" title="Eliminar Socio"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -113,6 +139,7 @@
             document.getElementById('direccion').value = socio.direccion || '';
             document.getElementById('telefono').value = socio.telefono || '';
             
+            // Scroll hacia el formulario para facilitar la edición
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -142,22 +169,33 @@
             const url = esEdicion ? `/api/socios/${dni}` : '/api/registrar';
 
             try {
-                await fetch(url, {
+                const response = await fetch(url, {
                     method: metodo,
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(datos)
                 });
-                cancelarEdicion();
-                cargarSocios();
+                
+                if(response.ok) {
+                    cancelarEdicion();
+                    cargarSocios();
+                } else {
+                    alert("Hubo un problema al guardar los datos.");
+                }
             } catch (err) {
-                alert("Error en la operación");
+                alert("Error de red al intentar guardar.");
             }
         };
 
         async function borrarSocio(dni) {
-            if (confirm('¿Estás seguro de que quieres eliminar este socio?')) {
-                await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                cargarSocios();
+            if (confirm('¿Estás seguro de que quieres eliminar este socio permanentemente?')) {
+                try {
+                    const response = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                    if(response.ok) {
+                        cargarSocios();
+                    }
+                } catch (e) {
+                    alert("No se pudo eliminar al socio.");
+                }
             }
         }
 
