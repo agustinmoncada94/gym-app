@@ -4,11 +4,11 @@
         <div style="width: 60px; height: 4px; background: var(--primary-red); margin: 10px auto;"></div>
     </div>
 
-    <div style="margin-bottom: 20px;">
-        <input type="text" id="busqueda" class="admin-input" placeholder="🔍 Buscar por nombre o DNI..." onkeyup="filtrarSocios()" style="margin-bottom:0;">
+    <div style="margin-bottom: 20px; position: relative;">
+        <input type="text" id="busqueda" class="admin-input" placeholder="🔍 Buscar por nombre o DNI..." onkeyup="filtrarSocios()" style="padding-left: 40px;">
     </div>
     
-    <div style="overflow-x: auto;">
+    <div class="tabla-container">
         <table class="tabla-socios">
             <thead>
                 <tr>
@@ -19,8 +19,7 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody id="lista">
-                </tbody>
+            <tbody id="lista"></tbody>
         </table>
     </div>
 </div>
