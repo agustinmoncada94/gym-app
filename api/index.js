@@ -4,19 +4,17 @@ const { createClient } = require('redis');
 const app = express();
 app.use(express.json());
 
-// Configuramos el cliente de Redis
 const client = createClient({
     url: process.env.REDIS_URL
 });
 
 client.on('error', err => console.log('Redis Error:', err));
 
-// Función para asegurar la conexión en cada pedido
 async function conectar() {
     if (!client.isOpen) await client.connect();
 }
 
-// RUTA: LISTAR TODOS
+// RUTA: OBTENER TODOS LOS SOCIOS
 app.get('/api/socios/todos', async (req, res) => {
     try {
         await conectar();
@@ -29,17 +27,18 @@ app.get('/api/socios/todos', async (req, res) => {
                 return JSON.parse(data);
             })
         );
+        socios.sort((a, b) => a.nombre.localeCompare(b.nombre));
         res.json(socios);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// RUTA: REGISTRAR
+// RUTA: REGISTRAR (Con todos los campos)
 app.post('/api/registrar', async (req, res) => {
     try {
         await conectar();
-        const socio = req.body;
+        const socio = req.body; // Recibe nombre, dni, nacimiento, direccion, telefono
         socio.fechaPago = new Date().toISOString();
         await client.set(`socio:${socio.dni}`, JSON.stringify(socio));
         res.json({ success: true });

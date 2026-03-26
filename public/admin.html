@@ -3,52 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - GYM</title>
+    <title>Panel Admin - GYM</title>
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="admin-layout">
         <div class="card">
-            <h2>Registrar Socio</h2>
+            <h2><i class="fas fa-user-plus"></i> Registrar Socio</h2>
             <form id="registroForm">
-                <input type="text" id="nombre" class="admin-input" placeholder="Nombre" required>
-                <input type="text" id="dni" class="admin-input" placeholder="DNI" required>
+                <input type="text" id="nombre" class="admin-input" placeholder="Nombre Completo" required>
+                <input type="text" id="dni" class="admin-input" placeholder="DNI (sin puntos)" required>
+                <label style="color:gray; font-size:0.8rem; display:block; margin: 10px 0 5px 5px;">Fecha Nacimiento</label>
                 <input type="date" id="nacimiento" class="admin-input" required>
+                <input type="text" id="direccion" class="admin-input" placeholder="Dirección">
+                <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono / WhatsApp">
                 <button type="submit" id="btn" class="btn-admin">DAR DE ALTA</button>
             </form>
         </div>
 
         <div class="card">
-            <h2>Lista de Clientes</h2>
-            <table class="tabla-socios">
-                <thead>
-                    <tr><th>Nombre</th><th>DNI</th><th>Acciones</th></tr>
-                </thead>
-                <tbody id="lista"></tbody>
-            </table>
+            <h2><i class="fas fa-users"></i> Lista de Clientes</h2>
+            <div style="overflow-x: auto;">
+                <table class="tabla-socios">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>Teléfono</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
         const cargar = async () => {
             const t = document.getElementById('lista');
-            t.innerHTML = 'Cargando...';
+            t.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
             try {
                 const r = await fetch('/api/socios/todos');
                 const data = await r.json();
+                
+                if (data.length === 0) {
+                    t.innerHTML = '<tr><td colspan="4">No hay socios registrados.</td></tr>';
+                    return;
+                }
+
                 t.innerHTML = data.map(s => `
                     <tr>
                         <td>${s.nombre}</td>
                         <td>${s.dni}</td>
-                        <td><button onclick="borrar('${s.dni}')" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+                        <td>${s.telefono || '-'}</td>
+                        <td>
+                            <button onclick="borrar('${s.dni}')" style="color:#ff5f5f; background:none; border:none; cursor:pointer; font-size:1.1rem;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
-                `).join('') || 'No hay socios';
-            } catch (e) { t.innerHTML = 'Error al cargar datos.'; }
+                `).join('');
+            } catch (e) { 
+                t.innerHTML = '<tr><td colspan="4" style="color:red;">Error al cargar datos.</td></tr>'; 
+            }
         };
 
         const borrar = async (dni) => {
-            if(confirm('¿Borrar?')) {
+            if(confirm('¿Seguro que querés eliminar este socio?')) {
                 await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
                 cargar();
             }
@@ -56,18 +79,34 @@
 
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('btn');
+            btn.innerText = "REGISTRANDO...";
+            btn.disabled = true;
+
             const datos = {
                 nombre: document.getElementById('nombre').value,
                 dni: document.getElementById('dni').value,
-                nacimiento: document.getElementById('nacimiento').value
+                nacimiento: document.getElementById('nacimiento').value,
+                direccion: document.getElementById('direccion').value,
+                telefono: document.getElementById('telefono').value
             };
-            await fetch('/api/registrar', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(datos)
-            });
-            e.target.reset();
-            cargar();
+
+            try {
+                const res = await fetch('/api/registrar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(datos)
+                });
+                if(res.ok) {
+                    e.target.reset();
+                    cargar();
+                }
+            } catch (error) {
+                alert("Error al guardar.");
+            } finally {
+                btn.innerText = "DAR DE ALTA";
+                btn.disabled = false;
+            }
         };
 
         window.onload = cargar;
