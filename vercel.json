@@ -1,9 +1,13 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/registrar", "destination": "/api/index.js" },
-    { "source": "/api/checkin/(.*)", "destination": "/api/index.js" },
-    { "source": "/admin", "destination": "/public/admin.html" },
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
     { "source": "/(.*)", "destination": "/public/$1" }
-  ]
+  ],
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }
