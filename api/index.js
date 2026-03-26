@@ -2,56 +2,26 @@ const express = require('express');
 const { createClient } = require('redis');
 
 const app = express();
-
-// CONFIGURACIÓN DE REDIS CON TIMEOUT
-const client = createClient({
-    url: process.env.REDIS_URL,
-    socket: {
-        connectTimeout: 10000,
-        keepAlive: 5000
-    }
-});
-
-client.on('error', err => console.error('Redis Client Error', err));
-
-async function connectRedis() {
-    try {
-        if (!client.isOpen) {
-            await client.connect();
-        }
-    } catch (err) {
-        console.error("Fallo de conexión a Redis:", err);
-    }
-}
-
-app.use(express.static('public'));
 app.use(express.json());
 
-// --- RUTA: REGISTRAR SOCIO ---
-app.post('/api/registrar', async (req, res) => {
-    const { nombre, dni, nacimiento, direccion, telefono } = req.body;
-    if (!dni || !nombre) return res.status(400).json({ error: "Faltan datos" });
-
-    try {
-        await connectRedis();
-        const nuevoSocio = {
-            nombre, dni, nacimiento, direccion, telefono,
-            fechaPago: new Date().toISOString()
-        };
-        await client.set(`socio:${dni}`, JSON.stringify(nuevoSocio));
-        res.status(201).json({ message: "Socio registrado con éxito" });
-    } catch (error) {
-        res.status(500).json({ error: "Error en el servidor al registrar" });
-    }
+// Configuramos el cliente de Redis
+const client = createClient({
+    url: process.env.REDIS_URL
 });
 
-// --- RUTA: OBTENER TODOS LOS SOCIOS ---
+client.on('error', err => console.log('Redis Error:', err));
+
+// Función para asegurar la conexión en cada pedido
+async function conectar() {
+    if (!client.isOpen) await client.connect();
+}
+
+// RUTA: LISTAR TODOS
 app.get('/api/socios/todos', async (req, res) => {
     try {
-        await connectRedis();
+        await conectar();
         const keys = await client.keys('socio:*');
-        
-        if (!keys || keys.length === 0) return res.json([]);
+        if (!keys.length) return res.json([]);
 
         const socios = await Promise.all(
             keys.map(async (key) => {
@@ -59,46 +29,33 @@ app.get('/api/socios/todos', async (req, res) => {
                 return JSON.parse(data);
             })
         );
-
-        socios.sort((a, b) => a.nombre.localeCompare(b.nombre));
         res.json(socios);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al obtener socios" });
+        res.status(500).json({ error: error.message });
     }
 });
 
-// --- RUTA: ELIMINAR SOCIO ---
+// RUTA: REGISTRAR
+app.post('/api/registrar', async (req, res) => {
+    try {
+        await conectar();
+        const socio = req.body;
+        socio.fechaPago = new Date().toISOString();
+        await client.set(`socio:${socio.dni}`, JSON.stringify(socio));
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// RUTA: ELIMINAR
 app.delete('/api/socios/:dni', async (req, res) => {
     try {
-        await connectRedis();
+        await conectar();
         await client.del(`socio:${req.params.dni}`);
-        res.json({ message: "Socio eliminado" });
+        res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: "Error al eliminar" });
-    }
-});
-
-// --- RUTA: CHECK-IN ---
-app.get('/api/checkin/:dni', async (req, res) => {
-    const { dni } = req.params;
-    try {
-        await connectRedis();
-        const data = await client.get(`socio:${dni}`);
-        if (!data) return res.status(404).json({ message: "DNI no encontrado" });
-
-        const socio = JSON.parse(data);
-        const hoy = new Date();
-        const vencimiento = new Date(socio.fechaPago);
-        vencimiento.setDate(vencimiento.getDate() + 30);
-
-        if (hoy > vencimiento) {
-            res.json({ estado: "VENCIDO", message: `Cuota vencida el ${vencimiento.toLocaleDateString()}.` });
-        } else {
-            res.json({ estado: "OK", message: `¡Hola ${socio.nombre}! Acceso concedido.` });
-        }
-    } catch (error) {
-        res.status(500).json({ error: "Error en check-in" });
+        res.status(500).json({ error: error.message });
     }
 });
 
