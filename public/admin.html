@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYM Admin</title>
+    <title>GYM Admin - Gestión de Socios</title>
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -13,7 +13,7 @@
             <h2><i class="fas fa-user-plus"></i> Registrar Socio</h2>
             <form id="registroForm">
                 <input type="text" id="nombre" class="admin-input" placeholder="Nombre Completo" required>
-                <input type="text" id="dni" class="admin-input" placeholder="DNI" required>
+                <input type="text" id="dni" class="admin-input" placeholder="DNI (sin puntos)" required>
                 <input type="date" id="nacimiento" class="admin-input" required>
                 <input type="text" id="direccion" class="admin-input" placeholder="Dirección">
                 <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono">
@@ -26,54 +26,70 @@
             <div style="overflow-x: auto;">
                 <table class="tabla-socios">
                     <thead>
-                        <tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Acciones</th></tr>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>Teléfono</th>
+                            <th>Acciones</th>
+                        </tr>
                     </thead>
-                    <tbody id="lista"></tbody>
+                    <tbody id="lista">
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        const actualizarLista = async () => {
-            const body = document.getElementById('lista');
-            body.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
+        // Función para cargar la lista desde la API que ya sabemos que funciona
+        async function cargarSocios() {
+            const tabla = document.getElementById('lista');
+            tabla.innerHTML = '<tr><td colspan="4">Cargando socios...</td></tr>';
+
             try {
-                const r = await fetch('/api/socios/todos');
-                if(!r.ok) throw new Error();
-                const data = await r.json();
-                
-                if(data.length === 0) {
-                    body.innerHTML = '<tr><td colspan="4">No hay socios.</td></tr>';
+                // Usamos la ruta exacta que te funcionó en la captura
+                const respuesta = await fetch('/api/socios/todos');
+                const socios = await respuesta.json();
+
+                if (socios.length === 0) {
+                    tabla.innerHTML = '<tr><td colspan="4">No hay socios registrados.</td></tr>';
                     return;
                 }
 
-                body.innerHTML = data.map(s => `
+                // Dibujamos la tabla con los datos reales
+                tabla.innerHTML = socios.map(s => `
                     <tr>
                         <td>${s.nombre}</td>
                         <td>${s.dni}</td>
                         <td>${s.telefono || '-'}</td>
-                        <td><button onclick="borrar('${s.dni}')" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+                        <td>
+                            <button onclick="borrarSocio('${s.dni}')" class="btn-borrar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                 `).join('');
-            } catch (e) {
-                body.innerHTML = '<tr><td colspan="4" style="color:red;">Error de conexión con Redis.</td></tr>';
-            }
-        };
 
-        const borrar = async (dni) => {
-            if(confirm('¿Eliminar?')) {
+            } catch (error) {
+                tabla.innerHTML = '<tr><td colspan="4" style="color:red;">Error al cargar datos. Reintente.</td></tr>';
+            }
+        }
+
+        // Función para borrar
+        async function borrarSocio(dni) {
+            if (confirm('¿Seguro que desea eliminar este socio?')) {
                 await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                actualizarLista();
+                cargarSocios();
             }
-        };
+        }
 
+        // Manejo del formulario
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn');
             btn.disabled = true;
-            
-            const payload = {
+
+            const datos = {
                 nombre: document.getElementById('nombre').value,
                 dni: document.getElementById('dni').value,
                 nacimiento: document.getElementById('nacimiento').value,
@@ -81,18 +97,26 @@
                 telefono: document.getElementById('telefono').value
             };
 
-            await fetch('/api/registrar', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            
-            e.target.reset();
-            btn.disabled = false;
-            actualizarLista();
+            try {
+                const res = await fetch('/api/registrar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(datos)
+                });
+                
+                if(res.ok) {
+                    e.target.reset();
+                    cargarSocios();
+                }
+            } catch (err) {
+                alert("Error al guardar");
+            } finally {
+                btn.disabled = false;
+            }
         };
 
-        window.onload = actualizarLista;
+        // Cargar al iniciar
+        window.onload = cargarSocios;
     </script>
 </body>
 </html>
