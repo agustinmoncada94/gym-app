@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DECLON Admin - Panel de Control</title>
+    <title>DECLON Admin - Gestión Dinámica</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
             --primary-red: #ff3333;   
-            --border-red: #cc0000;    
             --bg-dark: #0a0a0a;       
             --card-dark: #121212;     
             --text-main: #ffffff;     
@@ -18,186 +17,134 @@
         }
 
         body { 
-            margin: 0; 
-            display: flex; 
+            margin: 0; display: flex; 
             font-family: 'Segoe UI', sans-serif; 
-            background: var(--bg-dark); 
-            color: var(--text-main); 
+            background: var(--bg-dark); color: var(--text-main); 
         }
 
         /* SIDEBAR */
         .sidebar { 
-            width: 250px; 
-            height: 100vh; 
-            background: var(--card-dark); 
-            border-right: 1px solid #1a1a1a; 
-            position: fixed; 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 1000;
+            width: 250px; height: 100vh; 
+            background: var(--card-dark); border-right: 1px solid #1a1a1a; 
+            position: fixed; display: flex; flex-direction: column; z-index: 1000;
         }
-
         .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1a1a1a; }
-        .sidebar-logo { max-width: 180px; height: auto; display: block; margin: 0 auto; }
+        .sidebar-logo { max-width: 180px; height: auto; }
 
         .nav-link { 
             padding: 15px 25px; color: var(--text-muted); text-decoration: none; 
             display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; 
         }
         .nav-link.active { color: var(--text-main); background: #1a1a1a; border-right: 3px solid var(--primary-red); }
+        .nav-link:hover { background: #151515; color: #fff; }
 
-        /* CONTENIDO */
-        .main-content { margin-left: 250px; flex: 1; padding: 30px; }
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
+        /* CONTENEDOR PRINCIPALDonde se cargará todo */
+        .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-
-        /* CARDS Y FORMULARIOS */
-        .admin-layout { display: grid; grid-template-columns: 1fr 2.5fr; gap: 20px; }
-        .card { 
-            background: var(--card-dark); padding: 25px; border-radius: 12px; 
-            border: 1px solid var(--border-red); margin-bottom: 20px; 
-        }
-
-        /* CORRECCIÓN CALENDARIOS BLANCOS */
+        /* ESTILOS GLOBALES PARA LAS PESTAÑAS (Se mantienen aquí para que afecten a los archivos cargados) */
+        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
+        
+        /* Calendarios Blancos */
         .admin-input { 
             width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; 
             border: 1px solid #333; background: #080808; color: var(--text-main); 
-            box-sizing: border-box; color-scheme: dark; /* Esto pone el icono del calendario en blanco */
+            color-scheme: dark; 
         }
 
         .btn-admin { 
             width: 100%; padding: 12px; border-radius: 8px; border: none; 
-            background: var(--primary-red); color: #fff; font-weight: bold; 
-            cursor: pointer; transition: 0.3s; text-transform: uppercase;
+            background: var(--primary-red); color: #fff; font-weight: bold; cursor: pointer; 
         }
 
-        /* TABLA Y ESTADOS */
-        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .tabla-socios th { color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; padding: 15px; text-align: left; }
-        .tabla-socios td { padding: 15px; border-bottom: 1px solid #1a1a1a; vertical-align: middle; }
+        /* Tabla y Estados */
+        .tabla-socios { width: 100%; border-collapse: collapse; }
+        .tabla-socios th { color: var(--text-muted); font-size: 0.75rem; text-align: left; padding: 15px; border-bottom: 1px solid #222; }
+        .tabla-socios td { padding: 15px; border-bottom: 1px solid #1a1a1a; }
 
-        .status-pill { 
-            padding: 5px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; 
-        }
+        .status-pill { padding: 5px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
         .status-ok { background: rgba(0, 255, 102, 0.1); color: var(--status-green); border: 1px solid var(--status-green); }
         .status-vencido { background: rgba(255, 255, 255, 0.05); color: var(--status-gray); border: 1px solid #444; }
 
-        /* MENÚ DESPLEGABLE DE ACCIONES */
+        /* Menú Dropdown 3 puntos */
         .dropdown { position: relative; display: inline-block; }
-        .dropbtn { 
-            background: none; border: none; color: var(--text-muted); 
-            font-size: 1.2rem; cursor: pointer; padding: 5px 10px;
-        }
+        .dropbtn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
         .dropdown-content {
-            display: none; position: absolute; right: 0; background-color: #1a1a1a;
-            min-width: 140px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
-            z-index: 1001; border-radius: 8px; border: 1px solid #333;
-            overflow: hidden;
+            display: none; position: absolute; right: 0; background: #1a1a1a;
+            min-width: 150px; border: 1px solid #333; z-index: 100; border-radius: 8px;
         }
         .dropdown-content button {
-            color: white; padding: 12px 16px; text-decoration: none;
-            display: block; width: 100%; border: none; background: none;
-            text-align: left; cursor: pointer; font-size: 0.85rem;
+            color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer;
         }
-        .dropdown-content button:hover { background-color: #252525; color: var(--primary-red); }
+        .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
         .dropdown:hover .dropdown-content { display: block; }
-
-        /* DASHBOARD */
-        .db-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .db-card { background: #080808; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <img src="img/logo.png" alt="DECLON Logo" class="sidebar-logo">
+            <img src="img/logo.png" alt="DECLON" class="sidebar-logo">
         </div>
-        <div class="nav-link active" onclick="switchTab('tab-socios')"><i class="fas fa-users"></i> Socios</div>
-        <div class="nav-link" onclick="switchTab('tab-equipos')"><i class="fas fa-tools"></i> Equipos</div>
-        <div class="nav-link" onclick="switchTab('tab-dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
+        <nav>
+            <div class="nav-link active" onclick="switchTab('socios_lista')"><i class="fas fa-list"></i> Ver Socios</div>
+            <div class="nav-link" onclick="switchTab('socios_registro')"><i class="fas fa-user-plus"></i> Registrar Socio</div>
+            <div class="nav-link" onclick="switchTab('equipos')"><i class="fas fa-tools"></i> Equipos</div>
+            <div class="nav-link" onclick="switchTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
+        </nav>
     </div>
 
-    <div class="main-content">
-        
-        <div id="tab-socios" class="tab-content active">
-            <div class="admin-layout">
-                <div class="card">
-                    <h2 id="formTitle"><i class="fas fa-user-plus"></i> Registrar</h2>
-                    <form id="registroForm">
-                        <input type="hidden" id="editMode" value="false">
-                        <label style="font-size: 0.7rem; color: var(--text-muted);">NOMBRE COMPLETO</label>
-                        <input type="text" id="nombre" class="admin-input" required>
-                        <label style="font-size: 0.7rem; color: var(--text-muted);">DNI (SIN PUNTOS)</label>
-                        <input type="text" id="dni" class="admin-input" required>
-                        <label style="font-size: 0.7rem; color: var(--text-muted);">FECHA NACIMIENTO</label>
-                        <input type="date" id="nacimiento" class="admin-input" required>
-                        <label style="font-size: 0.7rem; color: var(--text-muted);">TELÉFONO</label>
-                        <input type="tel" id="telefono" class="admin-input">
-                        <label style="font-size: 0.7rem; color: var(--text-muted);">PLAN</label>
-                        <select id="plan" class="admin-input">
-                            <option value="Musculación">Musculación</option>
-                            <option value="Plan Full">Plan Full</option>
-                            <option value="Personalizado">Personalizado</option>
-                        </select>
-                        <label style="font-size: 0.7rem; color: var(--text-muted);">INICIO COBERTURA</label>
-                        <input type="date" id="fechaInicioManual" class="admin-input">
-                        <button type="submit" id="btnSubmit" class="btn-admin">DAR DE ALTA</button>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <h2><i class="fas fa-list"></i> Socios y Pagos</h2>
-                    <table class="tabla-socios">
-                        <thead>
-                            <tr>
-                                <th>Socio</th>
-                                <th>Plan</th>
-                                <th>Ciclo de Pago</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-equipos" class="tab-content">
-            <div class="card"><h2><i class="fas fa-tools"></i> Gestión de Equipos</h2></div>
-        </div>
-
-        <div id="tab-dashboard" class="tab-content">
-            <div class="card">
-                <h2>Dashboard DECLON</h2>
-                <div class="db-grid">
-                    <div class="db-card"><h3 id="totalSocios">0</h3><p>TOTAL</p></div>
-                    <div class="db-card"><h3 id="totalVencidos" style="color:var(--status-gray)">0</h3><p>VENCIDOS</p></div>
-                    <div class="db-card"><h3 id="totalActivos" style="color:var(--status-green)">0</h3><p>AL DÍA</p></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <main class="main-content" id="view-container">
+        </main>
 
     <script>
-        let sociosGlobal = [];
+        // Función principal para cambiar de pestaña
+        async function switchTab(tabName) {
+            const container = document.getElementById('view-container');
+            
+            try {
+                // 1. Cargar el archivo HTML
+                const response = await fetch(`${tabName}.html`);
+                if (!response.ok) throw new Error('No se pudo cargar la pestaña');
+                const html = await response.text();
+                
+                // 2. Inyectar el HTML
+                container.innerHTML = html;
 
+                // 3. Actualizar Sidebar
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
+                });
+
+                // 4. Disparar lógica según la pestaña
+                if (tabName === 'socios_lista') cargarSocios();
+                if (tabName === 'dashboard') actualizarDashboard();
+                
+                // Si es registro, reiniciamos el modo edición por las dudas
+                if (tabName === 'socios_registro') {
+                   console.log("Formulario de registro listo");
+                }
+
+            } catch (error) {
+                container.innerHTML = `<div class="card"><h2>Error</h2><p>No se encontró el archivo ${tabName}.html</p></div>`;
+            }
+        }
+
+        // --- LÓGICA DE DATOS (Se queda en admin.html para que sea global) ---
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
-                sociosGlobal = await r.json();
-                renderizarTabla();
-                actualizarDashboard();
-            } catch (e) { console.error(e); }
+                const socios = await r.json();
+                renderizarTabla(socios);
+            } catch (e) { console.error("Error al cargar socios:", e); }
         }
 
-        function renderizarTabla() {
-            const tabla = document.getElementById('lista');
+        function renderizarTabla(lista) {
+            const tbody = document.getElementById('lista');
+            if(!tbody) return;
             const hoy = new Date();
-            tabla.innerHTML = sociosGlobal.map(s => {
+
+            tbody.innerHTML = lista.map(s => {
                 const desde = new Date(s.fechaInicio || s.fechaPago);
                 const hasta = new Date(desde);
                 hasta.setDate(desde.getDate() + 30);
@@ -206,7 +153,7 @@
                 return `
                 <tr>
                     <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
-                    <td><span style="color:var(--primary-red); font-size:0.8rem">${s.plan}</span></td>
+                    <td><span style="color:var(--primary-red); font-size:0.85rem">${s.plan}</span></td>
                     <td>
                         <small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br>
                         <small>Vence: ${hasta.toLocaleDateString('es-AR')}</small>
@@ -216,9 +163,9 @@
                         <div class="dropdown">
                             <button class="dropbtn"><i class="fas fa-ellipsis-v"></i></button>
                             <div class="dropdown-content">
-                                <button onclick='renovarMes(${JSON.stringify(s)})'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
-                                <button onclick='prepararEdicion(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar</button>
-                                <button onclick="borrarSocio('${s.dni}')"><i class="fas fa-trash"></i> Eliminar</button>
+                                <button onclick='renovarMes(${JSON.stringify(s)})'><i class="fas fa-money-bill-wave"></i> Cobrar</button>
+                                <button onclick='irAEditar(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar</button>
+                                <button onclick="borrarSocio('${s.dni}')"><i class="fas fa-trash"></i> Borrar</button>
                             </div>
                         </div>
                     </td>
@@ -226,63 +173,15 @@
             }).join('');
         }
 
-        // --- FUNCIONES DE LOGICA ---
-        function switchTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            event.currentTarget.classList.add('active');
+        function irAEditar(socio) {
+            // Guardamos el socio en el storage temporal para que la pestaña de registro lo lea
+            localStorage.setItem('socioAEditar', JSON.stringify(socio));
+            switchTab('socios_registro');
         }
 
-        function actualizarDashboard() {
-            const hoy = new Date();
-            let v = 0;
-            sociosGlobal.forEach(s => {
-                const f = new Date(s.fechaInicio);
-                f.setDate(f.getDate() + 30);
-                if (hoy > f) v++;
-            });
-            document.getElementById('totalSocios').innerText = sociosGlobal.length;
-            document.getElementById('totalVencidos').innerText = v;
-            document.getElementById('totalActivos').innerText = sociosGlobal.length - v;
-        }
+        // Carga inicial
+        window.onload = () => switchTab('socios_lista');
 
-        async function renovarMes(s) {
-            if (confirm(`¿Cobrar mes a ${s.nombre}?`)) {
-                s.fechaInicio = new Date().toISOString();
-                await fetch(`/api/socios/${s.dni}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(s) });
-                cargarSocios();
-            }
-        }
-
-        document.getElementById('registroForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const esEdicion = document.getElementById('editMode').value === "true";
-            const datos = {
-                nombre: document.getElementById('nombre').value,
-                dni: document.getElementById('dni').value,
-                nacimiento: document.getElementById('nacimiento').value,
-                telefono: document.getElementById('telefono').value,
-                plan: document.getElementById('plan').value,
-                fechaInicio: document.getElementById('fechaInicioManual').value || new Date().toISOString()
-            };
-            await fetch(esEdicion ? `/api/socios/${datos.dni}` : '/api/registrar', { 
-                method: esEdicion ? 'PUT' : 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(datos) 
-            });
-            document.getElementById('registroForm').reset();
-            cargarSocios();
-        };
-
-        async function borrarSocio(dni) {
-            if (confirm('¿Eliminar?')) {
-                await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                cargarSocios();
-            }
-        }
-
-        window.onload = cargarSocios;
     </script>
 </body>
 </html>
