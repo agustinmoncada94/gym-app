@@ -51,5 +51,16 @@ app.get('/api/checkin/:dni', async (req, res) => {
         res.json({ estado: "OK", message: `¡Hola ${JSON.parse(data).nombre}!` });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
+// RUTA PARA EDITAR (Es igual a registrar, pero pisa los datos existentes)
+app.put('/api/socios/:dni', async (req, res) => {
+    try {
+        await conectar();
+        const datosActualizados = req.body;
+        // Usamos SET para sobreescribir el JSON del socio con los nuevos datos
+        await client.set(`socio:${req.params.dni}`, JSON.stringify(datosActualizados));
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: "No se pudo actualizar" });
+    }
+});
 module.exports = app;

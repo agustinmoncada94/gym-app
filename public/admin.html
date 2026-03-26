@@ -3,119 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYM Admin - Gestión de Socios</title>
+    <title>Gestión GYM - Pro</title>
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .search-container { margin-bottom: 15px; position: relative; }
+        .search-input { width: 100%; padding: 10px 40px 10px 15px; border-radius: 8px; border: 1px solid #444; background: #222; color: white; }
+        .search-icon { position: absolute; right: 15px; top: 12px; color: #888; }
+        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; margin-right: 10px; font-size: 1.1rem; }
+        .btn-borrar { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+    </style>
 </head>
 <body>
     <div class="admin-layout">
         <div class="card">
-            <h2><i class="fas fa-user-plus"></i> Registrar Socio</h2>
+            <h2 id="formTitle"><i class="fas fa-user-plus"></i> Registrar Socio</h2>
             <form id="registroForm">
+                <input type="hidden" id="editMode" value="false">
                 <input type="text" id="nombre" class="admin-input" placeholder="Nombre Completo" required>
                 <input type="text" id="dni" class="admin-input" placeholder="DNI (sin puntos)" required>
                 <input type="date" id="nacimiento" class="admin-input" required>
                 <input type="text" id="direccion" class="admin-input" placeholder="Dirección">
                 <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono">
-                <button type="submit" id="btn" class="btn-admin">DAR DE ALTA</button>
+                <button type="submit" id="btnSubmit" class="btn-admin">DAR DE ALTA</button>
+                <button type="button" id="btnCancelar" class="btn-admin" style="display:none; background:#444; margin-top:5px;" onclick="cancelarEdicion()">CANCELAR</button>
             </form>
         </div>
 
         <div class="card">
             <h2><i class="fas fa-users"></i> Lista de Clientes</h2>
+            
+            <div class="search-container">
+                <input type="text" id="busqueda" class="search-input" placeholder="Buscar por nombre o DNI..." onkeyup="filtrarSocios()">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+
             <div style="overflow-x: auto;">
                 <table class="tabla-socios">
                     <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>DNI</th>
-                            <th>Teléfono</th>
-                            <th>Acciones</th>
-                        </tr>
+                        <tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Acciones</th></tr>
                     </thead>
-                    <tbody id="lista">
-                        </tbody>
+                    <tbody id="lista"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        // Función para cargar la lista desde la API que ya sabemos que funciona
+        let sociosGlobal = []; // Para filtrar sin volver a llamar a la API
+
         async function cargarSocios() {
-            const tabla = document.getElementById('lista');
-            tabla.innerHTML = '<tr><td colspan="4">Cargando socios...</td></tr>';
-
             try {
-                // Usamos la ruta exacta que te funcionó en la captura
-                const respuesta = await fetch('/api/socios/todos');
-                const socios = await respuesta.json();
-
-                if (socios.length === 0) {
-                    tabla.innerHTML = '<tr><td colspan="4">No hay socios registrados.</td></tr>';
-                    return;
-                }
-
-                // Dibujamos la tabla con los datos reales
-                tabla.innerHTML = socios.map(s => `
-                    <tr>
-                        <td>${s.nombre}</td>
-                        <td>${s.dni}</td>
-                        <td>${s.telefono || '-'}</td>
-                        <td>
-                            <button onclick="borrarSocio('${s.dni}')" class="btn-borrar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (error) {
-                tabla.innerHTML = '<tr><td colspan="4" style="color:red;">Error al cargar datos. Reintente.</td></tr>';
-            }
+                const r = await fetch('/api/socios/todos');
+                sociosGlobal = await r.json();
+                renderizarTabla(sociosGlobal);
+            } catch (e) { console.error("Error al cargar"); }
         }
 
-        // Función para borrar
-        async function borrarSocio(dni) {
-            if (confirm('¿Seguro que desea eliminar este socio?')) {
-                await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                cargarSocios();
+        function renderizarTabla(lista) {
+            const tabla = document.getElementById('lista');
+            if (lista.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="4">No se encontraron socios.</td></tr>';
+                return;
             }
+            tabla.innerHTML = lista.map(s => `
+                <tr>
+                    <td>${s.nombre}</td>
+                    <td>${s.dni}</td>
+                    <td>${s.telefono || '-'}</td>
+                    <td>
+                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button onclick="borrarSocio('${s.dni}')" class="btn-borrar" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        // Manejo del formulario
+        // Lógica del Buscador
+        function filtrarSocios() {
+            const termino = document.getElementById('busqueda').value.toLowerCase();
+            const filtrados = sociosGlobal.filter(s => 
+                s.nombre.toLowerCase().includes(termino) || s.dni.includes(termino)
+            );
+            renderizarTabla(filtrados);
+        }
+
+        // Lógica de Edición
+        function prepararEdicion(socio) {
+            document.getElementById('editMode').value = "true";
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-user-edit"></i> Editar Socio';
+            document.getElementById('btnSubmit').innerText = "GUARDAR CAMBIOS";
+            document.getElementById('btnCancelar').style.display = "block";
+            
+            // Llenar campos
+            document.getElementById('nombre').value = socio.nombre;
+            document.getElementById('dni').value = socio.dni;
+            document.getElementById('dni').readOnly = true; // El DNI no se debería cambiar
+            document.getElementById('nacimiento').value = socio.nacimiento;
+            document.getElementById('direccion').value = socio.direccion || '';
+            document.getElementById('telefono').value = socio.telefono || '';
+        }
+
+        function cancelarEdicion() {
+            document.getElementById('registroForm').reset();
+            document.getElementById('editMode').value = "false";
+            document.getElementById('dni').readOnly = false;
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-user-plus"></i> Registrar Socio';
+            document.getElementById('btnSubmit').innerText = "DAR DE ALTA";
+            document.getElementById('btnCancelar').style.display = "none";
+        }
+
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn');
-            btn.disabled = true;
-
+            const esEdicion = document.getElementById('editMode').value === "true";
+            const dni = document.getElementById('dni').value;
+            
             const datos = {
                 nombre: document.getElementById('nombre').value,
-                dni: document.getElementById('dni').value,
+                dni: dni,
                 nacimiento: document.getElementById('nacimiento').value,
                 direccion: document.getElementById('direccion').value,
                 telefono: document.getElementById('telefono').value
             };
 
-            try {
-                const res = await fetch('/api/registrar', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(datos)
-                });
-                
-                if(res.ok) {
-                    e.target.reset();
-                    cargarSocios();
-                }
-            } catch (err) {
-                alert("Error al guardar");
-            } finally {
-                btn.disabled = false;
-            }
+            const metodo = esEdicion ? 'PUT' : 'POST';
+            const url = esEdicion ? `/api/socios/${dni}` : '/api/registrar';
+
+            await fetch(url, {
+                method: metodo,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(datos)
+            });
+
+            cancelarEdicion();
+            cargarSocios();
         };
 
-        // Cargar al iniciar
+        async function borrarSocio(dni) {
+            if (confirm('¿Eliminar?')) {
+                await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                cargarSocios();
+            }
+        }
+
         window.onload = cargarSocios;
     </script>
 </body>
