@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - GYM</title>
+    <title>Panel de Administración - GYM</title>
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -14,11 +14,11 @@
             <form id="registroForm">
                 <input type="text" id="nombre" class="admin-input" placeholder="Nombre Completo" required>
                 <input type="text" id="dni" class="admin-input" placeholder="DNI (sin puntos)" required>
-                <label style="color:gray; font-size:0.8rem; display:block; margin: 10px 0 5px 5px;">Fecha Nacimiento</label>
+                <label style="color:#aaa; font-size:0.8rem; margin:10px 0 5px 5px; display:block;">Fecha de Nacimiento</label>
                 <input type="date" id="nacimiento" class="admin-input" required>
-                <input type="text" id="direccion" class="admin-input" placeholder="Dirección">
-                <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono / WhatsApp">
-                <button type="submit" id="btn" class="btn-admin">DAR DE ALTA</button>
+                <input type="text" id="direccion" class="admin-input" placeholder="Dirección Residencial">
+                <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono de Contacto">
+                <button type="submit" id="btnGuardar" class="btn-admin">DAR DE ALTA</button>
             </form>
         </div>
 
@@ -34,56 +34,58 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="lista"></tbody>
+                    <tbody id="listaCuerpo">
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        const cargar = async () => {
-            const t = document.getElementById('lista');
-            t.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
+        const renderizarLista = async () => {
+            const tabla = document.getElementById('listaCuerpo');
+            tabla.innerHTML = '<tr><td colspan="4">Cargando socios...</td></tr>';
+            
             try {
-                const r = await fetch('/api/socios/todos');
-                const data = await r.json();
-                
-                if (data.length === 0) {
-                    t.innerHTML = '<tr><td colspan="4">No hay socios registrados.</td></tr>';
+                const respuesta = await fetch('/api/socios/todos');
+                if (!respuesta.ok) throw new Error();
+                const socios = await respuesta.json();
+
+                if (socios.length === 0) {
+                    tabla.innerHTML = '<tr><td colspan="4">No hay socios registrados aún.</td></tr>';
                     return;
                 }
 
-                t.innerHTML = data.map(s => `
+                tabla.innerHTML = socios.map(s => `
                     <tr>
-                        <td>${s.nombre}</td>
+                        <td><strong>${s.nombre}</strong></td>
                         <td>${s.dni}</td>
-                        <td>${s.telefono || '-'}</td>
+                        <td>${s.telefono || 'No cargado'}</td>
                         <td>
-                            <button onclick="borrar('${s.dni}')" style="color:#ff5f5f; background:none; border:none; cursor:pointer; font-size:1.1rem;">
+                            <button onclick="eliminarSocio('${s.dni}')" style="color:#ff4d4d; background:none; border:none; cursor:pointer; font-size:1.2rem;">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
                     </tr>
                 `).join('');
-            } catch (e) { 
-                t.innerHTML = '<tr><td colspan="4" style="color:red;">Error al cargar datos.</td></tr>'; 
+            } catch (error) {
+                tabla.innerHTML = '<tr><td colspan="4" style="color:#ff4d4d;">Error al conectar con la base de datos.</td></tr>';
             }
         };
 
-        const borrar = async (dni) => {
-            if(confirm('¿Seguro que querés eliminar este socio?')) {
-                await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                cargar();
-            }
+        const eliminarSocio = async (dni) => {
+            if (!confirm('¿Seguro que desea eliminar a este socio?')) return;
+            await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+            renderizarLista();
         };
 
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn');
-            btn.innerText = "REGISTRANDO...";
+            const btn = document.getElementById('btnGuardar');
             btn.disabled = true;
+            btn.innerText = "GUARDANDO...";
 
-            const datos = {
+            const nuevoSocio = {
                 nombre: document.getElementById('nombre').value,
                 dni: document.getElementById('dni').value,
                 nacimiento: document.getElementById('nacimiento').value,
@@ -95,21 +97,21 @@
                 const res = await fetch('/api/registrar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(datos)
+                    body: JSON.stringify(nuevoSocio)
                 });
-                if(res.ok) {
+                if (res.ok) {
                     e.target.reset();
-                    cargar();
+                    renderizarLista();
                 }
-            } catch (error) {
-                alert("Error al guardar.");
+            } catch (err) {
+                alert("Error de conexión al registrar.");
             } finally {
-                btn.innerText = "DAR DE ALTA";
                 btn.disabled = false;
+                btn.innerText = "DAR DE ALTA";
             }
         };
 
-        window.onload = cargar;
+        window.onload = renderizarLista;
     </script>
 </body>
 </html>
