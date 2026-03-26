@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DECLON Admin - Gestión Dinámica</title>
+    <title>DECLON Admin - Panel de Control</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
@@ -36,62 +36,45 @@
             display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; 
         }
         .nav-link.active { color: var(--text-main); background: #1a1a1a; border-right: 3px solid var(--primary-red); }
-        .nav-link:hover { background: #151515; color: #fff; }
 
-        /* CONTENEDOR PRINCIPALDonde se cargará todo */
         .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
 
-        /* ESTILOS GLOBALES PARA LAS PESTAÑAS (Se mantienen aquí para que afecten a los archivos cargados) */
-        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
+        /* ESTILOS DE TABLA Y CARDS */
+        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; }
         
-        /* Calendarios Blancos */
+        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        
+        /* Líneas divisorias de columnas (Punto 2) */
+        .tabla-socios th, .tabla-socios td { 
+            padding: 18px; 
+            text-align: left; 
+            border-bottom: 1px solid #1a1a1a; 
+            border-right: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+        .tabla-socios th:last-child, .tabla-socios td:last-child { border-right: none; }
+
+        .tabla-socios th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Estados */
+        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
+        .status-ok { background: rgba(0, 255, 102, 0.1); color: var(--status-green); border: 1px solid var(--status-green); }
+        .status-vencido { background: rgba(255, 255, 255, 0.05); color: var(--status-gray); border: 1px solid #444; }
+
+        /* Inputs y Calendarios */
         .admin-input { 
             width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; 
-            border: 1px solid #333; background: #080808; color: var(--text-main); 
-            color-scheme: dark; 
+            border: 1px solid #333; background: #080808; color: var(--text-main); color-scheme: dark; 
         }
+        .btn-admin { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary-red); color: #fff; font-weight: bold; cursor: pointer; }
 
-        .btn-admin { 
-            width: 100%; padding: 12px; border-radius: 8px; border: none; 
-            background: var(--primary-red); color: #fff; font-weight: bold; cursor: pointer; 
-        }
-
-       /* TABLA DE SOCIOS DECLON CON LÍNEAS DIVISORIAS */
-.tabla-socios { 
-    width: 100%; 
-    border-collapse: collapse; 
-    margin-top: 15px; 
-}
-
-.tabla-socios th, .tabla-socios td { 
-    text-align: left; 
-    padding: 15px; 
-    /* LÍNEA DIVISORIA SUTIL */
-    border-bottom: 1px solid #1a1a1a; 
-    border-right: 1px solid rgba(255, 255, 255, 0.05); /* Línea vertical sutil */
-}
-
-/* Sacamos el borde derecho de la última columna (Acciones) */
-.tabla-socios th:last-child, .tabla-socios td:last-child {
-    border-right: none;
-}
-
-.tabla-socios th { 
-    color: var(--text-muted); 
-    text-transform: uppercase; 
-    font-size: 0.8rem; 
-}
-
-        /* Menú Dropdown 3 puntos */
+        /* Dropdown Acciones */
         .dropdown { position: relative; display: inline-block; }
-        .dropbtn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
+        .dropbtn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; }
         .dropdown-content {
             display: none; position: absolute; right: 0; background: #1a1a1a;
-            min-width: 150px; border: 1px solid #333; z-index: 100; border-radius: 8px;
+            min-width: 150px; border: 1px solid #333; z-index: 100; border-radius: 8px; overflow: hidden;
         }
-        .dropdown-content button {
-            color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer;
-        }
+        .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; }
         .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
         .dropdown:hover .dropdown-content { display: block; }
     </style>
@@ -110,50 +93,32 @@
         </nav>
     </div>
 
-    <main class="main-content" id="view-container">
-        </main>
+    <main class="main-content" id="view-container"></main>
 
     <script>
-        // Función principal para cambiar de pestaña
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
-            
             try {
-                // 1. Cargar el archivo HTML
                 const response = await fetch(`${tabName}.html`);
-                if (!response.ok) throw new Error('No se pudo cargar la pestaña');
                 const html = await response.text();
-                
-                // 2. Inyectar el HTML
                 container.innerHTML = html;
 
-                // 3. Actualizar Sidebar
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.classList.remove('active');
                     if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
                 });
 
-                // 4. Disparar lógica según la pestaña
                 if (tabName === 'socios_lista') cargarSocios();
                 if (tabName === 'dashboard') actualizarDashboard();
-                
-                // Si es registro, reiniciamos el modo edición por las dudas
-                if (tabName === 'socios_registro') {
-                   console.log("Formulario de registro listo");
-                }
-
-            } catch (error) {
-                container.innerHTML = `<div class="card"><h2>Error</h2><p>No se encontró el archivo ${tabName}.html</p></div>`;
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // --- LÓGICA DE DATOS (Se queda en admin.html para que sea global) ---
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
                 const socios = await r.json();
                 renderizarTabla(socios);
-            } catch (e) { console.error("Error al cargar socios:", e); }
+            } catch (e) { console.error(e); }
         }
 
         function renderizarTabla(lista) {
@@ -170,10 +135,10 @@
                 return `
                 <tr>
                     <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
-                    <td><span style="color:var(--primary-red); font-size:0.85rem">${s.plan}</span></td>
+                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'MUSCULACIÓN'}</span></td>
                     <td>
                         <small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br>
-                        <small>Vence: ${hasta.toLocaleDateString('es-AR')}</small>
+                        <b>Vence: ${hasta.toLocaleDateString('es-AR')}</b>
                     </td>
                     <td><span class="status-pill ${esVencido ? 'status-vencido' : 'status-ok'}">${esVencido ? 'VENCIDO' : 'AL DÍA'}</span></td>
                     <td>
@@ -190,15 +155,7 @@
             }).join('');
         }
 
-        function irAEditar(socio) {
-            // Guardamos el socio en el storage temporal para que la pestaña de registro lo lea
-            localStorage.setItem('socioAEditar', JSON.stringify(socio));
-            switchTab('socios_registro');
-        }
-
-        // Carga inicial
         window.onload = () => switchTab('socios_lista');
-
     </script>
 </body>
 </html>

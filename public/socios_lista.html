@@ -1,11 +1,11 @@
 <div class="card">
-    
-    <h1 style="text-align:center; color: var(--primary-red); margin-top:0;">LISTA DE SOCIOS</h1>
-    <p style="text-align:center; color: var(--text-muted); margin-bottom: 25px;">Registro completo de la comunidad DECLON.</p>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: var(--primary-red); margin: 0; font-size: 2rem; letter-spacing: 2px;">LISTA DE SOCIOS</h1>
+        <div style="width: 60px; height: 4px; background: var(--primary-red); margin: 10px auto;"></div>
+    </div>
 
-    <div class="search-container">
-        <input type="text" id="busqueda" class="search-input" placeholder="Buscar por nombre o DNI..." onkeyup="filtrarSocios()">
-        <i class="fas fa-search search-icon"></i>
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="busqueda" class="admin-input" placeholder="🔍 Buscar por nombre o DNI..." onkeyup="filtrarSocios()" style="margin-bottom:0;">
     </div>
     
     <div style="overflow-x: auto;">
@@ -14,12 +14,13 @@
                 <tr>
                     <th>Socio</th>
                     <th>Plan</th>
-                    <th>Vencimiento</th>
+                    <th>Ciclo de Pago</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody id="lista"></tbody>
+            <tbody id="lista">
+                </tbody>
         </table>
     </div>
 </div>
