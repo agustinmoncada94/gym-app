@@ -17,7 +17,7 @@ async function conectar() {
     if (!client.isOpen) await client.connect();
 }
 
-// OBTENER TODOS LOS SOCIOS (Para la tabla)
+// OBTENER TODOS LOS SOCIOS
 app.get('/api/socios/todos', async (req, res) => {
     try {
         await conectar();
@@ -29,11 +29,15 @@ app.get('/api/socios/todos', async (req, res) => {
     }
 });
 
-// REGISTRAR NUEVO SOCIO
+// REGISTRAR / EDITAR (Unificado)
 app.post('/api/registrar', async (req, res) => {
     try {
         await conectar();
         const socio = req.body;
+        // Si es nuevo, guardamos la fecha de hoy como inicio de ciclo
+        if (!socio.fechaInicio) {
+            socio.fechaInicio = new Date().toISOString();
+        }
         await client.set(`socio:${socio.dni}`, JSON.stringify(socio));
         res.json({ success: true });
     } catch (e) {
@@ -41,37 +45,32 @@ app.post('/api/registrar', async (req, res) => {
     }
 });
 
-// EDITAR SOCIO EXISTENTE
 app.put('/api/socios/:dni', async (req, res) => {
     try {
         await conectar();
-        const datos = req.body;
-        await client.set(`socio:${req.params.dni}`, JSON.stringify(datos));
+        await client.set(`socio:${req.params.dni}`, JSON.stringify(req.body));
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: "No se pudo actualizar" });
+        res.status(500).json({ error: "Error al actualizar" });
     }
 });
 
-// ELIMINAR SOCIO
 app.delete('/api/socios/:dni', async (req, res) => {
     try {
         await conectar();
         await client.del(`socio:${req.params.dni}`);
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: "No se pudo eliminar" });
+        res.status(500).json({ error: "Error al eliminar" });
     }
 });
 
-// CHECK-IN (Para la pantalla de entrada)
 app.get('/api/checkin/:dni', async (req, res) => {
     try {
         await conectar();
         const data = await client.get(`socio:${req.params.dni}`);
         if (!data) return res.status(404).json({ message: "No encontrado" });
-        const socio = JSON.parse(data);
-        res.json({ estado: "OK", message: `¡Hola ${socio.nombre}!` });
+        res.json({ estado: "OK", nombre: JSON.parse(data).nombre });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
