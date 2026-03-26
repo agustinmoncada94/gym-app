@@ -1,8 +1,25 @@
 <div class="card">
-    <h2><i class="fas fa-list"></i> Lista de Socios</h2>
-    <input type="text" id="busqueda" class="search-input" placeholder="Buscar..." onkeyup="filtrarSocios()">
-    <table class="tabla-socios">
-        <thead>...</thead>
-        <tbody id="lista"></tbody>
-    </table>
+    
+    <h1 style="text-align:center; color: var(--primary-red); margin-top:0;">LISTA DE SOCIOS</h1>
+    <p style="text-align:center; color: var(--text-muted); margin-bottom: 25px;">Registro completo de la comunidad DECLON.</p>
+
+    <div class="search-container">
+        <input type="text" id="busqueda" class="search-input" placeholder="Buscar por nombre o DNI..." onkeyup="filtrarSocios()">
+        <i class="fas fa-search search-icon"></i>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="tabla-socios">
+            <thead>
+                <tr>
+                    <th>Socio</th>
+                    <th>Plan</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="lista"></tbody>
+        </table>
+    </div>
 </div>
