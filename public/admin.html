@@ -3,94 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYM Admin - Gestión de Planes</title>
+    <title>GYM Admin - Panel de Control</title>
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root { --primary: #ccff00; --bg: #0a0a0a; --card: #141414; --text: #eee; }
+        
+        body { margin: 0; display: flex; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+        /* SIDEBAR */
+        .sidebar { width: 250px; height: 100vh; background: var(--card); border-right: 1px solid #222; position: fixed; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 30px 20px; font-size: 1.5rem; font-weight: bold; color: var(--primary); text-align: center; border-bottom: 1px solid #222; }
+        .nav-link { padding: 15px 25px; color: #888; text-decoration: none; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; }
+        .nav-link:hover { background: #1a1a1a; color: white; }
+        .nav-link.active { color: var(--primary); background: #1a1a1a; border-right: 3px solid var(--primary); }
+
+        /* CONTENIDO */
+        .main-content { margin-left: 250px; flex: 1; padding: 30px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ESTILOS QUE YA TENÍAS */
         .search-container { margin-bottom: 20px; position: relative; width: 100%; box-sizing: border-box; }
         .search-input { width: 100%; padding: 12px 40px 12px 15px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white; box-sizing: border-box; }
         .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #888; }
-        
-        .status-pill { padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; text-align: center; display: inline-block; min-width: 80px; }
+        .status-pill { padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; min-width: 80px; text-align: center; display: inline-block; }
         .status-ok { background: #2e7d32; color: #fff; }
         .status-vencido { background: #c62828; color: #fff; }
-        
-        .fecha-info { font-size: 0.8rem; color: #aaa; display: block; }
-        .plan-tag { color: #ccff00; font-weight: bold; font-size: 0.9rem; }
-        
-        .btn-pay { color: #4caf50; background: none; border: none; cursor: pointer; margin-right: 12px; font-size: 1.2rem; }
-        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; margin-right: 12px; font-size: 1.1rem; }
+        .plan-tag { color: var(--primary); font-weight: bold; }
+        .btn-pay { color: #4caf50; background: none; border: none; cursor: pointer; font-size: 1.2rem; margin-right: 10px; }
+        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
         .btn-borrar { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
-        
-        tr.vencido-row { background-color: rgba(198, 40, 40, 0.05); }
-        select.admin-input { background: #1a1a1a; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="admin-layout">
-        <div class="card">
-            <h2 id="formTitle"><i class="fas fa-user-plus"></i> Registrar Socio</h2>
-            <form id="registroForm">
-                <input type="hidden" id="editMode" value="false">
-                
-                <label style="color:#888; font-size: 0.75rem;">NOMBRE COMPLETO:</label>
-                <input type="text" id="nombre" class="admin-input" placeholder="Juan Pérez" required>
-                
-                <label style="color:#888; font-size: 0.75rem;">DNI:</label>
-                <input type="text" id="dni" class="admin-input" placeholder="Sin puntos" required>
-                
-                <label style="color:#888; font-size: 0.75rem;">FECHA DE NACIMIENTO:</label>
-                <input type="date" id="nacimiento" class="admin-input" required>
-                
-                <label style="color:#888; font-size: 0.75rem;">TELÉFONO:</label>
-                <input type="tel" id="telefono" class="admin-input" placeholder="353...">
 
-                <label style="color:#888; font-size: 0.75rem;">TIPO DE PLAN:</label>
-                <select id="plan" class="admin-input">
-                    <option value="Musculación">Musculación</option>
-                    <option value="Plan Full">Plan Full</option>
-                    <option value="Personalizado">Personalizado</option>
-                    <option value="Familiar">Familiar</option>
-                </select>
-                
-                <label style="color:#888; font-size: 0.75rem;">INICIO DE COBERTURA (PAGO):</label>
-                <input type="date" id="fechaInicioManual" class="admin-input">
-                
-                <button type="submit" id="btnSubmit" class="btn-admin">DAR DE ALTA</button>
-                <button type="button" id="btnCancelar" class="btn-admin" style="display:none; background:#444; margin-top:10px;" onclick="cancelarEdicion()">CANCELAR</button>
-            </form>
+    <div class="sidebar">
+        <div class="sidebar-header"><i class="fas fa-dumbbell"></i> GYM PRO</div>
+        <div class="nav-link active" onclick="switchTab('tab-socios')"><i class="fas fa-users"></i> Socios</div>
+        <div class="nav-link" onclick="switchTab('tab-equipos')"><i class="fas fa-tools"></i> Equipos</div>
+        <div class="nav-link" onclick="switchTab('tab-dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="tab-socios" class="tab-content active">
+            <div class="admin-layout">
+                <div class="card">
+                    <h2 id="formTitle"><i class="fas fa-user-plus"></i> Registrar Socio</h2>
+                    <form id="registroForm">
+                        <input type="hidden" id="editMode" value="false">
+                        <label style="font-size: 0.75rem; color: #888;">NOMBRE COMPLETO</label>
+                        <input type="text" id="nombre" class="admin-input" placeholder="Ej: Juan Pérez" required>
+                        <label style="font-size: 0.75rem; color: #888;">DNI</label>
+                        <input type="text" id="dni" class="admin-input" placeholder="Sin puntos" required>
+                        <label style="font-size: 0.75rem; color: #888;">FECHA NACIMIENTO</label>
+                        <input type="date" id="nacimiento" class="admin-input" required>
+                        <label style="font-size: 0.75rem; color: #888;">TELÉFONO</label>
+                        <input type="tel" id="telefono" class="admin-input" placeholder="353...">
+                        <label style="font-size: 0.75rem; color: #888;">PLAN</label>
+                        <select id="plan" class="admin-input">
+                            <option value="Musculación">Musculación</option>
+                            <option value="Plan Full">Plan Full</option>
+                            <option value="Personalizado">Personalizado</option>
+                            <option value="Familiar">Familiar</option>
+                        </select>
+                        <label style="font-size: 0.75rem; color: #888;">INICIO COBERTURA</label>
+                        <input type="date" id="fechaInicioManual" class="admin-input">
+                        <button type="submit" id="btnSubmit" class="btn-admin">DAR DE ALTA</button>
+                        <button type="button" id="btnCancelar" class="btn-admin" style="display:none; background:#444; margin-top:10px;" onclick="cancelarEdicion()">CANCELAR</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2><i class="fas fa-list"></i> Lista de Socios</h2>
+                    <div class="search-container">
+                        <input type="text" id="busqueda" class="search-input" placeholder="Buscar por nombre o DNI..." onkeyup="filtrarSocios()">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="tabla-socios">
+                            <thead>
+                                <tr>
+                                    <th>Socio</th>
+                                    <th>Plan</th>
+                                    <th>Vencimiento</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="card">
-            <h2><i class="fas fa-users"></i> Socios y Pagos</h2>
-            <div class="search-container">
-                <input type="text" id="busqueda" class="search-input" placeholder="Buscar socio..." onkeyup="filtrarSocios()">
-                <i class="fas fa-search search-icon"></i>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="tabla-socios">
-                    <thead>
-                        <tr>
-                            <th>Socio</th>
-                            <th>Plan</th>
-                            <th>Ciclo de Pago</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista"></tbody>
-                </table>
+        <div id="tab-equipos" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-tools"></i> Gestión de Equipos</h2>
+                <p style="color: #888;">Próximamente: Inventario de máquinas y registro de mantenimiento.</p>
             </div>
         </div>
+
+        <div id="tab-dashboard" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Dashboard Operativo</h2>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="margin:0; color:var(--primary)" id="totalSocios">0</h3>
+                        <p style="font-size: 0.8rem; color:#888;">SOCIOS TOTALES</p>
+                    </div>
+                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="margin:0; color:#ff4d4d" id="totalVencidos">0</h3>
+                        <p style="font-size: 0.8rem; color:#888;">VENCIDOS</p>
+                    </div>
+                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h3 style="margin:0; color:#4caf50" id="totalActivos">0</h3>
+                        <p style="font-size: 0.8rem; color:#888;">AL DÍA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
         let sociosGlobal = [];
 
+        // LÓGICA DE PESTAÑAS
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
         async function cargarSocios() {
             const r = await fetch('/api/socios/todos');
             sociosGlobal = await r.json();
             renderizarTabla(sociosGlobal);
+            actualizarDashboard();
+        }
+
+        function actualizarDashboard() {
+            const hoy = new Date();
+            let vencidos = 0;
+            sociosGlobal.forEach(s => {
+                const f = new Date(s.fechaInicio || s.fechaPago);
+                f.setDate(f.getDate() + 30);
+                if (hoy > f) vencidos++;
+            });
+
+            document.getElementById('totalSocios').innerText = sociosGlobal.length;
+            document.getElementById('totalVencidos').innerText = vencidos;
+            document.getElementById('totalActivos').innerText = sociosGlobal.length - vencidos;
         }
 
         function obtenerFechas(fechaIso) {
@@ -105,44 +174,31 @@
         function renderizarTabla(lista) {
             const tabla = document.getElementById('lista');
             const hoy = new Date();
-            
             tabla.innerHTML = lista.map(s => {
                 const ciclo = obtenerFechas(s.fechaInicio || s.fechaPago);
                 const esVencido = hoy > ciclo.hasta;
-
                 return `
                 <tr class="${esVencido ? 'vencido-row' : ''}">
                     <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:#888">${s.dni}</small></td>
                     <td><span class="plan-tag">${s.plan || 'Musculación'}</span></td>
+                    <td><span class="fecha-info">Vence: ${ciclo.hasta.toLocaleDateString('es-AR')}</span></td>
+                    <td><span class="status-pill ${esVencido ? 'status-vencido' : 'status-ok'}">${esVencido ? 'VENCIDO' : 'AL DÍA'}</span></td>
                     <td>
-                        <span class="fecha-info"><b>Desde:</b> ${ciclo.desde.toLocaleDateString('es-AR')}</span>
-                        <span class="fecha-info"><b>Vence:</b> ${ciclo.hasta.toLocaleDateString('es-AR')}</span>
-                    </td>
-                    <td>
-                        <span class="status-pill ${esVencido ? 'status-vencido' : 'status-ok'}">
-                            ${esVencido ? 'VENCIDO' : 'AL DÍA'}
-                        </span>
-                    </td>
-                    <td>
-                        <button onclick='renovarMes(${JSON.stringify(s)})' class="btn-pay" title="Cobrar Mes"><i class="fas fa-money-bill-wave"></i></button>
-                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit" title="Editar"><i class="fas fa-edit"></i></button>
-                        <button onclick="borrarSocio('${s.dni}')" class="btn-borrar" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        <button onclick='renovarMes(${JSON.stringify(s)})' class="btn-pay"><i class="fas fa-money-bill-wave"></i></button>
+                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit"><i class="fas fa-edit"></i></button>
+                        <button onclick="borrarSocio('${s.dni}')" class="btn-borrar"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             }).join('');
         }
 
+        // --- Funciones de Backend (Iguales que antes) ---
         async function renovarMes(socio) {
             const ciclo = obtenerFechas(socio.fechaInicio || socio.fechaPago);
             let nuevaFecha = (new Date() > ciclo.hasta) ? new Date().toISOString() : ciclo.hasta.toISOString();
-
-            if (confirm(`¿Registrar nuevo pago de 30 días para ${socio.nombre}?`)) {
+            if (confirm(`¿Registrar pago para ${socio.nombre}?`)) {
                 socio.fechaInicio = nuevaFecha;
-                await fetch(`/api/socios/${socio.dni}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(socio)
-                });
+                await fetch(`/api/socios/${socio.dni}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(socio) });
                 cargarSocios();
             }
         }
@@ -150,23 +206,15 @@
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const esEdicion = document.getElementById('editMode').value === "true";
-            const fManual = document.getElementById('fechaInicioManual').value;
-
             const datos = {
                 nombre: document.getElementById('nombre').value,
                 dni: document.getElementById('dni').value,
                 nacimiento: document.getElementById('nacimiento').value,
                 telefono: document.getElementById('telefono').value,
                 plan: document.getElementById('plan').value,
-                fechaInicio: fManual ? new Date(fManual).toISOString() : (esEdicion ? sociosGlobal.find(s=>s.dni==datos.dni).fechaInicio : new Date().toISOString())
+                fechaInicio: document.getElementById('fechaInicioManual').value ? new Date(document.getElementById('fechaInicioManual').value).toISOString() : (esEdicion ? sociosGlobal.find(s=>s.dni==document.getElementById('dni').value).fechaInicio : new Date().toISOString())
             };
-
-            await fetch(esEdicion ? `/api/socios/${datos.dni}` : '/api/registrar', {
-                method: esEdicion ? 'PUT' : 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(datos)
-            });
-            
+            await fetch(esEdicion ? `/api/socios/${datos.dni}` : '/api/registrar', { method: esEdicion ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(datos) });
             cancelarEdicion();
             cargarSocios();
         };
@@ -180,13 +228,8 @@
             document.getElementById('nacimiento').value = s.nacimiento;
             document.getElementById('telefono').value = s.telefono || '';
             document.getElementById('plan').value = s.plan || 'Musculación';
-            
-            const fecha = s.fechaInicio || s.fechaPago;
-            if (fecha) document.getElementById('fechaInicioManual').value = fecha.split('T')[0];
-
             document.getElementById('btnSubmit').innerText = "GUARDAR CAMBIOS";
             document.getElementById('btnCancelar').style.display = "block";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function cancelarEdicion() {
@@ -195,7 +238,6 @@
             document.getElementById('dni').readOnly = false;
             document.getElementById('btnSubmit').innerText = "DAR DE ALTA";
             document.getElementById('btnCancelar').style.display = "none";
-            document.getElementById('formTitle').innerText = "Registrar Socio";
         }
 
         function filtrarSocios() {
