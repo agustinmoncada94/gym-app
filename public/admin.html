@@ -11,38 +11,40 @@
         .search-input { width: 100%; padding: 12px 40px 12px 15px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white; box-sizing: border-box; }
         .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #888; }
         
-        /* ESTADOS DE PAGO */
-        .status-pill { padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; }
-        .status-ok { background: #2e7d32; color: #fff; } /* Verde */
-        .status-vencido { background: #c62828; color: #fff; } /* Rojo */
+        .status-pill { padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; text-align: center; display: inline-block; min-width: 80px; }
+        .status-ok { background: #2e7d32; color: #fff; }
+        .status-vencido { background: #c62828; color: #fff; }
         
-        .fecha-info { font-size: 0.8rem; color: #aaa; display: block; }
-        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; margin-right: 10px; font-size: 1.1rem; }
+        .fecha-info { font-size: 0.8rem; color: #aaa; display: block; white-space: nowrap; }
+        .btn-pay { color: #4caf50; background: none; border: none; cursor: pointer; margin-right: 12px; font-size: 1.2rem; }
+        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; margin-right: 12px; font-size: 1.1rem; }
         .btn-borrar { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+        
+        tr.vencido-row { background-color: rgba(198, 40, 40, 0.05); }
     </style>
 </head>
 <body>
     <div class="admin-layout">
         <div class="card">
-            <h2 id="formTitle"><i class="fas fa-user-plus"></i> Registrar Socio</h2>
+            <h2 id="formTitle"><i class="fas fa-user-plus"></i> Nuevo Socio</h2>
             <form id="registroForm">
                 <input type="hidden" id="editMode" value="false">
-                <input type="hidden" id="fechaInicioHidden">
                 <input type="text" id="nombre" class="admin-input" placeholder="Nombre Completo" required>
                 <input type="text" id="dni" class="admin-input" placeholder="DNI" required>
                 <input type="date" id="nacimiento" class="admin-input" required>
                 <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono">
-                <label style="color:#aaa; font-size:0.8rem;">Fecha del último pago:</label>
-                <input type="date" id="fechaPagoManual" class="admin-input" title="Fecha de último pago">
-                <button type="submit" id="btnSubmit" class="btn-admin">DAR DE ALTA / GUARDAR</button>
+                <label style="color:#888; font-size: 0.8rem;">Fecha de inicio de cobertura:</label>
+                <input type="date" id="fechaInicioManual" class="admin-input">
+                
+                <button type="submit" id="btnSubmit" class="btn-admin">REGISTRAR SOCIO</button>
                 <button type="button" id="btnCancelar" class="btn-admin" style="display:none; background:#444; margin-top:10px;" onclick="cancelarEdicion()">CANCELAR</button>
             </form>
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-users"></i> Socios y Estado de Cuenta</h2>
+            <h2><i class="fas fa-users"></i> Socios y Pagos</h2>
             <div class="search-container">
-                <input type="text" id="busqueda" class="search-input" placeholder="Buscar socio..." onkeyup="filtrarSocios()">
+                <input type="text" id="busqueda" class="search-input" placeholder="Buscar por nombre o DNI..." onkeyup="filtrarSocios()">
                 <i class="fas fa-search search-icon"></i>
             </div>
             <div style="overflow-x: auto;">
@@ -50,7 +52,6 @@
                     <thead>
                         <tr>
                             <th>Socio</th>
-                            <th>DNI / Tel</th>
                             <th>Ciclo de Pago</th>
                             <th>Estado</th>
                             <th>Acciones</th>
@@ -71,91 +72,82 @@
             renderizarTabla(sociosGlobal);
         }
 
-        function calcularEstado(fechaIso) {
-            if (!fechaIso) return { texto: "S/D", clase: "status-vencido", inicio: "-", fin: "-" };
-            
-            const hoy = new Date();
-            const inicio = new Date(fechaIso);
-            const fin = new Date(fechaIso);
-            fin.setMonth(fin.getMonth() + 1); // El mes vence exactamente un mes después
-
-            const vencido = hoy > fin;
-            
-            return {
-                texto: vencido ? "VENCIDO" : "AL DÍA",
-                clase: vencido ? "status-vencido" : "status-ok",
-                inicio: inicio.toLocaleDateString('es-AR'),
-                fin: fin.toLocaleDateString('es-AR')
-            };
+        function obtenerFechas(fechaIso) {
+            const desde = new Date(fechaIso);
+            const hasta = new Date(fechaIso);
+            hasta.setDate(desde.getDate() + 30); // Lógica de 30 días exactos
+            return { desde, hasta };
         }
 
         function renderizarTabla(lista) {
             const tabla = document.getElementById('lista');
+            const hoy = new Date();
+            
             tabla.innerHTML = lista.map(s => {
-                const info = calcularEstado(s.fechaInicio);
+                const ciclo = obtenerFechas(s.fechaInicio);
+                const esVencido = hoy > ciclo.hasta;
+
                 return `
-                <tr>
-                    <td><b>${s.nombre.toUpperCase()}</b></td>
-                    <td>${s.dni}<br><small>${s.telefono || '-'}</small></td>
+                <tr class="${esVencido ? 'vencido-row' : ''}">
+                    <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:#888">${s.dni}</small></td>
                     <td>
-                        <span class="fecha-info">Desde: ${info.inicio}</span>
-                        <span class="fecha-info">Vence: ${info.fin}</span>
+                        <span class="fecha-info"><b>Desde:</b> ${ciclo.desde.toLocaleDateString()}</span>
+                        <span class="fecha-info"><b>Vence:</b> ${ciclo.hasta.toLocaleDateString()}</span>
                     </td>
-                    <td><span class="status-pill ${info.clase}">${info.texto}</span></td>
                     <td>
-                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit"><i class="fas fa-edit"></i></button>
+                        <span class="status-pill ${esVencido ? 'status-vencido' : 'status-ok'}">
+                            ${esVencido ? 'VENCIDO' : 'AL DÍA'}
+                        </span>
+                    </td>
+                    <td>
+                        <button onclick='renovarMes(${JSON.stringify(s)})' class="btn-pay" title="Cobrar Mes (Suma 30 días)"><i class="fas fa-money-bill-wave"></i></button>
+                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit" title="Editar datos"><i class="fas fa-edit"></i></button>
                         <button onclick="borrarSocio('${s.dni}')" class="btn-borrar"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             }).join('');
         }
 
-        function filtrarSocios() {
-            const t = document.getElementById('busqueda').value.toLowerCase();
-            renderizarTabla(sociosGlobal.filter(s => s.nombre.toLowerCase().includes(t) || s.dni.includes(t)));
-        }
+        // FUNCIÓN CLAVE: RENOVAR MES
+        async function renovarMes(socio) {
+            const fechasActuales = obtenerFechas(socio.fechaInicio);
+            let nuevaFechaInicio;
 
-        function prepararEdicion(s) {
-            document.getElementById('editMode').value = "true";
-            document.getElementById('formTitle').innerText = "Editar Socio / Pago";
-            document.getElementById('nombre').value = s.nombre;
-            document.getElementById('dni').value = s.dni;
-            document.getElementById('dni').readOnly = true;
-            document.getElementById('nacimiento').value = s.nacimiento;
-            document.getElementById('telefono').value = s.telefono || '';
-            document.getElementById('fechaInicioHidden').value = s.fechaInicio;
-            
-            // Si queremos registrar un nuevo pago hoy, el usuario puede cambiar la fecha de pago
-            const fechaPago = s.fechaInicio ? s.fechaInicio.split('T')[0] : '';
-            document.getElementById('fechaPagoManual').value = fechaPago;
+            if (new Date() > fechasActuales.hasta) {
+                // Si ya estaba vencido, el nuevo mes arranca hoy
+                nuevaFechaInicio = new Date().toISOString();
+            } else {
+                // Si paga antes de vencer, el nuevo mes arranca cuando vencía el anterior (no pierde días)
+                nuevaFechaInicio = fechasActuales.hasta.toISOString();
+            }
 
-            document.getElementById('btnCancelar').style.display = "block";
-            window.scrollTo(0,0);
-        }
-
-        function cancelarEdicion() {
-            document.getElementById('registroForm').reset();
-            document.getElementById('editMode').value = "false";
-            document.getElementById('dni').readOnly = false;
-            document.getElementById('btnCancelar').style.display = "none";
-            document.getElementById('formTitle').innerText = "Registrar Socio";
+            if (confirm(`¿Registrar pago para ${socio.nombre}? El nuevo vencimiento será en 30 días.`)) {
+                socio.fechaInicio = nuevaFechaInicio;
+                await fetch(`/api/socios/${socio.dni}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(socio)
+                });
+                cargarSocios();
+            }
         }
 
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const esEdicion = document.getElementById('editMode').value === "true";
-            const fechaManual = document.getElementById('fechaPagoManual').value;
-            
+            const dni = document.getElementById('dni').value;
+            const fManual = document.getElementById('fechaInicioManual').value;
+
             const datos = {
                 nombre: document.getElementById('nombre').value,
-                dni: document.getElementById('dni').value,
+                dni: dni,
                 nacimiento: document.getElementById('nacimiento').value,
                 telefono: document.getElementById('telefono').value,
-                // Si el usuario puso una fecha manual, usamos esa (para renovar meses)
-                fechaInicio: fechaManual ? new Date(fechaManual).toISOString() : new Date().toISOString()
+                // Si es nuevo y no pone fecha, arranca hoy. Si es edición, mantiene la que tenía.
+                fechaInicio: fManual ? new Date(fManual).toISOString() : (esEdicion ? sociosGlobal.find(s=>s.dni==dni).fechaInicio : new Date().toISOString())
             };
 
-            await fetch(esEdicion ? `/api/socios/${datos.dni}` : '/api/registrar', {
+            await fetch(esEdicion ? `/api/socios/${dni}` : '/api/registrar', {
                 method: esEdicion ? 'PUT' : 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(datos)
@@ -164,6 +156,34 @@
             cancelarEdicion();
             cargarSocios();
         };
+
+        function filtrarSocios() {
+            const t = document.getElementById('busqueda').value.toLowerCase();
+            renderizarTabla(sociosGlobal.filter(s => s.nombre.toLowerCase().includes(t) || s.dni.includes(t)));
+        }
+
+        function prepararEdicion(s) {
+            document.getElementById('editMode').value = "true";
+            document.getElementById('formTitle').innerText = "Editar Socio";
+            document.getElementById('nombre').value = s.nombre;
+            document.getElementById('dni').value = s.dni;
+            document.getElementById('dni').readOnly = true;
+            document.getElementById('nacimiento').value = s.nacimiento;
+            document.getElementById('telefono').value = s.telefono || '';
+            document.getElementById('fechaInicioManual').value = s.fechaInicio.split('T')[0];
+            document.getElementById('btnSubmit').innerText = "GUARDAR CAMBIOS";
+            document.getElementById('btnCancelar').style.display = "block";
+            window.scrollTo(0,0);
+        }
+
+        function cancelarEdicion() {
+            document.getElementById('registroForm').reset();
+            document.getElementById('editMode').value = "false";
+            document.getElementById('dni').readOnly = false;
+            document.getElementById('btnSubmit').innerText = "REGISTRAR SOCIO";
+            document.getElementById('btnCancelar').style.display = "none";
+            document.getElementById('formTitle').innerText = "Nuevo Socio";
+        }
 
         async function borrarSocio(dni) {
             if (confirm('¿Eliminar socio?')) {
