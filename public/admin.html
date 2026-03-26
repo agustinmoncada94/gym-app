@@ -22,6 +22,7 @@
             background: var(--bg-dark); color: var(--text-main); 
         }
 
+        /* SIDEBAR */
         .sidebar { 
             width: 250px; height: 100vh; 
             background: var(--card-dark); border-right: 1px solid #1a1a1a; 
@@ -38,40 +39,41 @@
 
         .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
 
-        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; }
+        /* TABLA Y DISEÑO */
+        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; position: relative; }
         
-        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
         
         .tabla-socios th, .tabla-socios td { 
             padding: 18px; 
             text-align: left; 
             border-bottom: 1px solid #1a1a1a; 
-            border-right: 1px solid rgba(255, 255, 255, 0.05); 
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: visible; /* IMPORTANTE: Para que el menú no se corte */
         }
-        .tabla-socios th:last-child, .tabla-socios td:last-child { border-right: none; }
-
-        /* FIX: Evitar el scroll en la tabla cuando se abre el menú */
-        .tabla-container { overflow-x: visible !important; }
+        .tabla-socios th:last-child, .tabla-socios td:last-child { border-right: none; width: 80px; }
 
         .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
         .status-ok { background: rgba(0, 255, 102, 0.1); color: var(--status-green); border: 1px solid var(--status-green); }
         .status-vencido { background: rgba(255, 255, 255, 0.05); color: var(--status-gray); border: 1px solid #444; }
 
+        /* INPUTS */
         .admin-input { 
             width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; 
             border: 1px solid #333; background: #080808; color: var(--text-main); color-scheme: dark; 
         }
         .btn-admin { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary-red); color: #fff; font-weight: bold; cursor: pointer; }
 
-        /* DROPDOWN MEJORADO: Sin generar scroll (Punto 2) */
-        .dropdown { position: relative; display: inline-block; }
+        /* DROPDOWN FLOTANTE (Punto 2: Sin scroll) */
+        .dropdown { position: relative; }
         .dropbtn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: 5px; }
         .dropdown-content {
-            display: none; position: absolute; right: 0; top: 100%; background: #1a1a1a;
-            min-width: 130px; border: 1px solid #333; z-index: 9999; border-radius: 8px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: none; position: absolute; right: 0; top: 30px; background: #1a1a1a;
+            min-width: 140px; border: 1px solid #444; z-index: 9999; border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
-        .dropdown-content button { color: white; padding: 10px 15px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; font-size: 0.8rem; }
+        .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #222; }
+        .dropdown-content button:last-child { border-bottom: none; }
         .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
         .dropdown:hover .dropdown-content { display: block; }
     </style>
@@ -93,7 +95,7 @@
     <main class="main-content" id="view-container"></main>
 
     <script>
-        let sociosGlobal = []; // Almacén para que el filtro funcione
+        let sociosGlobal = [];
 
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
@@ -120,7 +122,7 @@
             } catch (e) { console.error(e); }
         }
 
-        // Lógica del Buscador (Punto 1)
+        // Buscador (Punto 1)
         function filtrarSocios() {
             const busqueda = document.getElementById('busqueda').value.toLowerCase();
             const filtrados = sociosGlobal.filter(s => 
@@ -155,7 +157,7 @@
                             <button class="dropbtn"><i class="fas fa-ellipsis-v"></i></button>
                             <div class="dropdown-content">
                                 <button onclick='renovarMes(${JSON.stringify(s)})'><i class="fas fa-money-bill-wave"></i> Cobrar</button>
-                                <button onclick='irAEditar(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar</button>
+                                <button onclick='prepararEdicion(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar</button>
                                 <button onclick="borrarSocio('${s.dni}')"><i class="fas fa-trash"></i> Borrar</button>
                             </div>
                         </div>
@@ -164,12 +166,16 @@
             }).join('');
         }
 
-        // Asegurar que el formulario funcione tras cargar el HTML (Punto 3)
+        // FIX Registro (Punto 3)
         function adjuntarEventoRegistro() {
             const form = document.getElementById('registroForm');
             if(!form) return;
             form.onsubmit = async (e) => {
                 e.preventDefault();
+                const btn = form.querySelector('button');
+                btn.innerText = "GUARDANDO...";
+                btn.disabled = true;
+
                 const datos = {
                     nombre: document.getElementById('nombre').value,
                     dni: document.getElementById('dni').value,
@@ -178,13 +184,22 @@
                     plan: document.getElementById('plan').value,
                     fechaInicio: document.getElementById('fechaInicioManual').value || new Date().toISOString()
                 };
-                await fetch('/api/registrar', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify(datos) 
-                });
-                alert("Socio registrado con éxito");
-                switchTab('socios_lista'); // Volver a la lista para ver el cambio
+
+                try {
+                    const res = await fetch('/api/registrar', { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify(datos) 
+                    });
+                    if(res.ok) {
+                        alert("Socio guardado correctamente");
+                        switchTab('socios_lista'); 
+                    }
+                } catch (error) {
+                    alert("Error al guardar");
+                    btn.innerText = "DAR DE ALTA";
+                    btn.disabled = false;
+                }
             };
         }
 

@@ -6,16 +6,16 @@
 
     <form id="registroForm">
         <label style="font-size: 0.7rem; color: var(--text-muted);">NOMBRE COMPLETO</label>
-        <input type="text" id="nombre" class="admin-input" required placeholder="Ej: Juan Pérez">
+        <input type="text" id="nombre" class="admin-input" required>
         
         <label style="font-size: 0.7rem; color: var(--text-muted);">DNI (SIN PUNTOS)</label>
-        <input type="text" id="dni" class="admin-input" required placeholder="Solo números">
+        <input type="text" id="dni" class="admin-input" required>
         
         <label style="font-size: 0.7rem; color: var(--text-muted);">FECHA NACIMIENTO</label>
         <input type="date" id="nacimiento" class="admin-input" required>
         
         <label style="font-size: 0.7rem; color: var(--text-muted);">TELÉFONO</label>
-        <input type="tel" id="telefono" class="admin-input" placeholder="353...">
+        <input type="tel" id="telefono" class="admin-input">
         
         <label style="font-size: 0.7rem; color: var(--text-muted);">PLAN</label>
         <select id="plan" class="admin-input">
@@ -24,7 +24,7 @@
             <option value="Personalizado">Personalizado</option>
         </select>
         
-        <label style="font-size: 0.7rem; color: var(--text-muted);">INICIO COBERTURA</label>
+        <label style="font-size: 0.7rem; color: var(--text-muted);">INICIO COBERTURA (OPCIONAL)</label>
         <input type="date" id="fechaInicioManual" class="admin-input">
         
         <button type="submit" class="btn-admin" style="margin-top: 10px;">DAR DE ALTA</button>
