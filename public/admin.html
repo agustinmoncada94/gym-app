@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYM Admin - Panel de Control</title>
+    <title>DECLON Admin - Panel de Control</title>
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -11,9 +11,22 @@
         
         body { margin: 0; display: flex; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
 
-        /* SIDEBAR */
+        /* SIDEBAR ACTUALIZADO CON LOGO */
         .sidebar { width: 250px; height: 100vh; background: var(--card); border-right: 1px solid #222; position: fixed; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 30px 20px; font-size: 1.5rem; font-weight: bold; color: var(--primary); text-align: center; border-bottom: 1px solid #222; }
+        
+        .sidebar-header { 
+            padding: 30px 20px; 
+            text-align: center; 
+            border-bottom: 1px solid #222; 
+        }
+        
+        .sidebar-logo {
+            max-width: 180px; /* Ajusta este ancho según necesites */
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
         .nav-link { padding: 15px 25px; color: #888; text-decoration: none; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; }
         .nav-link:hover { background: #1a1a1a; color: white; }
         .nav-link.active { color: var(--primary); background: #1a1a1a; border-right: 3px solid var(--primary); }
@@ -25,23 +38,46 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ESTILOS QUE YA TENÍAS */
+        /* ESTILOS DE COMPONENTES */
+        .admin-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px;}
+        .card h2 { margin-top: 0; color: #fff; font-size: 1.2rem; }
+        .admin-input, .admin-select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white; box-sizing: border-box; }
+        .btn-admin { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary); color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-admin:hover { opacity: 0.8; }
+        .btn-admin:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* TABLA DE SOCIOS */
+        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .tabla-socios th, .tabla-socios td { text-align: left; padding: 15px; border-bottom: 1px solid #222; }
+        .tabla-socios th { color: #888; text-transform: uppercase; font-size: 0.8rem; }
+        
         .search-container { margin-bottom: 20px; position: relative; width: 100%; box-sizing: border-box; }
         .search-input { width: 100%; padding: 12px 40px 12px 15px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: white; box-sizing: border-box; }
         .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #888; }
+        
+        /* ESTADOS Y ACCIONES */
         .status-pill { padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; min-width: 80px; text-align: center; display: inline-block; }
         .status-ok { background: #2e7d32; color: #fff; }
         .status-vencido { background: #c62828; color: #fff; }
         .plan-tag { color: var(--primary); font-weight: bold; }
-        .btn-pay { color: #4caf50; background: none; border: none; cursor: pointer; font-size: 1.2rem; margin-right: 10px; }
-        .btn-edit { color: #ffca28; background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
-        .btn-borrar { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+        
+        .btn-pay, .btn-edit, .btn-borrar { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0; transition: 0.2s;}
+        .btn-pay { color: #4caf50; margin-right: 12px; }
+        .btn-edit { color: #ffca28; margin-right: 12px; }
+        .btn-borrar { color: #ff4d4d; }
+        
+        .btn-pay:hover, .btn-edit:hover, .btn-borrar:hover { opacity: 0.7; transform: scale(1.1); }
+        tr.vencido-row { background-color: rgba(198, 40, 40, 0.05); }
+
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="sidebar-header"><i class="fas fa-dumbbell"></i> GYM PRO</div>
+        <div class="sidebar-header">
+            <img src="img/logo.png" alt="DECLON Logo" class="sidebar-logo">
+        </div>
         <div class="nav-link active" onclick="switchTab('tab-socios')"><i class="fas fa-users"></i> Socios</div>
         <div class="nav-link" onclick="switchTab('tab-equipos')"><i class="fas fa-tools"></i> Equipos</div>
         <div class="nav-link" onclick="switchTab('tab-dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
@@ -102,26 +138,26 @@
 
         <div id="tab-equipos" class="tab-content">
             <div class="card">
-                <h2><i class="fas fa-tools"></i> Gestión de Equipos</h2>
+                <h2><i class="fas fa-tools"></i> Gestión de Equipos DECLON</h2>
                 <p style="color: #888;">Próximamente: Inventario de máquinas y registro de mantenimiento.</p>
             </div>
         </div>
 
         <div id="tab-dashboard" class="tab-content">
             <div class="card">
-                <h2><i class="fas fa-chart-line"></i> Dashboard Operativo</h2>
+                <h2><i class="fas fa-chart-line"></i> Dashboard DECLON Operativo</h2>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center;">
+                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333;">
                         <h3 style="margin:0; color:var(--primary)" id="totalSocios">0</h3>
                         <p style="font-size: 0.8rem; color:#888;">SOCIOS TOTALES</p>
                     </div>
-                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center;">
+                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333;">
                         <h3 style="margin:0; color:#ff4d4d" id="totalVencidos">0</h3>
-                        <p style="font-size: 0.8rem; color:#888;">VENCIDOS</p>
+                        <p style="font-size: 0.8rem; color:#888;">SOCIOS VENCIDOS</p>
                     </div>
-                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center;">
+                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333;">
                         <h3 style="margin:0; color:#4caf50" id="totalActivos">0</h3>
-                        <p style="font-size: 0.8rem; color:#888;">AL DÍA</p>
+                        <p style="font-size: 0.8rem; color:#888;">SOCIOS AL DÍA</p>
                     </div>
                 </div>
             </div>
@@ -138,14 +174,23 @@
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            
+            // Encuentra y resalta el enlace de navegación correspondiente
+            const activeLink = document.querySelector(`.nav-link[onclick="switchTab('${tabId}')"]`);
+            if (activeLink) activeLink.classList.add('active');
         }
 
         async function cargarSocios() {
-            const r = await fetch('/api/socios/todos');
-            sociosGlobal = await r.json();
-            renderizarTabla(sociosGlobal);
-            actualizarDashboard();
+            try {
+                const r = await fetch('/api/socios/todos');
+                sociosGlobal = await r.json();
+                renderizarTabla(sociosGlobal);
+                actualizarDashboard();
+            } catch (error) {
+                console.error("Error cargando socios:", error);
+                const tabla = document.getElementById('lista');
+                tabla.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error cargando datos.</td></tr>';
+            }
         }
 
         function actualizarDashboard() {
@@ -153,8 +198,10 @@
             let vencidos = 0;
             sociosGlobal.forEach(s => {
                 const f = new Date(s.fechaInicio || s.fechaPago);
-                f.setDate(f.getDate() + 30);
-                if (hoy > f) vencidos++;
+                if (!isNaN(f.getTime())) {
+                    f.setDate(f.getDate() + 30);
+                    if (hoy > f) vencidos++;
+                }
             });
 
             document.getElementById('totalSocios').innerText = sociosGlobal.length;
@@ -164,7 +211,7 @@
 
         function obtenerFechas(fechaIso) {
             let fechaBase = new Date(fechaIso);
-            if (isNaN(fechaBase.getTime())) fechaBase = new Date();
+            if (isNaN(fechaBase.getTime())) fechaBase = new Date(); // Fallback a hoy si la fecha es inválida
             const desde = new Date(fechaBase);
             const hasta = new Date(fechaBase);
             hasta.setDate(desde.getDate() + 30);
@@ -174,6 +221,12 @@
         function renderizarTabla(lista) {
             const tabla = document.getElementById('lista');
             const hoy = new Date();
+            
+            if (lista.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay socios registrados.</td></tr>';
+                return;
+            }
+
             tabla.innerHTML = lista.map(s => {
                 const ciclo = obtenerFechas(s.fechaInicio || s.fechaPago);
                 const esVencido = hoy > ciclo.hasta;
@@ -184,19 +237,18 @@
                     <td><span class="fecha-info">Vence: ${ciclo.hasta.toLocaleDateString('es-AR')}</span></td>
                     <td><span class="status-pill ${esVencido ? 'status-vencido' : 'status-ok'}">${esVencido ? 'VENCIDO' : 'AL DÍA'}</span></td>
                     <td>
-                        <button onclick='renovarMes(${JSON.stringify(s)})' class="btn-pay"><i class="fas fa-money-bill-wave"></i></button>
-                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit"><i class="fas fa-edit"></i></button>
-                        <button onclick="borrarSocio('${s.dni}')" class="btn-borrar"><i class="fas fa-trash"></i></button>
+                        <button onclick='renovarMes(${JSON.stringify(s)})' class="btn-pay" title="Cobrar Mes"><i class="fas fa-money-bill-wave"></i></button>
+                        <button onclick='prepararEdicion(${JSON.stringify(s)})' class="btn-edit" title="Editar Socio"><i class="fas fa-edit"></i></button>
+                        <button onclick="borrarSocio('${s.dni}')" class="btn-borrar" title="Eliminar Socio"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             }).join('');
         }
 
-        // --- Funciones de Backend (Iguales que antes) ---
         async function renovarMes(socio) {
             const ciclo = obtenerFechas(socio.fechaInicio || socio.fechaPago);
             let nuevaFecha = (new Date() > ciclo.hasta) ? new Date().toISOString() : ciclo.hasta.toISOString();
-            if (confirm(`¿Registrar pago para ${socio.nombre}?`)) {
+            if (confirm(`¿Registrar nuevo pago de 30 días para ${socio.nombre}?`)) {
                 socio.fechaInicio = nuevaFecha;
                 await fetch(`/api/socios/${socio.dni}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(socio) });
                 cargarSocios();
@@ -206,17 +258,43 @@
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const esEdicion = document.getElementById('editMode').value === "true";
+            const dni = document.getElementById('dni').value;
+            const fManual = document.getElementById('fechaInicioManual').value;
+
+            // Bloquea el botón para evitar múltiples envíos
+            document.getElementById('btnSubmit').disabled = true;
+
             const datos = {
                 nombre: document.getElementById('nombre').value,
-                dni: document.getElementById('dni').value,
+                dni: dni,
                 nacimiento: document.getElementById('nacimiento').value,
                 telefono: document.getElementById('telefono').value,
                 plan: document.getElementById('plan').value,
-                fechaInicio: document.getElementById('fechaInicioManual').value ? new Date(document.getElementById('fechaInicioManual').value).toISOString() : (esEdicion ? sociosGlobal.find(s=>s.dni==document.getElementById('dni').value).fechaInicio : new Date().toISOString())
+                fechaInicio: fManual ? new Date(fManual).toISOString() : (esEdicion ? sociosGlobal.find(s=>s.dni==dni).fechaInicio : new Date().toISOString())
             };
-            await fetch(esEdicion ? `/api/socios/${datos.dni}` : '/api/registrar', { method: esEdicion ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(datos) });
-            cancelarEdicion();
-            cargarSocios();
+
+            const url = esEdicion ? `/api/socios/${dni}` : '/api/registrar';
+            const method = esEdicion ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, { 
+                    method: method, 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(datos) 
+                });
+                if (response.ok) {
+                    cancelarEdicion();
+                    cargarSocios();
+                } else {
+                    alert("Error al guardar el socio.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error de red.");
+            } finally {
+                // Reactiva el botón
+                document.getElementById('btnSubmit').disabled = false;
+            }
         };
 
         function prepararEdicion(s) {
@@ -224,12 +302,16 @@
             document.getElementById('formTitle').innerText = "Editar Socio";
             document.getElementById('nombre').value = s.nombre;
             document.getElementById('dni').value = s.dni;
-            document.getElementById('dni').readOnly = true;
+            document.getElementById('dni').readOnly = true; // No permitir editar DNI
             document.getElementById('nacimiento').value = s.nacimiento;
             document.getElementById('telefono').value = s.telefono || '';
             document.getElementById('plan').value = s.plan || 'Musculación';
+            
+            if (s.fechaInicio) document.getElementById('fechaInicioManual').value = s.fechaInicio.split('T')[0];
+            
             document.getElementById('btnSubmit').innerText = "GUARDAR CAMBIOS";
             document.getElementById('btnCancelar').style.display = "block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function cancelarEdicion() {
@@ -238,6 +320,7 @@
             document.getElementById('dni').readOnly = false;
             document.getElementById('btnSubmit').innerText = "DAR DE ALTA";
             document.getElementById('btnCancelar').style.display = "none";
+            document.getElementById('formTitle').innerText = "Registrar Socio";
         }
 
         function filtrarSocios() {
@@ -246,9 +329,15 @@
         }
 
         async function borrarSocio(dni) {
-            if (confirm('¿Eliminar definitivamente?')) {
-                await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                cargarSocios();
+            if (confirm('¿Eliminar definitivamente este socio?')) {
+                try {
+                    const response = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                    if (response.ok) cargarSocios();
+                    else alert("Error al eliminar.");
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error de red.");
+                }
             }
         }
 
