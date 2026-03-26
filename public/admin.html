@@ -68,14 +68,18 @@
         .dropdown { position: relative; }
         .dropbtn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: 5px; }
         .dropdown-content {
-            display: none; position: absolute; right: 0; top: 30px; background: #1a1a1a;
-            min-width: 140px; border: 1px solid #444; z-index: 9999; border-radius: 8px; 
+            display: none; 
+            position: absolute; 
+            right: 0; 
+            top: 100%; /* Se pega justo abajo del botón */
+            background: #1a1a1a;
+            min-width: 140px; 
+            border: 1px solid #444; 
+            z-index: 9999; 
+            border-radius: 8px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            overflow: hidden; /* Para que los bordes redondeados corten los botones internos */
         }
-        .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #222; }
-        .dropdown-content button:last-child { border-bottom: none; }
-        .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
-        .dropdown:hover .dropdown-content { display: block; }
     </style>
 </head>
 <body>
@@ -146,13 +150,13 @@
                 return `
                 <tr>
                     <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
-                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'MUSCULACIÓN'}</span></td>
+                    <td><span style="color:var(--primary-red); font-weight:bold; text-transform: uppercase;">${s.plan || 'S/D'}</span></td>
                     <td>
                         <small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br>
                         <b>Vence: ${hasta.toLocaleDateString('es-AR')}</b>
                     </td>
-                    <td><span class="status-pill ${esVencido ? 'status-vencido' : 'status-ok'}">${esVencido ? 'VENCIDO' : 'AL DÍA'}</span></td>
-                    <td>
+                    <td><span class="status-pill ${esVencido ? 'status-vencido' : 'status-ok'}">${esVencido ? 'AL DÍA' : 'AL DÍA'}</span></td>
+                    <td style="overflow: visible;">
                         <div class="dropdown">
                             <button class="dropbtn"><i class="fas fa-ellipsis-v"></i></button>
                             <div class="dropdown-content">
