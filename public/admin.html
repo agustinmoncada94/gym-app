@@ -22,7 +22,6 @@
                 <input type="tel" id="telefono" class="admin-input" placeholder="Teléfono">
                 <button type="submit" id="btnEnviar" class="btn-admin">DAR DE ALTA</button>
             </form>
-            <div id="resultado" class="mensaje"></div>
         </div>
 
         <div class="card">
@@ -45,20 +44,19 @@
     </div>
 
     <script>
-        // CARGAR LISTA
+        // CARGAR LISTA DESDE EL SERVIDOR
         async function cargarSocios() {
             const lista = document.getElementById('listaSocios');
             lista.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando...</td></tr>';
 
             try {
-                // Forzamos la ruta absoluta para evitar errores de 404
-                const res = await fetch(window.location.origin + '/api/socios/todos');
-                if (!res.ok) throw new Error("Error " + res.status);
+                const res = await fetch('/api/socios/todos');
+                if (!res.ok) throw new Error("Error del servidor: " + res.status);
                 
                 const socios = await res.json();
 
                 if (socios.length === 0) {
-                    lista.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay socios registrados.</td></tr>';
+                    lista.innerHTML = '<tr><td colspan="4" style="text-align:center; color:gray;">No hay socios registrados.</td></tr>';
                     return;
                 }
 
@@ -70,7 +68,7 @@
                         <td>${socio.dni}</td>
                         <td><span class="status-badge active">ACTIVO</span></td>
                         <td>
-                            <button style="background:none; border:none; color:#e57373; cursor:pointer;" onclick="eliminarSocio('${socio.dni}')">
+                            <button title="Eliminar" style="background:none; border:none; color:#e57373; cursor:pointer;" onclick="eliminarSocio('${socio.dni}')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -78,20 +76,21 @@
                     lista.appendChild(fila);
                 });
             } catch (error) {
-                lista.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Error de conexión.</td></tr>`;
+                console.error(error);
+                lista.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; padding:20px;">Error al obtener datos. Reintente en un momento.</td></tr>`;
             }
         }
 
-        // ELIMINAR
+        // ELIMINAR SOCIO
         async function eliminarSocio(dni) {
-            if (!confirm("¿Eliminar socio?")) return;
+            if (!confirm("¿Desea eliminar este socio definitivamente?")) return;
             try {
-                await fetch(window.location.origin + `/api/socios/${dni}`, { method: 'DELETE' });
-                cargarSocios();
-            } catch (e) { alert("Error al eliminar"); }
+                const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                if (res.ok) cargarSocios();
+            } catch (e) { alert("No se pudo eliminar."); }
         }
 
-        // REGISTRAR
+        // REGISTRAR SOCIO
         document.getElementById('registroForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnEnviar');
@@ -106,16 +105,19 @@
             };
 
             try {
-                const res = await fetch(window.location.origin + '/api/registrar', {
+                const res = await fetch('/api/registrar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(datos)
                 });
                 if (res.ok) {
+                    alert("¡Socio registrado!");
                     e.target.reset();
                     cargarSocios();
+                } else {
+                    alert("Error al registrar: " + res.status);
                 }
-            } catch (error) { alert("Error al registrar"); }
+            } catch (error) { alert("Error de red."); }
             finally { btn.disabled = false; }
         };
 

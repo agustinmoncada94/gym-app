@@ -3,19 +3,24 @@ const { createClient } = require('redis');
 
 const app = express();
 
-// CONFIGURACIÓN DE REDIS
+// CONFIGURACIÓN DE REDIS CON TIMEOUT
 const client = createClient({
     url: process.env.REDIS_URL,
     socket: {
-        connectTimeout: 10000
+        connectTimeout: 10000,
+        keepAlive: 5000
     }
 });
 
 client.on('error', err => console.error('Redis Client Error', err));
 
 async function connectRedis() {
-    if (!client.isOpen) {
-        await client.connect();
+    try {
+        if (!client.isOpen) {
+            await client.connect();
+        }
+    } catch (err) {
+        console.error("Fallo de conexión a Redis:", err);
     }
 }
 
@@ -36,11 +41,11 @@ app.post('/api/registrar', async (req, res) => {
         await client.set(`socio:${dni}`, JSON.stringify(nuevoSocio));
         res.status(201).json({ message: "Socio registrado con éxito" });
     } catch (error) {
-        res.status(500).json({ error: "Error en el servidor" });
+        res.status(500).json({ error: "Error en el servidor al registrar" });
     }
 });
 
-// --- RUTA: OBTENER TODOS LOS SOCIOS (La que estaba fallando) ---
+// --- RUTA: OBTENER TODOS LOS SOCIOS ---
 app.get('/api/socios/todos', async (req, res) => {
     try {
         await connectRedis();
@@ -55,10 +60,10 @@ app.get('/api/socios/todos', async (req, res) => {
             })
         );
 
-        // Ordenar por nombre
         socios.sort((a, b) => a.nombre.localeCompare(b.nombre));
         res.json(socios);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Error al obtener socios" });
     }
 });
@@ -74,7 +79,7 @@ app.delete('/api/socios/:dni', async (req, res) => {
     }
 });
 
-// --- RUTA: CHECK-IN (Pantalla Socio) ---
+// --- RUTA: CHECK-IN ---
 app.get('/api/checkin/:dni', async (req, res) => {
     const { dni } = req.params;
     try {
@@ -96,10 +101,5 @@ app.get('/api/checkin/:dni', async (req, res) => {
         res.status(500).json({ error: "Error en check-in" });
     }
 });
-
-const PORT = process.env.PORT || 3000;
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
-}
 
 module.exports = app;
