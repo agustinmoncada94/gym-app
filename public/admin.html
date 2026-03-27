@@ -187,89 +187,65 @@
             } catch (e) { console.error(e); }
         }
 
-        async function cargarSocios() {
-            try {
-                const r = await fetch('/api/socios/todos');
-                sociosGlobal = await r.json();
-                renderizarTabla(sociosGlobal);
-            } catch (e) { console.error(e); }
-        }
+       // --- LÓGICA DE DATOS ACTUALIZADA ---
+async function cargarSocios() {
+    try {
+        const r = await fetch('/api/socios/todos');
+        sociosGlobal = await r.json();
+        
+        // Al cargar, ejecutamos el filtro inicial. 
+        // Como el buscador está vacío, mostrará TODOS y actualizará el contador.
+        filtrarSocios(); 
+        
+    } catch (e) { 
+        console.error("Error al cargar socios:", e); 
+    }
+}
 
-        function renderizarTabla(lista) {
-            const tbody = document.getElementById('lista');
-            if(!tbody) return;
-            const hoy = new Date();
-            hoy.setHours(0,0,0,0);
+function filtrarSocios() {
+    // Verificamos que los elementos existan para evitar errores en consola
+    const inputBusqueda = document.getElementById('busqueda');
+    const inputEstado = document.getElementById('filtroEstado');
+    const contadorLabel = document.getElementById('contador-socios');
 
-            tbody.innerHTML = lista.map(s => {
-                const desde = new Date(s.fechaInicio || s.fechaPago);
-                const hasta = new Date(desde);
-                hasta.setDate(desde.getDate() + 30);
-                
-                const diffTime = hasta - hoy;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const diasDesdeRegistro = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
+    if (!inputBusqueda || !inputEstado) return;
 
-                let estadoTexto = "AL DÍA";
-                let estadoClase = "status-ok";
+    const busqueda = inputBusqueda.value.toLowerCase();
+    const filtroEstado = inputEstado.value;
 
-                if (s.estado === "Suspendido") {
-                    estadoTexto = "SUSPENDIDO"; estadoClase = "status-suspendido";
-                } else if (s.plan === "Semana de Prueba") {
-                    if (diasDesdeRegistro <= 7) { estadoTexto = "PRUEBA"; estadoClase = "status-prueba"; }
-                    else { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
-                } else if (hoy > hasta) {
-                    estadoTexto = "VENCIDO"; estadoClase = "status-vencido";
-                } else if (diffDays <= 5 && diffDays >= 0) {
-                    estadoTexto = "POR VENCER"; estadoClase = "status-por-vencer";
-                }
+    const filtrados = sociosGlobal.filter(s => {
+        // Coincidencia de texto
+        const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
 
-                return `
-                <tr>
-                    <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
-                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'Musculacion'}</span></td>
-                    <td><small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br><b>Vence: ${hasta.toLocaleDateString('es-AR')}</b></td>
-                    <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
-                    <td>
-                        <div class="dropdown">
-                            <button class="dropbtn" onclick="toggleMenu(event, this)"><i class="fas fa-cog"></i> GESTIONAR</button>
-                            <div class="dropdown-content">
-                                <button onclick='cobrarMes("${s.dni}")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
-                                <button onclick='prepararEdicion(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar Datos</button>
-                                <div style="border-top: 1px solid #333; margin: 5px 0;"></div>
-                                <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
-                            </div>
-                        </div>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
+        // Cálculo de estado en tiempo real
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+        const desde = new Date(s.fechaInicio || s.fechaPago);
+        const hasta = new Date(desde);
+        hasta.setDate(desde.getDate() + 30);
+        const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+        const diasDesdeRegistro = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
 
-        function filtrarSocios() {
-            const busqueda = document.getElementById('busqueda').value.toLowerCase();
-            const filtroEstado = document.getElementById('filtroEstado').value;
+        let estadoActual = "AL DÍA";
+        if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
+        else if (s.plan === "Semana de Prueba") {
+            estadoActual = (diasDesdeRegistro <= 7) ? "PRUEBA" : "VENCIDO";
+        } else if (hoy > hasta) estadoActual = "VENCIDO";
+        else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
 
-            const filtrados = sociosGlobal.filter(s => {
-                const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
-                
-                const hoy = new Date(); hoy.setHours(0,0,0,0);
-                const desde = new Date(s.fechaInicio || s.fechaPago);
-                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
-                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
-                const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+        // Coincidencia de estado
+        const coincideEstado = (filtroEstado === "todos" || estadoActual === filtroEstado);
 
-                let estadoActual = "AL DÍA";
-                if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
-                else if (s.plan === "Semana de Prueba") estadoActual = (diasDesdeReg <= 7) ? "PRUEBA" : "VENCIDO";
-                else if (hoy > hasta) estadoActual = "VENCIDO";
-                else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
+        return coincideTexto && coincideEstado;
+    });
 
-                return coincideTexto && (filtroEstado === "todos" || estadoActual === filtroEstado);
-            });
-            document.getElementById('contador-socios').innerText = filtrados.length;
-            
-            renderizarTabla(filtrados);
-        }
+    renderizarTabla(filtrados);
+
+    // ACTUALIZAR EL CONTADOR
+    if (contadorLabel) {
+        contadorLabel.innerText = filtrados.length;
+    }
+}
 
         async function cobrarMes(dni) {
             if(!confirm("¿Confirmar pago y renovar 30 días desde hoy?")) return;
