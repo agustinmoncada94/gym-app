@@ -266,6 +266,8 @@
 
                 return coincideTexto && (filtroEstado === "todos" || estadoActual === filtroEstado);
             });
+            document.getElementById('contador-socios').innerText = filtrados.length;
+            
             renderizarTabla(filtrados);
         }
 
