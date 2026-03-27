@@ -42,20 +42,19 @@
         /* TABLA Y DISEÑO */
         .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; position: relative; }
         
-        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
         
         .tabla-socios th, .tabla-socios td { 
             padding: 18px; 
             text-align: left; 
             border-bottom: 1px solid #1a1a1a; 
             border-right: 1px solid rgba(255, 255, 255, 0.05);
-            overflow: visible; /* IMPORTANTE: Para que el menú no se corte */
+            overflow: visible; 
         }
-        .tabla-socios th:last-child, .tabla-socios td:last-child { border-right: none; width: 80px; }
+        .tabla-socios th:last-child, .tabla-socios td:last-child { border-right: none; }
 
         /* ESTADOS DE SOCIO */
         .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; }
-        
         .status-ok { background: rgba(0, 255, 102, 0.1); color: #00ff66; border-color: #00ff66; }
         .status-vencido { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
         .status-por-vencer { background: rgba(255, 165, 0, 0.1); color: #ffa500; border-color: #ffa500; }
@@ -69,36 +68,25 @@
         }
         .btn-admin { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary-red); color: #fff; font-weight: bold; cursor: pointer; }
 
-        /* BOTÓN GESTIONAR (Reemplaza a los 3 puntos) */
+        /* BOTÓN GESTIONAR */
         .dropbtn { 
-            background: #1a1a1a; 
-            border: 1px solid #333; 
-            color: var(--text-main); 
-            padding: 8px 12px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 0.75rem; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            transition: 0.3s;
+            background: #1a1a1a; border: 1px solid #333; color: var(--text-main); 
+            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; 
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
         }
         .dropbtn:hover { background: #222; border-color: var(--primary-red); }
         .dropbtn i { color: var(--primary-red); font-size: 0.9rem; }
 
+        .dropdown { position: relative; display: inline-block; }
         .dropdown-content {
-            display: none; 
-            position: absolute; 
-            right: 0; 
-            top: 40px; /* Bajamos un poco el menú para que no tape el botón */
-            background: #1a1a1a;
-            min-width: 160px; 
-            border: 1px solid #444; 
-            z-index: 9999; 
-            border-radius: 8px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: none; position: absolute; right: 0; top: 40px; 
+            background: #1a1a1a; min-width: 160px; border: 1px solid #444; 
+            z-index: 9999; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             overflow: hidden;
         }
+        .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #222; }
+        .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
+        .dropdown:hover .dropdown-content { display: block; }
     </style>
 </head>
 <body>
@@ -145,12 +133,10 @@
             } catch (e) { console.error(e); }
         }
 
-        // Buscador (Punto 1)
         function filtrarSocios() {
             const busqueda = document.getElementById('busqueda').value.toLowerCase();
             const filtrados = sociosGlobal.filter(s => 
-                s.nombre.toLowerCase().includes(busqueda) || 
-                s.dni.includes(busqueda)
+                s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda)
             );
             renderizarTabla(filtrados);
         }
@@ -159,71 +145,58 @@
             const tbody = document.getElementById('lista');
             if(!tbody) return;
             const hoy = new Date();
-            hoy.setHours(0,0,0,0); // Normalizamos hoy para comparar fechas puras
+            hoy.setHours(0,0,0,0);
 
             tbody.innerHTML = lista.map(s => {
                 const desde = new Date(s.fechaInicio || s.fechaPago);
                 const hasta = new Date(desde);
                 hasta.setDate(desde.getDate() + 30);
                 
-                // Cálculo de diferencia de días para "Por Vencer" y "Prueba"
                 const diffTime = hasta - hoy;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
                 const diasDesdeRegistro = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
 
-                // LÓGICA DE ESTADOS
                 let estadoTexto = "AL DÍA";
                 let estadoClase = "status-ok";
 
                 if (s.estado === "Suspendido") {
-                    estadoTexto = "SUSPENDIDO";
-                    estadoClase = "status-suspendido";
-                } else if (s.plan === "Semana de Prueba" || s.estado === "Prueba") {
-                    if (diasDesdeRegistro <= 7) {
-                        estadoTexto = "PRUEBA";
-                        estadoClase = "status-prueba";
-                    } else {
-                        estadoTexto = "VENCIDO";
-                        estadoClase = "status-vencido";
-                    }
+                    estadoTexto = "SUSPENDIDO"; estadoClase = "status-suspendido";
+                } else if (s.plan === "Semana de Prueba") {
+                    if (diasDesdeRegistro <= 7) { estadoTexto = "PRUEBA"; estadoClase = "status-prueba"; }
+                    else { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
                 } else if (hoy > hasta) {
-                    estadoTexto = "VENCIDO";
-                    estadoClase = "status-vencido";
+                    estadoTexto = "VENCIDO"; estadoClase = "status-vencido";
                 } else if (diffDays <= 5 && diffDays >= 0) {
-                    estadoTexto = "POR VENCER";
-                    estadoClase = "status-por-vencer";
+                    estadoTexto = "POR VENCER"; estadoClase = "status-por-vencer";
                 }
 
-               // Buscá dentro del return de renderizarTabla esta parte:
                 return `
                 <tr>
-                    ... (resto de celdas) ...
+                    <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
+                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'MUSCULACIÓN'}</span></td>
+                    <td><small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br><b>Vence: ${hasta.toLocaleDateString('es-AR')}</b></td>
+                    <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
                     <td>
                         <div class="dropdown">
-                            <button class="dropbtn">
-                                <i class="fas fa-cog"></i> GESTIONAR
-                            </button>
+                            <button class="dropbtn"><i class="fas fa-cog"></i> GESTIONAR</button>
                             <div class="dropdown-content">
-                                <button onclick='renovarMes(${JSON.stringify(s)})'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
-                                <button onclick='cambiarEstadoManual("${s.dni}", "Suspendido")'><i class="fas fa-pause"></i> Suspender</button>
-                                <button onclick='irAEditar(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar Datos</button>
-                                <div style="border-top: 1px solid #333; margin: 5px 0;"></div>
+                                <button onclick='alert("Cobrar a ${s.nombre}")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
+                                <button onclick='alert("Editar a ${s.nombre}")'><i class="fas fa-edit"></i> Editar Datos</button>
                                 <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
                             </div>
                         </div>
                     </td>
                 </tr>`;
+            }).join('');
+        }
 
-        // FIX Registro (Punto 3)
         function adjuntarEventoRegistro() {
             const form = document.getElementById('registroForm');
             if(!form) return;
             form.onsubmit = async (e) => {
                 e.preventDefault();
                 const btn = form.querySelector('button');
-                btn.innerText = "GUARDANDO...";
-                btn.disabled = true;
+                btn.innerText = "GUARDANDO..."; btn.disabled = true;
 
                 const datos = {
                     nombre: document.getElementById('nombre').value,
@@ -240,15 +213,8 @@
                         headers: {'Content-Type': 'application/json'}, 
                         body: JSON.stringify(datos) 
                     });
-                    if(res.ok) {
-                        alert("Socio guardado correctamente");
-                        switchTab('socios_lista'); 
-                    }
-                } catch (error) {
-                    alert("Error al guardar");
-                    btn.innerText = "DAR DE ALTA";
-                    btn.disabled = false;
-                }
+                    if(res.ok) { alert("Socio guardado correctamente"); switchTab('socios_lista'); }
+                } catch (error) { alert("Error al guardar"); btn.innerText = "DAR DE ALTA"; btn.disabled = false; }
             };
         }
 
