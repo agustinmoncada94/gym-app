@@ -53,9 +53,14 @@
         }
         .tabla-socios th:last-child, .tabla-socios td:last-child { border-right: none; width: 80px; }
 
-        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
-        .status-ok { background: rgba(0, 255, 102, 0.1); color: var(--status-green); border: 1px solid var(--status-green); }
-        .status-vencido { background: rgba(255, 255, 255, 0.05); color: var(--status-gray); border: 1px solid #444; }
+        /* ESTADOS DE SOCIO */
+        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; }
+        
+        .status-ok { background: rgba(0, 255, 102, 0.1); color: #00ff66; border-color: #00ff66; }
+        .status-vencido { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
+        .status-por-vencer { background: rgba(255, 165, 0, 0.1); color: #ffa500; border-color: #ffa500; }
+        .status-suspendido { background: rgba(128, 128, 128, 0.1); color: #e0e0e0; border-color: #e0e0e0; }
+        .status-prueba { background: rgba(255, 255, 153, 0.1); color: #ffff99; border-color: #ffff99; }
 
         /* INPUTS */
         .admin-input { 
