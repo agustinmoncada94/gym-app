@@ -29,7 +29,43 @@
             background: var(--card-dark); border-right: 1px solid #1a1a1a; 
             position: fixed; display: flex; flex-direction: column; z-index: 1000;
         }
-        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1a1a1a; }
+        /* --- 1. TITULO EN EL SIDEBAR (DEBAJO DEL LOGO) --- */
+.sidebar-header h1 {
+    font-size: 1.6rem; /* Más grande */
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin: 15px 0 0 0;
+    
+    /* EFECTO PLATEADO PREMIUM */
+    background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    
+    /* Sombra para dar relieve */
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 900;
+}
+
+/* --- 2. TITULO PRINCIPAL DE LA LISTA (LISTA DE SOCIOS) --- */
+.main-content h1 {
+    font-size: 2.8rem; /* Bastante más grande y llamativo */
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin: 0;
+    font-weight: 900;
+
+    /* EFECTO PLATEADO PREMIUM CON DEGRADADO */
+    background: linear-gradient(180deg, #ffffff 10%, #aaaaaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    
+    /* Sombra profunda para destacar sobre el fondo negro */
+    filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.8));
+}
         .sidebar-logo { max-width: 180px; height: auto; }
 
         .nav-link { 
