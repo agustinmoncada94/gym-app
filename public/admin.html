@@ -280,6 +280,25 @@
         }
 
         window.onload = () => switchTab('socios_lista');
+        async function borrarSocio(dni) {
+            if (!confirm(`¿Estás seguro de eliminar permanentemente al socio con DNI: ${dni}?`)) return;
+
+            try {
+                const res = await fetch(`/api/socios/${dni}`, {
+                    method: 'DELETE'
+                });
+
+                if (res.ok) {
+                    alert("Socio eliminado correctamente");
+                    cargarSocios(); // Recarga la lista para actualizar la tabla
+                } else {
+                    alert("Error al intentar eliminar el socio");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error de conexión con el servidor");
+            }
+        }
     </script>
 </body>
 </html>

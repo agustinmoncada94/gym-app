@@ -81,14 +81,23 @@ app.put('/api/socios/:dni', async (req, res) => {
     }
 });
 
-// ELIMINAR
+// ELIMINAR SOCIO
 app.delete('/api/socios/:dni', async (req, res) => {
     try {
         await conectar();
-        await client.del(`socio:${req.params.dni}`);
-        res.json({ success: true });
+        const dni = req.params.dni;
+        
+        // Borramos la clave específica en Redis
+        const resultado = await client.del(`socio:${dni}`);
+        
+        if (resultado === 1) {
+            res.json({ success: true, mensaje: "Socio eliminado" });
+        } else {
+            res.status(404).json({ error: "Socio no encontrado" });
+        }
     } catch (e) {
-        res.status(500).json({ error: "Error al eliminar" });
+        console.error("Error al eliminar:", e);
+        res.status(500).json({ error: "Error interno del servidor" });
     }
 });
 
