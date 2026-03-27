@@ -188,7 +188,7 @@
                         <div class="dropdown">
                             <button class="dropbtn"><i class="fas fa-cog"></i> GESTIONAR</button>
                             <div class="dropdown-content">
-                                <button onclick='alert("Cobrando...")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
+                                <button onclick='cobrarMes("${s.dni}")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
                                 <button onclick='alert("Editando...")'><i class="fas fa-edit"></i> Editar Datos</button>
                                 <div style="border-top: 1px solid #333; margin: 5px 0;"></div>
                                 <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
@@ -224,7 +224,30 @@
                 } catch (error) { alert("Error al guardar"); btn.innerText = "DAR DE ALTA"; btn.disabled = false; }
             };
         }
+async function cobrarMes(dni) {
+            if(!confirm("¿Confirmar pago y renovar 30 días desde hoy?")) return;
 
+            try {
+                const res = await fetch('/api/socios/cobrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        dni: dni,
+                        nuevaFecha: new Date().toISOString() // Fecha de hoy para el nuevo ciclo
+                    })
+                });
+
+                if(res.ok) {
+                    alert("Pago registrado. Ciclo actualizado.");
+                    cargarSocios(); // Recarga la lista para ver los cambios
+                } else {
+                    alert("Error al procesar el pago");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error de conexión");
+            }
+        }
         window.onload = () => switchTab('socios_lista');
     </script>
 </body>
