@@ -14,6 +14,7 @@
             --text-muted: #888888;    
             --status-green: #00ff66;
             --status-gray: #e0e0e0;
+            --input-bg: #1a1a1a;
         }
 
         body { 
@@ -39,24 +40,88 @@
 
         .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
 
+        /* DISEÑO DE BUSCADORES ESTÉTICOS */
+        .search-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #222;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 2;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-red);
+            font-size: 1.1rem;
+        }
+
+        .admin-input { 
+            width: 100%; 
+            padding: 12px 15px 12px 45px; 
+            border-radius: 10px; 
+            border: 1px solid #333; 
+            background: var(--input-bg); 
+            color: var(--text-main); 
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .admin-input:focus {
+            border-color: var(--primary-red);
+            background: #222;
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.1);
+        }
+
+        .filter-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .select-custom {
+            padding-left: 15px !important;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ff3333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 18px;
+        }
+
         /* TABLA Y DISEÑO */
         .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; position: relative; }
         
         .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
         
-        .tabla-socios th, .tabla-socios td { 
+        .tabla-socios th { 
+            padding: 18px; 
+            text-align: center; 
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #1a1a1a; 
+        }
+
+        .tabla-socios td { 
             padding: 18px; 
             text-align: center; 
             border-bottom: 1px solid #1a1a1a; 
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            overflow: visible; 
-        }
-        .tabla-socios th:last-child, .tabla-socios td:last-child { 
-            border-right: none; 
-            text-align: center; 
         }
 
-        /* ESTADOS DE SOCIO */
+        /* ESTADOS */
         .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; }
         .status-ok { background: rgba(0, 255, 102, 0.1); color: #00ff66; border-color: #00ff66; }
         .status-vencido { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
@@ -69,18 +134,14 @@
             background: #1a1a1a; border: 1px solid #333; color: var(--text-main); 
             padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; 
             display: flex; align-items: center; gap: 8px; transition: 0.3s;
+            margin: 0 auto;
         }
         .dropbtn:hover { background: #222; border-color: var(--primary-red); }
-        .dropbtn i { color: var(--primary-red); font-size: 0.9rem; }
 
-        .dropdown { 
-            position: relative; 
-            display: inline-block; 
-            vertical-align: middle;
-        }
+        .dropdown { position: relative; display: inline-block; }
         .dropdown-content {
             display: none; position: absolute; right: 0; top: 40px; 
-            background: #1a1a1a; min-width: 160px; border: 1px solid #444; 
+            background: #1a1a1a; min-width: 170px; border: 1px solid #444; 
             z-index: 9999; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             overflow: hidden;
         }
@@ -109,7 +170,6 @@
         let sociosGlobal = [];
         window.socioAEditar = null;
 
-        // --- NAVEGACIÓN ---
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
             try {
@@ -127,7 +187,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- LÓGICA DE DATOS ---
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
@@ -186,18 +245,28 @@
             }).join('');
         }
 
-        // --- ACCIONES ---
-        async function borrarSocio(dni) {
-            if (!confirm(`¿Estás seguro de eliminar permanentemente al socio con DNI: ${dni}?`)) return;
-            try {
-                const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                if (res.ok) {
-                    alert("Socio eliminado correctamente");
-                    cargarSocios();
-                } else {
-                    alert("Error al eliminar");
-                }
-            } catch (e) { alert("Error de conexión"); }
+        function filtrarSocios() {
+            const busqueda = document.getElementById('busqueda').value.toLowerCase();
+            const filtroEstado = document.getElementById('filtroEstado').value;
+
+            const filtrados = sociosGlobal.filter(s => {
+                const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
+                
+                const hoy = new Date(); hoy.setHours(0,0,0,0);
+                const desde = new Date(s.fechaInicio || s.fechaPago);
+                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
+                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
+                const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+
+                let estadoActual = "AL DÍA";
+                if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
+                else if (s.plan === "Semana de Prueba") estadoActual = (diasDesdeReg <= 7) ? "PRUEBA" : "VENCIDO";
+                else if (hoy > hasta) estadoActual = "VENCIDO";
+                else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
+
+                return coincideTexto && (filtroEstado === "todos" || estadoActual === filtroEstado);
+            });
+            renderizarTabla(filtrados);
         }
 
         async function cobrarMes(dni) {
@@ -209,7 +278,16 @@
                     body: JSON.stringify({ dni: dni, nuevaFecha: new Date().toISOString() })
                 });
                 if(res.ok) { alert("Pago registrado"); cargarSocios(); }
+                else { alert("Error al procesar el pago"); }
             } catch (e) { alert("Error de conexión"); }
+        }
+
+        async function borrarSocio(dni) {
+            if (!confirm(`¿Eliminar permanentemente al socio DNI: ${dni}?`)) return;
+            try {
+                const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                if (res.ok) { alert("Socio eliminado"); cargarSocios(); }
+            } catch (e) { alert("Error al eliminar"); }
         }
 
         function prepararEdicion(socio) {
@@ -217,61 +295,6 @@
             switchTab('socios_registro');
         }
 
-        // --- FORMULARIO REGISTRO ---
-        function adjuntarEventoRegistro() {
-            const form = document.getElementById('registroForm');
-            if(!form) return;
-
-            if (window.socioAEditar) {
-                const s = window.socioAEditar;
-                document.getElementById('nombre').value = s.nombre || '';
-                document.getElementById('dni').value = s.dni || '';
-                document.getElementById('dni').readOnly = true;
-                document.getElementById('nacimiento').value = s.nacimiento || '';
-                document.getElementById('telefono').value = s.telefono || '';
-                document.getElementById('plan').value = s.plan || 'Musculación';
-                if(document.getElementById('estado')) document.getElementById('estado').value = s.estado || 'Activo';
-                form.querySelector('button').innerText = "ACTUALIZAR DATOS";
-            }
-
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const btn = form.querySelector('button');
-                btn.innerText = "GUARDANDO...";
-                btn.disabled = true;
-
-                const datos = {
-                    nombre: document.getElementById('nombre').value,
-                    dni: document.getElementById('dni').value,
-                    nacimiento: document.getElementById('nacimiento').value,
-                    telefono: document.getElementById('telefono').value,
-                    plan: document.getElementById('plan').value,
-                    estado: document.getElementById('estado') ? document.getElementById('estado').value : 'Activo',
-                    fechaInicio: document.getElementById('fechaInicioManual')?.value || (window.socioAEditar ? window.socioAEditar.fechaInicio : new Date().toISOString())
-                };
-
-                try {
-                    const url = window.socioAEditar ? `/api/socios/${datos.dni}` : '/api/registrar';
-                    const res = await fetch(url, { 
-                        method: window.socioAEditar ? 'PUT' : 'POST', 
-                        headers: {'Content-Type': 'application/json'}, 
-                        body: JSON.stringify(datos) 
-                    });
-
-                    if(res.ok) {
-                        alert("Guardado con éxito");
-                        window.socioAEditar = null;
-                        switchTab('socios_lista'); 
-                    }
-                } catch (error) {
-                    alert("Error al procesar");
-                    btn.innerText = "GUARDAR";
-                    btn.disabled = false;
-                }
-            };
-        }
-
-        // --- UI / MENÚS ---
         function toggleMenu(event, btn) {
             event.stopPropagation();
             document.querySelectorAll('.dropdown-content').forEach(menu => {
@@ -280,43 +303,7 @@
             btn.nextElementSibling.classList.toggle('show');
         }
 
-        window.onclick = function(event) {
-            if (!event.target.matches('.dropbtn')) {
-                document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
-            }
-        }
-        function filtrarSocios() {
-    const busqueda = document.getElementById('busqueda').value.toLowerCase();
-    const filtroEstado = document.getElementById('filtroEstado').value;
-
-    const filtrados = sociosGlobal.filter(s => {
-        // 1. Lógica de búsqueda por texto
-        const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
-
-        // 2. Lógica de búsqueda por estado (calculamos el estado igual que en la tabla)
-        const hoy = new Date();
-        hoy.setHours(0,0,0,0);
-        const desde = new Date(s.fechaInicio || s.fechaPago);
-        const hasta = new Date(desde);
-        hasta.setDate(desde.getDate() + 30);
-        const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
-        const diasDesdeRegistro = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
-
-        let estadoActual = "AL DÍA";
-        if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
-        else if (s.plan === "Semana de Prueba") {
-            estadoActual = (diasDesdeRegistro <= 7) ? "PRUEBA" : "VENCIDO";
-        } else if (hoy > hasta) estadoActual = "VENCIDO";
-        else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
-
-        // 3. Verificamos si coincide con el filtro seleccionado
-        const coincideEstado = (filtroEstado === "todos" || estadoActual === filtroEstado);
-
-        return coincideTexto && coincideEstado;
-    });
-
-    renderizarTabla(filtrados);
-}
+        window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
 
         window.onload = () => switchTab('socios_lista');
     </script>
