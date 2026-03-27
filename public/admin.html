@@ -231,7 +231,7 @@
                     nacimiento: document.getElementById('nacimiento').value,
                     telefono: document.getElementById('telefono').value,
                     plan: document.getElementById('plan').value,
-                    fechaInicio: window.socioAEditar ? window.socioAEditar.fechaInicio : (document.getElementById('fechaInicioManual').value || new Date().toISOString())
+                    fechaInicio: document.getElementById('fechaInicioManual').value || (window.socioAEditar ? window.socioAEditar.fechaInicio : new Date().toISOString())
                 };
 
                 try {
