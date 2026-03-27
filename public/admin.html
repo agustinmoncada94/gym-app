@@ -207,6 +207,7 @@
 
             // --- NUEVO: Si venimos de "Editar", llenamos los campos ---
             if (window.socioAEditar) {
+                document.getElementById('estado').value = s.estado || 'Activo';
                 const s = window.socioAEditar;
                 document.getElementById('nombre').value = s.nombre;
                 document.getElementById('dni').value = s.dni;
@@ -230,6 +231,7 @@
                     dni: document.getElementById('dni').value,
                     nacimiento: document.getElementById('nacimiento').value,
                     telefono: document.getElementById('telefono').value,
+                    estado: document.getElementById('estado').value,
                     plan: document.getElementById('plan').value,
                     fechaInicio: document.getElementById('fechaInicioManual').value || (window.socioAEditar ? window.socioAEditar.fechaInicio : new Date().toISOString())
                 };
