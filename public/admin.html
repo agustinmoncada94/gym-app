@@ -174,33 +174,55 @@
         }
 
         function rellenarFormularioEdicion(socio) {
-            const campos = {
-                'nombre': socio.nombre,
-                'dni': socio.dni,
-                'telefono': socio.telefono,
-                'plan': socio.plan,
-                'fechaInicio': socio.fechaInicio ? socio.fechaInicio.split('T')[0] : '' 
-            };
+    // 1. Alinear y formatear fechas correctas
+    // CORRECCIÓN PUNTO 4: Determinar la fecha inicial combinando las dos lógica (inicio o pago)
+    // para que la Adri Debernardi que es de Prueba traiga su fecha de registro.
+    const initialDate = socio.fechaInicio || socio.fechaPago;
+    const formattedInitialDate = initialDate ? initialDate.split('T')[0] : '';
 
-            for (let id in campos) {
-                const input = document.getElementById(id);
-                if (input) input.value = campos[id];
-            }
+    const campos = {
+        'nombre': socio.nombre,
+        'dni': socio.dni,
+        'telefono': socio.telefono,
+        'plan': socio.plan,
+        // CORRECCIÓN PUNTO 2: Agregamos el campo de nacimiento que faltaba
+        'nacimiento': socio.nacimiento ? socio.nacimiento.split('T')[0] : '', 
+        // CORRECCIÓN PUNTO 3: Agregamos el campo del estado actual
+        'estado': socio.estado,
+        'fechaInicio': formattedInitialDate // PUNTO 4: USANDO LÓGICA DE FECHA INICIO/PAGO
+    };
 
-            const tituloForm = document.querySelector('.card h1');
-            if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
-
-            const btnAlta = document.querySelector('button[type="submit"]') || document.querySelector('.btn-submit'); 
-            if (btnAlta) {
-                btnAlta.innerText = "TERMINAR EDICIÓN";
-                btnAlta.classList.add('btn-edit-mode');
-            }
-
-            const inputDni = document.getElementById('dni');
-            if (inputDni) inputDni.readOnly = true;
-
-            window.socioAEditar = null; // Resetear después de cargar
+    // Rellenar los campos
+    for (let id in campos) {
+        const input = document.getElementById(id);
+        if (input) {
+            input.value = campos[id];
         }
+    }
+
+    // CORRECCIÓN PUNTO 1: ASEGURARNOS DE QUE EL DNI SEA EDITABLE.
+    // Buscamos el DNI y forzamos su estado editable para que no lo bloquee.
+    const inputDni = document.getElementById('dni');
+    if (inputDni) {
+        inputDni.readOnly = false; // Surgical fix here: aseguramos que NO sea readonly.
+    }
+
+    // --- MANTENEMOS ESTÉTICA QUE SÍ FUNCIONABA ---
+    // 1. Cambiar el título a "EDITAR SOCIO"
+    const tituloForm = document.querySelector('.card h1');
+    if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
+
+    // 2. Cambiar texto del botón a "TERMINAR EDICIÓN" y mantener su clase especial
+    const btnAlta = document.querySelector('button[type="submit"]') || document.querySelector('.btn-submit'); 
+    if (btnAlta) {
+        btnAlta.innerText = "TERMINAR EDICIÓN";
+        // Mantener su clase de diseño premium para que combine con el resto.
+        btnAlta.classList.add('btn-edit-mode'); 
+    }
+
+    // Limpiamos la variable global
+    window.socioAEditar = null;
+}
 
        function renderizarTabla(lista) {
     const tbody = document.getElementById('lista');
