@@ -40,122 +40,46 @@
 
         .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
 
-        /* DISEÑO DE BUSCADORES ESTÉTICOS */
+        /* DISEÑO DE BUSCADORES ESTÉTICOS (Se usan en socios_lista.html) */
         .search-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid #222;
+            display: flex; gap: 15px; margin-bottom: 30px; align-items: center;
+            background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 15px; border: 1px solid #222;
         }
-
-        .search-wrapper {
-            position: relative;
-            flex: 2;
-        }
-
-        .search-wrapper i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary-red);
-            font-size: 1.1rem;
-        }
-
+        .search-wrapper { position: relative; flex: 2; }
+        .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-red); }
         .admin-input { 
-            width: 100%; 
-            padding: 12px 15px 12px 45px; 
-            border-radius: 10px; 
-            border: 1px solid #333; 
-            background: var(--input-bg); 
-            color: var(--text-main); 
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
+            width: 100%; padding: 12px 15px 12px 45px; border-radius: 10px; border: 1px solid #333; 
+            background: var(--input-bg); color: var(--text-main); font-size: 0.95rem; transition: 0.3s;
         }
-
-        .admin-input:focus {
-            border-color: var(--primary-red);
-            background: #222;
-            outline: none;
-            box-shadow: 0 0 15px rgba(255, 51, 51, 0.1);
-        }
-
-        .filter-wrapper {
-            flex: 1;
-            position: relative;
-        }
-
-        .select-custom {
-            padding-left: 15px !important;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ff3333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 18px;
-        }
-
-        /* TABLA Y DISEÑO */
-        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; position: relative; }
+        .admin-input:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 15px rgba(255, 51, 51, 0.1); }
         
+        /* TABLA */
+        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; }
         .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        
-        .tabla-socios th { 
-            padding: 18px; 
-            text-align: center; 
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #1a1a1a; 
-        }
+        .tabla-socios th { padding: 18px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid #1a1a1a; }
+        .tabla-socios td { padding: 18px; text-align: center; border-bottom: 1px solid #1a1a1a; }
 
-        .tabla-socios td { 
-            padding: 18px; 
-            text-align: center; 
-            border-bottom: 1px solid #1a1a1a; 
-        }
-
-        /* ESTADOS */
-        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; }
+        /* PILLS DE ESTADO */
+        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; border: 1px solid transparent; }
         .status-ok { background: rgba(0, 255, 102, 0.1); color: #00ff66; border-color: #00ff66; }
         .status-vencido { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
         .status-por-vencer { background: rgba(255, 165, 0, 0.1); color: #ffa500; border-color: #ffa500; }
         .status-suspendido { background: rgba(128, 128, 128, 0.1); color: #e0e0e0; border-color: #e0e0e0; }
         .status-prueba { background: rgba(255, 255, 153, 0.1); color: #ffff99; border-color: #ffff99; }
 
-        /* BOTÓN GESTIONAR */
-        .dropbtn { 
-            background: #1a1a1a; border: 1px solid #333; color: var(--text-main); 
-            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; 
-            display: flex; align-items: center; gap: 8px; transition: 0.3s;
-            margin: 0 auto;
-        }
-        .dropbtn:hover { background: #222; border-color: var(--primary-red); }
-
+        /* DROPDOWN GESTIONAR */
         .dropdown { position: relative; display: inline-block; }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: 40px; 
-            background: #1a1a1a; min-width: 170px; border: 1px solid #444; 
-            z-index: 9999; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            overflow: hidden;
-        }
-        .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #222; }
-        .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
-        .dropdown-content.show { display: block !important; }
+        .dropbtn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
+        .dropdown-content { display: none; position: absolute; right: 0; background: #1a1a1a; min-width: 170px; border: 1px solid #444; z-index: 9999; border-radius: 8px; box-shadow: 0 10px 30px black; }
+        .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #222; }
+        .dropdown-content button:hover { background: #222; color: var(--primary-red); }
+        .show { display: block !important; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="sidebar-header">
-            <img src="img/logo.png" alt="DECLON" class="sidebar-logo">
-        </div>
+        <div class="sidebar-header"><img src="img/logo.png" alt="DECLON" class="sidebar-logo"></div>
         <nav>
             <div class="nav-link active" onclick="switchTab('socios_lista')"><i class="fas fa-list"></i> Ver Socios</div>
             <div class="nav-link" onclick="switchTab('socios_registro')"><i class="fas fa-user-plus"></i> Registrar Socio</div>
@@ -183,72 +107,94 @@
                 });
 
                 if (tabName === 'socios_lista') cargarSocios();
-                if (tabName === 'socios_registro') adjuntarEventoRegistro();
             } catch (e) { console.error(e); }
         }
 
-       // --- LÓGICA DE DATOS ACTUALIZADA ---
-async function cargarSocios() {
-    try {
-        const r = await fetch('/api/socios/todos');
-        sociosGlobal = await r.json();
-        
-        // Al cargar, ejecutamos el filtro inicial. 
-        // Como el buscador está vacío, mostrará TODOS y actualizará el contador.
-        filtrarSocios(); 
-        
-    } catch (e) { 
-        console.error("Error al cargar socios:", e); 
-    }
-}
+        async function cargarSocios() {
+            try {
+                const r = await fetch('/api/socios/todos');
+                sociosGlobal = await r.json();
+                // Importante: Ejecutar filtrarSocios para cargar la tabla y el contador al inicio
+                filtrarSocios(); 
+            } catch (e) { console.error("Error al cargar socios:", e); }
+        }
 
-function filtrarSocios() {
-    // Verificamos que los elementos existan para evitar errores en consola
-    const inputBusqueda = document.getElementById('busqueda');
-    const inputEstado = document.getElementById('filtroEstado');
-    const contadorLabel = document.getElementById('contador-socios');
+        function renderizarTabla(lista) {
+            const tbody = document.getElementById('lista');
+            if(!tbody) return;
+            const hoy = new Date();
+            hoy.setHours(0,0,0,0);
 
-    if (!inputBusqueda || !inputEstado) return;
+            tbody.innerHTML = lista.map(s => {
+                const desde = new Date(s.fechaInicio || s.fechaPago);
+                const hasta = new Date(desde);
+                hasta.setDate(desde.getDate() + 30);
+                const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
 
-    const busqueda = inputBusqueda.value.toLowerCase();
-    const filtroEstado = inputEstado.value;
+                let estadoTexto = "AL DÍA", estadoClase = "status-ok";
+                if (s.estado === "Suspendido") { estadoTexto = "SUSPENDIDO"; estadoClase = "status-suspendido"; }
+                else if (s.plan === "Semana de Prueba") {
+                    if (diasDesdeReg <= 7) { estadoTexto = "PRUEBA"; estadoClase = "status-prueba"; }
+                    else { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
+                } else if (hoy > hasta) { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
+                else if (diffDays <= 5 && diffDays >= 0) { estadoTexto = "POR VENCER"; estadoClase = "status-por-vencer"; }
 
-    const filtrados = sociosGlobal.filter(s => {
-        // Coincidencia de texto
-        const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
+                return `
+                <tr>
+                    <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
+                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'Musculacion'}</span></td>
+                    <td><small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br><b>Vence: ${hasta.toLocaleDateString('es-AR')}</b></td>
+                    <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="dropbtn" onclick="toggleMenu(event, this)"><i class="fas fa-cog"></i> GESTIONAR</button>
+                            <div class="dropdown-content">
+                                <button onclick='cobrarMes("${s.dni}")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
+                                <button onclick='prepararEdicion(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar Datos</button>
+                                <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
 
-        // Cálculo de estado en tiempo real
-        const hoy = new Date();
-        hoy.setHours(0,0,0,0);
-        const desde = new Date(s.fechaInicio || s.fechaPago);
-        const hasta = new Date(desde);
-        hasta.setDate(desde.getDate() + 30);
-        const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
-        const diasDesdeRegistro = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
+        function filtrarSocios() {
+            const inputBusqueda = document.getElementById('busqueda');
+            const inputEstado = document.getElementById('filtroEstado');
+            const contadorLabel = document.getElementById('contador-socios');
 
-        let estadoActual = "AL DÍA";
-        if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
-        else if (s.plan === "Semana de Prueba") {
-            estadoActual = (diasDesdeRegistro <= 7) ? "PRUEBA" : "VENCIDO";
-        } else if (hoy > hasta) estadoActual = "VENCIDO";
-        else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
+            if (!inputBusqueda || !inputEstado) return;
 
-        // Coincidencia de estado
-        const coincideEstado = (filtroEstado === "todos" || estadoActual === filtroEstado);
+            const busqueda = inputBusqueda.value.toLowerCase();
+            const filtroEstado = inputEstado.value;
 
-        return coincideTexto && coincideEstado;
-    });
+            const filtrados = sociosGlobal.filter(s => {
+                const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
+                
+                const hoy = new Date(); hoy.setHours(0,0,0,0);
+                const desde = new Date(s.fechaInicio || s.fechaPago);
+                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
+                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
+                const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
 
-    renderizarTabla(filtrados);
+                let estadoActual = "AL DÍA";
+                if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
+                else if (s.plan === "Semana de Prueba") estadoActual = (diasDesdeReg <= 7) ? "PRUEBA" : "VENCIDO";
+                else if (hoy > hasta) estadoActual = "VENCIDO";
+                else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
 
-    // ACTUALIZAR EL CONTADOR
-    if (contadorLabel) {
-        contadorLabel.innerText = filtrados.length;
-    }
-}
+                return coincideTexto && (filtroEstado === "todos" || estadoActual === filtroEstado);
+            });
 
+            renderizarTabla(filtrados);
+            if (contadorLabel) contadorLabel.innerText = filtrados.length;
+        }
+
+        // --- ACCIONES (COBRAR, BORRAR, EDITAR) ---
         async function cobrarMes(dni) {
-            if(!confirm("¿Confirmar pago y renovar 30 días desde hoy?")) return;
+            if(!confirm("¿Confirmar pago y renovar 30 días?")) return;
             try {
                 const res = await fetch('/api/socios/cobrar', {
                     method: 'POST',
@@ -256,16 +202,15 @@ function filtrarSocios() {
                     body: JSON.stringify({ dni: dni, nuevaFecha: new Date().toISOString() })
                 });
                 if(res.ok) { alert("Pago registrado"); cargarSocios(); }
-                else { alert("Error al procesar el pago"); }
             } catch (e) { alert("Error de conexión"); }
         }
 
         async function borrarSocio(dni) {
-            if (!confirm(`¿Eliminar permanentemente al socio DNI: ${dni}?`)) return;
+            if (!confirm(`¿Eliminar socio DNI: ${dni}?`)) return;
             try {
                 const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
                 if (res.ok) { alert("Socio eliminado"); cargarSocios(); }
-            } catch (e) { alert("Error al eliminar"); }
+            } catch (e) { alert("Error"); }
         }
 
         function prepararEdicion(socio) {
@@ -275,14 +220,11 @@ function filtrarSocios() {
 
         function toggleMenu(event, btn) {
             event.stopPropagation();
-            document.querySelectorAll('.dropdown-content').forEach(menu => {
-                if (menu !== btn.nextElementSibling) menu.classList.remove('show');
-            });
+            document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
             btn.nextElementSibling.classList.toggle('show');
         }
 
         window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
-
         window.onload = () => switchTab('socios_lista');
     </script>
 </body>
