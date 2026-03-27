@@ -4,8 +4,24 @@
         <div style="width: 60px; height: 4px; background: var(--primary-red); margin: 10px auto;"></div>
     </div>
 
-    <div style="margin-bottom: 20px;">
-        <input type="text" id="busqueda" class="admin-input" placeholder="🔍 Buscar por nombre o DNI..." onkeyup="filtrarSocios()">
+    <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
+        <div style="flex: 2; min-width: 250px;">
+            <input type="text" id="busqueda" class="admin-input" 
+                   placeholder="🔍 Buscar por nombre o DNI..." 
+                   onkeyup="filtrarSocios()" style="margin-bottom: 0;">
+        </div>
+
+        <div style="flex: 1; min-width: 180px;">
+            <select id="filtroEstado" class="admin-input" 
+                    onchange="filtrarSocios()" style="margin-bottom: 0; cursor: pointer;">
+                <option value="todos">📊 TODOS LOS ESTADOS</option>
+                <option value="AL DÍA">✅ AL DÍA</option>
+                <option value="VENCIDO">❌ VENCIDOS</option>
+                <option value="POR VENCER">⚠️ POR VENCER</option>
+                <option value="SUSPENDIDO">🚫 SUSPENDIDOS</option>
+                <option value="PRUEBA">🧪 PRUEBA</option>
+            </select>
+        </div>
     </div>
     
     <div style="overflow: visible;">
@@ -17,8 +33,19 @@
                     <th style="width: 25%;">Ciclo de Pago</th>
                     <th style="width: 15%;">Estado</th>
                     <th style="width: 20%; text-align: center;">Acciones</th>
+                </tr>
             </thead>
-            <tbody id="lista"></tbody>
+            <tbody id="lista">
+                </tbody>
         </table>
     </div>
 </div>
+
+<style>
+    /* Ajuste para que los inputs en la misma línea no se vean amontonados */
+    .admin-input:focus {
+        border-color: var(--primary-red);
+        outline: none;
+        box-shadow: 0 0 5px rgba(255, 51, 51, 0.2);
+    }
+</style>

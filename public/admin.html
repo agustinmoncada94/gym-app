@@ -285,6 +285,38 @@
                 document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
             }
         }
+        function filtrarSocios() {
+    const busqueda = document.getElementById('busqueda').value.toLowerCase();
+    const filtroEstado = document.getElementById('filtroEstado').value;
+
+    const filtrados = sociosGlobal.filter(s => {
+        // 1. Lógica de búsqueda por texto
+        const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
+
+        // 2. Lógica de búsqueda por estado (calculamos el estado igual que en la tabla)
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+        const desde = new Date(s.fechaInicio || s.fechaPago);
+        const hasta = new Date(desde);
+        hasta.setDate(desde.getDate() + 30);
+        const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+        const diasDesdeRegistro = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
+
+        let estadoActual = "AL DÍA";
+        if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
+        else if (s.plan === "Semana de Prueba") {
+            estadoActual = (diasDesdeRegistro <= 7) ? "PRUEBA" : "VENCIDO";
+        } else if (hoy > hasta) estadoActual = "VENCIDO";
+        else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
+
+        // 3. Verificamos si coincide con el filtro seleccionado
+        const coincideEstado = (filtroEstado === "todos" || estadoActual === filtroEstado);
+
+        return coincideTexto && coincideEstado;
+    });
+
+    renderizarTabla(filtrados);
+}
 
         window.onload = () => switchTab('socios_lista');
     </script>
