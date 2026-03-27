@@ -69,21 +69,35 @@
         }
         .btn-admin { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary-red); color: #fff; font-weight: bold; cursor: pointer; }
 
-        /* DROPDOWN FLOTANTE (Punto 2: Sin scroll) */
-        .dropdown { position: relative; }
-        .dropbtn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: 5px; }
+        /* BOTÓN GESTIONAR (Reemplaza a los 3 puntos) */
+        .dropbtn { 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            color: var(--text-main); 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 0.75rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .dropbtn:hover { background: #222; border-color: var(--primary-red); }
+        .dropbtn i { color: var(--primary-red); font-size: 0.9rem; }
+
         .dropdown-content {
             display: none; 
             position: absolute; 
             right: 0; 
-            top: 100%; /* Se pega justo abajo del botón */
+            top: 40px; /* Bajamos un poco el menú para que no tape el botón */
             background: #1a1a1a;
-            min-width: 140px; 
+            min-width: 160px; 
             border: 1px solid #444; 
             z-index: 9999; 
             border-radius: 8px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            overflow: hidden; /* Para que los bordes redondeados corten los botones internos */
+            overflow: hidden;
         }
     </style>
 </head>
@@ -181,29 +195,25 @@
                     estadoClase = "status-por-vencer";
                 }
 
+               // Buscá dentro del return de renderizarTabla esta parte:
                 return `
                 <tr>
-                    <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
-                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'MUSCULACIÓN'}</span></td>
-                    <td>
-                        <small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br>
-                        <b>Vence: ${hasta.toLocaleDateString('es-AR')}</b>
-                    </td>
-                    <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
+                    ... (resto de celdas) ...
                     <td>
                         <div class="dropdown">
-                            <button class="dropbtn"><i class="fas fa-ellipsis-v"></i></button>
+                            <button class="dropbtn">
+                                <i class="fas fa-cog"></i> GESTIONAR
+                            </button>
                             <div class="dropdown-content">
-                                <button onclick='renovarMes(${JSON.stringify(s)})'><i class="fas fa-money-bill-wave"></i> Cobrar</button>
+                                <button onclick='renovarMes(${JSON.stringify(s)})'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
                                 <button onclick='cambiarEstadoManual("${s.dni}", "Suspendido")'><i class="fas fa-pause"></i> Suspender</button>
-                                <button onclick='irAEditar(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar</button>
-                                <button onclick="borrarSocio('${s.dni}')"><i class="fas fa-trash"></i> Borrar</button>
+                                <button onclick='irAEditar(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar Datos</button>
+                                <div style="border-top: 1px solid #333; margin: 5px 0;"></div>
+                                <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
                             </div>
                         </div>
                     </td>
                 </tr>`;
-            }).join('');
-        }
 
         // FIX Registro (Punto 3)
         function adjuntarEventoRegistro() {
