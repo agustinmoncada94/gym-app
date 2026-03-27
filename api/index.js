@@ -41,26 +41,32 @@ app.post('/api/registrar', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
-// RUTA PARA ACTUALIZAR EL PAGO (COBRAR MES)
+// RUTA PARA ACTUALIZAR EL PAGO (COBRAR MES) - VERSIÓN REDIS
 app.post('/api/socios/cobrar', async (req, res) => {
     const { dni, nuevaFecha } = req.body;
 
     try {
-        // Buscamos al socio por DNI y actualizamos su fecha de pago/inicio
-        const resultado = await Socio.findOneAndUpdate(
-            { dni: dni }, 
-            { fechaInicio: nuevaFecha }, // Actualiza la fecha a hoy
-            { new: true }
-        );
-
-        if (resultado) {
-            res.status(200).json({ mensaje: "Pago actualizado con éxito", socio: resultado });
+        await conectar();
+        
+        // 1. Obtenemos los datos actuales del socio
+        const datosSocioJSON = await client.get(`socio:${dni}`);
+        
+        if (datosSocioJSON) {
+            const socio = JSON.parse(datosSocioJSON);
+            
+            // 2. Actualizamos solo la fecha de inicio
+            socio.fechaInicio = nuevaFecha;
+            
+            // 3. Guardamos de nuevo en Redis
+            await client.set(`socio:${dni}`, JSON.stringify(socio));
+            
+            res.status(200).json({ success: true, mensaje: "Pago actualizado con éxito" });
         } else {
             res.status(404).json({ mensaje: "No se encontró el socio" });
         }
     } catch (error) {
         console.error("Error al cobrar:", error);
-        res.status(500).json({ mensaje: "Error interno del servidor" });
+        res.status(500).json({ error: "Error interno del servidor" });
     }
 });
 
