@@ -64,13 +64,6 @@
         .status-suspendido { background: rgba(128, 128, 128, 0.1); color: #e0e0e0; border-color: #e0e0e0; }
         .status-prueba { background: rgba(255, 255, 153, 0.1); color: #ffff99; border-color: #ffff99; }
 
-        /* INPUTS */
-        .admin-input { 
-            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; 
-            border: 1px solid #333; background: #080808; color: var(--text-main); color-scheme: dark; 
-        }
-        .btn-admin { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary-red); color: #fff; font-weight: bold; cursor: pointer; }
-
         /* BOTÓN GESTIONAR */
         .dropbtn { 
             background: #1a1a1a; border: 1px solid #333; color: var(--text-main); 
@@ -116,6 +109,7 @@
         let sociosGlobal = [];
         window.socioAEditar = null;
 
+        // --- NAVEGACIÓN ---
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
             try {
@@ -133,6 +127,7 @@
             } catch (e) { console.error(e); }
         }
 
+        // --- LÓGICA DE DATOS ---
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
@@ -191,6 +186,38 @@
             }).join('');
         }
 
+        // --- ACCIONES ---
+        async function borrarSocio(dni) {
+            if (!confirm(`¿Estás seguro de eliminar permanentemente al socio con DNI: ${dni}?`)) return;
+            try {
+                const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert("Socio eliminado correctamente");
+                    cargarSocios();
+                } else {
+                    alert("Error al eliminar");
+                }
+            } catch (e) { alert("Error de conexión"); }
+        }
+
+        async function cobrarMes(dni) {
+            if(!confirm("¿Confirmar pago y renovar 30 días desde hoy?")) return;
+            try {
+                const res = await fetch('/api/socios/cobrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dni: dni, nuevaFecha: new Date().toISOString() })
+                });
+                if(res.ok) { alert("Pago registrado"); cargarSocios(); }
+            } catch (e) { alert("Error de conexión"); }
+        }
+
+        function prepararEdicion(socio) {
+            window.socioAEditar = socio; 
+            switchTab('socios_registro');
+        }
+
+        // --- FORMULARIO REGISTRO ---
         function adjuntarEventoRegistro() {
             const form = document.getElementById('registroForm');
             if(!form) return;
@@ -203,10 +230,7 @@
                 document.getElementById('nacimiento').value = s.nacimiento || '';
                 document.getElementById('telefono').value = s.telefono || '';
                 document.getElementById('plan').value = s.plan || 'Musculación';
-                
-                const selectEstado = document.getElementById('estado');
-                if(selectEstado) selectEstado.value = s.estado || 'Activo';
-                
+                if(document.getElementById('estado')) document.getElementById('estado').value = s.estado || 'Activo';
                 form.querySelector('button').innerText = "ACTUALIZAR DATOS";
             }
 
@@ -223,20 +247,19 @@
                     telefono: document.getElementById('telefono').value,
                     plan: document.getElementById('plan').value,
                     estado: document.getElementById('estado') ? document.getElementById('estado').value : 'Activo',
-                    fechaInicio: document.getElementById('fechaInicioManual').value || (window.socioAEditar ? window.socioAEditar.fechaInicio : new Date().toISOString())
+                    fechaInicio: document.getElementById('fechaInicioManual')?.value || (window.socioAEditar ? window.socioAEditar.fechaInicio : new Date().toISOString())
                 };
 
                 try {
                     const url = window.socioAEditar ? `/api/socios/${datos.dni}` : '/api/registrar';
-                    const metodo = window.socioAEditar ? 'PUT' : 'POST';
                     const res = await fetch(url, { 
-                        method: metodo, 
+                        method: window.socioAEditar ? 'PUT' : 'POST', 
                         headers: {'Content-Type': 'application/json'}, 
                         body: JSON.stringify(datos) 
                     });
 
                     if(res.ok) {
-                        alert(window.socioAEditar ? "Datos actualizados" : "Socio guardado");
+                        alert("Guardado con éxito");
                         window.socioAEditar = null;
                         switchTab('socios_lista'); 
                     }
@@ -248,18 +271,7 @@
             };
         }
 
-        async function cobrarMes(dni) {
-            if(!confirm("¿Confirmar pago y renovar 30 días desde hoy?")) return;
-            try {
-                const res = await fetch('/api/socios/cobrar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dni: dni, nuevaFecha: new Date().toISOString() })
-                });
-                if(res.ok) { alert("Pago registrado"); cargarSocios(); }
-            } catch (e) { alert("Error de conexión"); }
-        }
-
+        // --- UI / MENÚS ---
         function toggleMenu(event, btn) {
             event.stopPropagation();
             document.querySelectorAll('.dropdown-content').forEach(menu => {
@@ -274,31 +286,7 @@
             }
         }
 
-        function prepararEdicion(socio) {
-            window.socioAEditar = socio; 
-            switchTab('socios_registro');
-        }
-
         window.onload = () => switchTab('socios_lista');
-        async function borrarSocio(dni) {
-            if (!confirm(`¿Estás seguro de eliminar permanentemente al socio con DNI: ${dni}?`)) return;
-
-            try {
-                const res = await fetch(`/api/socios/${dni}`, {
-                    method: 'DELETE'
-                });
-
-                if (res.ok) {
-                    alert("Socio eliminado correctamente");
-                    cargarSocios(); // Recarga la lista para actualizar la tabla
-                } else {
-                    alert("Error al intentar eliminar el socio");
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Error de conexión con el servidor");
-            }
-        }
     </script>
 </body>
 </html>
