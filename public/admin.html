@@ -94,7 +94,9 @@
         }
         .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #222; }
         .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
-        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content.show { 
+    display: block !important; 
+}
     </style>
 </head>
 <body>
@@ -186,7 +188,7 @@
                     <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
                     <td style="text-align: center;">
                         <div class="dropdown">
-                            <button class="dropbtn"><i class="fas fa-cog"></i> GESTIONAR</button>
+                            <button class="dropbtn" onclick="toggleMenu(event, this)"><i class="fas fa-cog"></i> GESTIONAR</button>
                             <div class="dropdown-content">
                                 <button onclick='cobrarMes("${s.dni}")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
                                 <button onclick='alert("Editando...")'><i class="fas fa-edit"></i> Editar Datos</button>
@@ -248,6 +250,26 @@ async function cobrarMes(dni) {
                 alert("Error de conexión");
             }
         }
+        function toggleMenu(event, btn) {
+    event.stopPropagation(); // Evita que el clic se propague
+    
+    // Cerramos cualquier otro menú que esté abierto
+    document.querySelectorAll('.dropdown-content').forEach(menu => {
+        if (menu !== btn.nextElementSibling) menu.classList.remove('show');
+    });
+
+    // Abrimos o cerramos el menú actual
+    btn.nextElementSibling.classList.toggle('show');
+}
+
+// Cerrar menús si se hace clic fuera de ellos
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+        document.querySelectorAll('.dropdown-content').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+}
         window.onload = () => switchTab('socios_lista');
     </script>
 </body>
