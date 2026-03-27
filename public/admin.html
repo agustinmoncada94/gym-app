@@ -44,17 +44,16 @@
         
         .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
         
-        /* Línea 48 aprox. */
         .tabla-socios th, .tabla-socios td { 
             padding: 18px; 
-            text-align: center; /* <-- Cambiar de left a center */
+            text-align: center; 
             border-bottom: 1px solid #1a1a1a; 
             border-right: 1px solid rgba(255, 255, 255, 0.05);
             overflow: visible; 
         }
         .tabla-socios th:last-child, .tabla-socios td:last-child { 
             border-right: none; 
-            text-align: center; /* Asegura que la última columna esté centrada */
+            text-align: center; 
         }
 
         /* ESTADOS DE SOCIO */
@@ -83,7 +82,7 @@
 
         .dropdown { 
             position: relative; 
-            display: inline-block; /* Esto permite que el centrado del TD funcione bien */
+            display: inline-block; 
             vertical-align: middle;
         }
         .dropdown-content {
@@ -94,9 +93,7 @@
         }
         .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #222; }
         .dropdown-content button:hover { background: #252525; color: var(--primary-red); }
-        .dropdown-content.show { 
-    display: block !important; 
-}
+        .dropdown-content.show { display: block !important; }
     </style>
 </head>
 <body>
@@ -117,6 +114,7 @@
 
     <script>
         let sociosGlobal = [];
+        window.socioAEditar = null;
 
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
@@ -141,14 +139,6 @@
                 sociosGlobal = await r.json();
                 renderizarTabla(sociosGlobal);
             } catch (e) { console.error(e); }
-        }
-
-        function filtrarSocios() {
-            const busqueda = document.getElementById('busqueda').value.toLowerCase();
-            const filtrados = sociosGlobal.filter(s => 
-                s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda)
-            );
-            renderizarTabla(filtrados);
         }
 
         function renderizarTabla(lista) {
@@ -186,7 +176,7 @@
                     <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'Musculacion'}</span></td>
                     <td><small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br><b>Vence: ${hasta.toLocaleDateString('es-AR')}</b></td>
                     <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
-                    <td style="text-align: center;">
+                    <td>
                         <div class="dropdown">
                             <button class="dropbtn" onclick="toggleMenu(event, this)"><i class="fas fa-cog"></i> GESTIONAR</button>
                             <div class="dropdown-content">
@@ -198,18 +188,15 @@
                         </div>
                     </td>
                 </tr>`;
-            }).join(''); // <-- ESTO ES LO QUE FALTABA
+            }).join('');
         }
 
         function adjuntarEventoRegistro() {
             const form = document.getElementById('registroForm');
             if(!form) return;
 
-            // --- CORREGIDO: Definir 's' primero antes de usarla ---
             if (window.socioAEditar) {
-                const s = window.socioAEditar; // Definimos 's' primero
-                
-                // Ahora sí asignamos los valores
+                const s = window.socioAEditar;
                 document.getElementById('nombre').value = s.nombre || '';
                 document.getElementById('dni').value = s.dni || '';
                 document.getElementById('dni').readOnly = true;
@@ -217,65 +204,81 @@
                 document.getElementById('telefono').value = s.telefono || '';
                 document.getElementById('plan').value = s.plan || 'Musculación';
                 
-                // Aseguramos que el campo 'estado' exista antes de asignarle valor
                 const selectEstado = document.getElementById('estado');
-                if(selectEstado) {
-                    selectEstado.value = s.estado || 'Activo';
-                }
+                if(selectEstado) selectEstado.value = s.estado || 'Activo';
                 
                 form.querySelector('button').innerText = "ACTUALIZAR DATOS";
             }
-            // ... resto del código del onsubmit sigue igual
-async function cobrarMes(dni) {
-            if(!confirm("¿Confirmar pago y renovar 30 días desde hoy?")) return;
 
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button');
+                btn.innerText = "GUARDANDO...";
+                btn.disabled = true;
+
+                const datos = {
+                    nombre: document.getElementById('nombre').value,
+                    dni: document.getElementById('dni').value,
+                    nacimiento: document.getElementById('nacimiento').value,
+                    telefono: document.getElementById('telefono').value,
+                    plan: document.getElementById('plan').value,
+                    estado: document.getElementById('estado') ? document.getElementById('estado').value : 'Activo',
+                    fechaInicio: document.getElementById('fechaInicioManual').value || (window.socioAEditar ? window.socioAEditar.fechaInicio : new Date().toISOString())
+                };
+
+                try {
+                    const url = window.socioAEditar ? `/api/socios/${datos.dni}` : '/api/registrar';
+                    const metodo = window.socioAEditar ? 'PUT' : 'POST';
+                    const res = await fetch(url, { 
+                        method: metodo, 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify(datos) 
+                    });
+
+                    if(res.ok) {
+                        alert(window.socioAEditar ? "Datos actualizados" : "Socio guardado");
+                        window.socioAEditar = null;
+                        switchTab('socios_lista'); 
+                    }
+                } catch (error) {
+                    alert("Error al procesar");
+                    btn.innerText = "GUARDAR";
+                    btn.disabled = false;
+                }
+            };
+        }
+
+        async function cobrarMes(dni) {
+            if(!confirm("¿Confirmar pago y renovar 30 días desde hoy?")) return;
             try {
                 const res = await fetch('/api/socios/cobrar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        dni: dni,
-                        nuevaFecha: new Date().toISOString() // Fecha de hoy para el nuevo ciclo
-                    })
+                    body: JSON.stringify({ dni: dni, nuevaFecha: new Date().toISOString() })
                 });
+                if(res.ok) { alert("Pago registrado"); cargarSocios(); }
+            } catch (e) { alert("Error de conexión"); }
+        }
 
-                if(res.ok) {
-                    alert("Pago registrado. Ciclo actualizado.");
-                    cargarSocios(); // Recarga la lista para ver los cambios
-                } else {
-                    alert("Error al procesar el pago");
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Error de conexión");
+        function toggleMenu(event, btn) {
+            event.stopPropagation();
+            document.querySelectorAll('.dropdown-content').forEach(menu => {
+                if (menu !== btn.nextElementSibling) menu.classList.remove('show');
+            });
+            btn.nextElementSibling.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
             }
         }
-        function toggleMenu(event, btn) {
-    event.stopPropagation(); // Evita que el clic se propague
-    
-    // Cerramos cualquier otro menú que esté abierto
-    document.querySelectorAll('.dropdown-content').forEach(menu => {
-        if (menu !== btn.nextElementSibling) menu.classList.remove('show');
-    });
 
-    // Abrimos o cerramos el menú actual
-    btn.nextElementSibling.classList.toggle('show');
-}
-
-// Cerrar menús si se hace clic fuera de ellos
-window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-        document.querySelectorAll('.dropdown-content').forEach(menu => {
-            menu.classList.remove('show');
-        });
-    }
-}
-function prepararEdicion(socio) {
-            // Guardamos los datos en una variable global para usarlos en la otra pestaña
+        function prepararEdicion(socio) {
             window.socioAEditar = socio; 
-            // Cambiamos a la pestaña de registro
             switchTab('socios_registro');
         }
+
         window.onload = () => switchTab('socios_lista');
     </script>
 </body>
