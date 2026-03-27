@@ -207,8 +207,8 @@
 
             // --- NUEVO: Si venimos de "Editar", llenamos los campos ---
             if (window.socioAEditar) {
-                document.getElementById('estado').value = s.estado || 'Activo';
-                const s = window.socioAEditar;
+                document.getElementById('estado').value = s.estado || 'Activo'; // <--- AQUÍ: 's' todavía no existe
+                const s = window.socioAEditar; // <--- AQUÍ: recién la defines
                 document.getElementById('nombre').value = s.nombre;
                 document.getElementById('dni').value = s.dni;
                 document.getElementById('dni').readOnly = true; // El DNI no se debería cambiar
