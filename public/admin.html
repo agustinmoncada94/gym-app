@@ -33,7 +33,6 @@
         .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1a1a1a; }
         .sidebar-logo { max-width: 180px; height: auto; }
 
-        /* TÍTULO PLATEADO EN SIDEBAR */
         .sidebar-header h1 {
             font-size: 1.6rem;
             text-transform: uppercase;
@@ -56,7 +55,6 @@
         /* --- CONTENIDO PRINCIPAL --- */
         .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
 
-        /* TÍTULO PLATEADO PRINCIPAL */
         .main-content h1 {
             font-size: 2.8rem;
             text-transform: uppercase;
@@ -70,27 +68,48 @@
             filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.8));
         }
 
-        /* ESTILOS PARA COMPONENTES DE LISTA (Se inyectan desde socios_lista.html) */
-        .search-container {
-            display: flex; gap: 15px; margin-bottom: 30px; align-items: center;
-            background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 15px; border: 1px solid #222;
-        }
-        .search-wrapper { position: relative; flex: 2; }
-        .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-red); }
-        
-        .admin-input { 
-            width: 100%; padding: 12px 15px 12px 45px; border-radius: 10px; border: 1px solid #333; 
-            background: var(--input-bg); color: var(--text-main); font-size: 0.95rem; transition: 0.3s;
+        /* --- INPUTS Y FORMULARIOS --- */
+        .admin-input {
+            width: 100%; 
+            padding: 12px 15px !important; 
+            border-radius: 10px; 
+            border: 1px solid #333; 
+            background: var(--input-bg); 
+            color: var(--text-main); 
+            font-size: 0.95rem; 
+            transition: 0.3s;
+            text-align: left !important; /* Alineación a la izquierda */
             box-sizing: border-box;
         }
         .admin-input:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 15px rgba(255, 51, 51, 0.1); }
-        
+
+        /* --- BOTONES DE ENVÍO --- */
+        .btn-submit {
+            background: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+        }
+
+        .btn-edit-mode {
+            background: linear-gradient(135deg, #ff3333 0%, #990000 100%) !important;
+            box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* --- TABLA Y ESTADOS --- */
         .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; }
         .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .tabla-socios th { padding: 18px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid #1a1a1a; text-align: center; }
+        .tabla-socios th { padding: 18px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid #1a1a1a; }
         .tabla-socios td { padding: 18px; text-align: center; border-bottom: 1px solid #1a1a1a; }
 
-        /* PILLS DE ESTADO */
         .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; border: 1px solid transparent; text-transform: uppercase; }
         .status-ok { background: rgba(0, 255, 102, 0.1); color: #00ff66; border-color: #00ff66; }
         .status-vencido { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
@@ -98,13 +117,10 @@
         .status-suspendido { background: rgba(128, 128, 128, 0.1); color: #e0e0e0; border-color: #e0e0e0; }
         .status-prueba { background: rgba(255, 255, 153, 0.1); color: #ffff99; border-color: #ffff99; }
 
-        /* DROPDOWN GESTIONAR */
         .dropdown { position: relative; display: inline-block; }
-        .dropbtn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.3s; }
-        .dropbtn:hover { border-color: var(--primary-red); }
+        .dropbtn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
         .dropdown-content { display: none; position: absolute; right: 0; background: #1a1a1a; min-width: 170px; border: 1px solid #444; z-index: 9999; border-radius: 8px; box-shadow: 0 10px 30px black; }
         .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #222; }
-        .dropdown-content button:hover { background: #222; color: var(--primary-red); }
         .show { display: block !important; }
     </style>
 </head>
@@ -129,77 +145,82 @@
         let sociosGlobal = [];
         window.socioAEditar = null;
 
-        // --- NAVEGACIÓN ---
-       async function switchTab(tabName) {
-    const container = document.getElementById('view-container');
-    try {
-        const response = await fetch(`${tabName}.html`);
-        const html = await response.text();
-        container.innerHTML = html;
+        async function switchTab(tabName) {
+            const container = document.getElementById('view-container');
+            try {
+                const response = await fetch(`${tabName}.html`);
+                const html = await response.text();
+                container.innerHTML = html;
 
-        // Actualizar links activos en el sidebar
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-            if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
-        });
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
+                });
 
-        // CASO 1: Lista de socios
-        if (tabName === 'socios_lista') {
-            await cargarSocios(); 
-        }
-        
-        // CASO 2: Registro (Aquí es donde ocurre la magia de la edición)
-        if (tabName === 'socios_registro') {
-            // Si existe alguien para editar, llenamos los campos
-            if (window.socioAEditar) {
-                rellenarFormularioEdicion(window.socioAEditar);
-            }
+                if (tabName === 'socios_lista') await cargarSocios();
+                
+                if (tabName === 'socios_registro' && window.socioAEditar) {
+                    rellenarFormularioEdicion(window.socioAEditar);
+                }
+            } catch (e) { console.error(e); }
         }
 
-    } catch (e) { console.error("Error al cambiar pestaña:", e); }
-}
-
-        // --- LÓGICA DE SOCIOS ---
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
                 sociosGlobal = await r.json();
                 filtrarSocios(); 
-            } catch (e) { console.error("Error al cargar socios:", e); }
+            } catch (e) { console.error(e); }
+        }
+
+        function rellenarFormularioEdicion(socio) {
+            const campos = {
+                'nombre': socio.nombre,
+                'dni': socio.dni,
+                'telefono': socio.telefono,
+                'plan': socio.plan,
+                'fechaInicio': socio.fechaInicio ? socio.fechaInicio.split('T')[0] : '' 
+            };
+
+            for (let id in campos) {
+                const input = document.getElementById(id);
+                if (input) input.value = campos[id];
+            }
+
+            const tituloForm = document.querySelector('.card h1');
+            if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
+
+            const btnAlta = document.querySelector('button[type="submit"]') || document.querySelector('.btn-submit'); 
+            if (btnAlta) {
+                btnAlta.innerText = "TERMINAR EDICIÓN";
+                btnAlta.classList.add('btn-edit-mode');
+            }
+
+            const inputDni = document.getElementById('dni');
+            if (inputDni) inputDni.readOnly = true;
+
+            window.socioAEditar = null; // Resetear después de cargar
         }
 
         function renderizarTabla(lista) {
             const tbody = document.getElementById('lista');
             if(!tbody) return;
-            const hoy = new Date();
-            hoy.setHours(0,0,0,0);
+            const hoy = new Date(); hoy.setHours(0,0,0,0);
 
             tbody.innerHTML = lista.map(s => {
                 const desde = new Date(s.fechaInicio || s.fechaPago);
-                const hasta = new Date(desde);
-                hasta.setDate(desde.getDate() + 30);
-                const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
-                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
-
-                let estadoTexto = "AL DÍA", estadoClase = "status-ok";
-                if (s.estado === "Suspendido") { estadoTexto = "SUSPENDIDO"; estadoClase = "status-suspendido"; }
-                else if (s.plan === "Semana de Prueba") {
-                    if (diasDesdeReg <= 7) { estadoTexto = "PRUEBA"; estadoClase = "status-prueba"; }
-                    else { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
-                } else if (hoy > hasta) { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
-                else if (diffDays <= 5 && diffDays >= 0) { estadoTexto = "POR VENCER"; estadoClase = "status-por-vencer"; }
-
+                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
+                
                 return `
                 <tr>
                     <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
                     <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'Musculación'}</span></td>
                     <td><small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br><b>Vence: ${hasta.toLocaleDateString('es-AR')}</b></td>
-                    <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
+                    <td><span class="status-pill status-ok">AL DÍA</span></td>
                     <td>
                         <div class="dropdown">
                             <button class="dropbtn" onclick="toggleMenu(event, this)"><i class="fas fa-cog"></i> GESTIONAR</button>
                             <div class="dropdown-content">
-                                <button onclick='cobrarMes("${s.dni}")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
                                 <button onclick='prepararEdicion(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar Datos</button>
                                 <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
                             </div>
@@ -211,55 +232,14 @@
 
         function filtrarSocios() {
             const inputBusqueda = document.getElementById('busqueda');
-            const inputEstado = document.getElementById('filtroEstado');
             const contadorLabel = document.getElementById('contador-socios');
-
-            if (!inputBusqueda || !inputEstado) return;
+            if (!inputBusqueda) return;
 
             const busqueda = inputBusqueda.value.toLowerCase();
-            const filtroEstado = inputEstado.value;
-
-            const filtrados = sociosGlobal.filter(s => {
-                const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
-                
-                const hoy = new Date(); hoy.setHours(0,0,0,0);
-                const desde = new Date(s.fechaInicio || s.fechaPago);
-                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
-                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
-                const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
-
-                let estadoActual = "AL DÍA";
-                if (s.estado === "Suspendido") estadoActual = "SUSPENDIDO";
-                else if (s.plan === "Semana de Prueba") estadoActual = (diasDesdeReg <= 7) ? "PRUEBA" : "VENCIDO";
-                else if (hoy > hasta) estadoActual = "VENCIDO";
-                else if (diffDays <= 5 && diffDays >= 0) estadoActual = "POR VENCER";
-
-                return coincideTexto && (filtroEstado === "todos" || estadoActual === filtroEstado);
-            });
+            const filtrados = sociosGlobal.filter(s => s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda));
 
             renderizarTabla(filtrados);
             if (contadorLabel) contadorLabel.innerText = filtrados.length;
-        }
-
-        // --- ACCIONES ---
-        async function cobrarMes(dni) {
-            if(!confirm("¿Confirmar pago y renovar 30 días?")) return;
-            try {
-                const res = await fetch('/api/socios/cobrar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dni: dni, nuevaFecha: new Date().toISOString() })
-                });
-                if(res.ok) { alert("Pago registrado"); cargarSocios(); }
-            } catch (e) { alert("Error de conexión"); }
-        }
-
-        async function borrarSocio(dni) {
-            if (!confirm(`¿Eliminar socio DNI: ${dni}?`)) return;
-            try {
-                const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                if (res.ok) { alert("Socio eliminado"); cargarSocios(); }
-            } catch (e) { alert("Error"); }
         }
 
         function prepararEdicion(socio) {
@@ -267,42 +247,12 @@
             switchTab('socios_registro');
         }
 
-        // --- UTILIDADES ---
         function toggleMenu(event, btn) {
             event.stopPropagation();
             document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
             btn.nextElementSibling.classList.toggle('show');
         }
-function rellenarFormularioEdicion(socio) {
-    // IMPORTANTE: Asegúrate de que los IDs (nombre, dni, plan, etc) 
-    // coincidan con los que pusiste en socios_registro.html
-    const campos = {
-        'nombre': socio.nombre,
-        'dni': socio.dni,
-        'telefono': socio.telefono,
-        'plan': socio.plan,
-        'fechaInicio': socio.fechaInicio ? socio.fechaInicio.split('T')[0] : '' 
-    };
 
-    for (let id in campos) {
-        const input = document.getElementById(id);
-        if (input) {
-            input.value = campos[id];
-        }
-    }
-
-    // Cambiamos el título del formulario para que el usuario sepa que está editando
-    const tituloForm = document.querySelector('.card h1');
-    if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
-
-    // Opcional: Bloquear el DNI para que no lo editen (ya que es la llave única)
-    const inputDni = document.getElementById('dni');
-    if (inputDni) inputDni.readOnly = true;
-
-    // Limpiamos la variable global después de usarla para que el 
-    // próximo registro nuevo empiece vacío
-    window.socioAEditar = null;
-}
         window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
         window.onload = () => switchTab('socios_lista');
     </script>
