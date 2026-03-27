@@ -202,33 +202,71 @@
             window.socioAEditar = null; // Resetear después de cargar
         }
 
-        function renderizarTabla(lista) {
-            const tbody = document.getElementById('lista');
-            if(!tbody) return;
-            const hoy = new Date(); hoy.setHours(0,0,0,0);
+       function renderizarTabla(lista) {
+    const tbody = document.getElementById('lista');
+    if(!tbody) return;
+    const hoy = new Date(); 
+    hoy.setHours(0,0,0,0);
 
-            tbody.innerHTML = lista.map(s => {
-                const desde = new Date(s.fechaInicio || s.fechaPago);
-                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
-                
-                return `
-                <tr>
-                    <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
-                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'Musculación'}</span></td>
-                    <td><small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br><b>Vence: ${hasta.toLocaleDateString('es-AR')}</b></td>
-                    <td><span class="status-pill status-ok">AL DÍA</span></td>
-                    <td>
-                        <div class="dropdown">
-                            <button class="dropbtn" onclick="toggleMenu(event, this)"><i class="fas fa-cog"></i> GESTIONAR</button>
-                            <div class="dropdown-content">
-                                <button onclick='prepararEdicion(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar Datos</button>
-                                <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
-                            </div>
-                        </div>
-                    </td>
-                </tr>`;
-            }).join('');
+    tbody.innerHTML = lista.map(s => {
+        // Lógica de fechas
+        const desde = new Date(s.fechaInicio || s.fechaPago);
+        const hasta = new Date(desde); 
+        hasta.setDate(desde.getDate() + 30);
+        
+        const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+        const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
+
+        // Lógica de Estados
+        let estadoTexto = "AL DÍA", estadoClase = "status-ok";
+        if (s.estado === "Suspendido") { 
+            estadoTexto = "SUSPENDIDO"; estadoClase = "status-suspendido"; 
+        } else if (s.plan === "Semana de Prueba") {
+            if (diasDesdeReg <= 7) { estadoTexto = "PRUEBA"; estadoClase = "status-prueba"; }
+            else { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
+        } else if (hoy > hasta) { 
+            estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; 
+        } else if (diffDays <= 5 && diffDays >= 0) { 
+            estadoTexto = "POR VENCER"; estadoClase = "status-por-vencer"; 
         }
+
+        return `
+        <tr>
+            <td style="text-align: left; padding-left: 20px;">
+                <b style="font-size: 1.1rem;">${s.nombre.toUpperCase()}</b><br>
+                <small style="color:var(--text-muted); letter-spacing: 1px;">${s.dni}</small>
+            </td>
+            <td>
+                <span style="color:var(--primary-red); font-weight:bold; text-transform: uppercase;">${s.plan || 'Musculación'}</span>
+            </td>
+            <td>
+                <small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br>
+                <b style="color: #eee;">Vence: ${hasta.toLocaleDateString('es-AR')}</b>
+            </td>
+            <td>
+                <span class="status-pill ${estadoClase}">${estadoTexto}</span>
+            </td>
+            <td>
+                <div class="dropdown">
+                    <button class="dropbtn" onclick="toggleMenu(event, this)">
+                        <i class="fas fa-cog"></i> GESTIONAR
+                    </button>
+                    <div class="dropdown-content">
+                        <button onclick='cobrarMes("${s.dni}")'>
+                            <i class="fas fa-money-bill-wave" style="color: #00ff66;"></i> Cobrar Mes
+                        </button>
+                        <button onclick='prepararEdicion(${JSON.stringify(s)})'>
+                            <i class="fas fa-edit" style="color: #aaa;"></i> Editar Datos
+                        </button>
+                        <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
 
         function filtrarSocios() {
             const inputBusqueda = document.getElementById('busqueda');
