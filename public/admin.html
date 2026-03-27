@@ -191,7 +191,7 @@
                             <button class="dropbtn" onclick="toggleMenu(event, this)"><i class="fas fa-cog"></i> GESTIONAR</button>
                             <div class="dropdown-content">
                                 <button onclick='cobrarMes("${s.dni}")'><i class="fas fa-money-bill-wave"></i> Cobrar Mes</button>
-                                <button onclick='alert("Editando...")'><i class="fas fa-edit"></i> Editar Datos</button>
+                                <button onclick='prepararEdicion(${JSON.stringify(s)})'><i class="fas fa-edit"></i> Editar Datos</button>
                                 <div style="border-top: 1px solid #333; margin: 5px 0;"></div>
                                 <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;"><i class="fas fa-trash"></i> Eliminar</button>
                             </div>
@@ -270,6 +270,12 @@ window.onclick = function(event) {
         });
     }
 }
+function prepararEdicion(socio) {
+            // Guardamos los datos en una variable global para usarlos en la otra pestaña
+            window.socioAEditar = socio; 
+            // Cambiamos a la pestaña de registro
+            switchTab('socios_registro');
+        }
         window.onload = () => switchTab('socios_lista');
     </script>
 </body>
