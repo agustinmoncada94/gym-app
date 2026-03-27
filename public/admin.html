@@ -130,24 +130,34 @@
         window.socioAEditar = null;
 
         // --- NAVEGACIÓN ---
-        async function switchTab(tabName) {
-            const container = document.getElementById('view-container');
-            try {
-                const response = await fetch(`${tabName}.html`);
-                const html = await response.text();
-                container.innerHTML = html;
+       async function switchTab(tabName) {
+    const container = document.getElementById('view-container');
+    try {
+        const response = await fetch(`${tabName}.html`);
+        const html = await response.text();
+        container.innerHTML = html;
 
-                document.querySelectorAll('.nav-link').forEach(link => {
-                    link.classList.remove('active');
-                    if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
-                });
+        // Actualizar links activos en el sidebar
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+            if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
+        });
 
-                // Carga de datos según la pestaña
-                if (tabName === 'socios_lista') {
-                    await cargarSocios(); 
-                }
-            } catch (e) { console.error("Error al cargar pestaña:", e); }
+        // CASO 1: Lista de socios
+        if (tabName === 'socios_lista') {
+            await cargarSocios(); 
         }
+        
+        // CASO 2: Registro (Aquí es donde ocurre la magia de la edición)
+        if (tabName === 'socios_registro') {
+            // Si existe alguien para editar, llenamos los campos
+            if (window.socioAEditar) {
+                rellenarFormularioEdicion(window.socioAEditar);
+            }
+        }
+
+    } catch (e) { console.error("Error al cambiar pestaña:", e); }
+}
 
         // --- LÓGICA DE SOCIOS ---
         async function cargarSocios() {
@@ -263,7 +273,36 @@
             document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
             btn.nextElementSibling.classList.toggle('show');
         }
+function rellenarFormularioEdicion(socio) {
+    // IMPORTANTE: Asegúrate de que los IDs (nombre, dni, plan, etc) 
+    // coincidan con los que pusiste en socios_registro.html
+    const campos = {
+        'nombre': socio.nombre,
+        'dni': socio.dni,
+        'telefono': socio.telefono,
+        'plan': socio.plan,
+        'fechaInicio': socio.fechaInicio ? socio.fechaInicio.split('T')[0] : '' 
+    };
 
+    for (let id in campos) {
+        const input = document.getElementById(id);
+        if (input) {
+            input.value = campos[id];
+        }
+    }
+
+    // Cambiamos el título del formulario para que el usuario sepa que está editando
+    const tituloForm = document.querySelector('.card h1');
+    if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
+
+    // Opcional: Bloquear el DNI para que no lo editen (ya que es la llave única)
+    const inputDni = document.getElementById('dni');
+    if (inputDni) inputDni.readOnly = true;
+
+    // Limpiamos la variable global después de usarla para que el 
+    // próximo registro nuevo empiece vacío
+    window.socioAEditar = null;
+}
         window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
         window.onload = () => switchTab('socios_lista');
     </script>
