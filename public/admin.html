@@ -81,7 +81,11 @@
         .dropbtn:hover { background: #222; border-color: var(--primary-red); }
         .dropbtn i { color: var(--primary-red); font-size: 0.9rem; }
 
-        .dropdown { position: relative; display: inline-block; }
+        .dropdown { 
+            position: relative; 
+            display: inline-block; /* Esto permite que el centrado del TD funcione bien */
+            vertical-align: middle;
+        }
         .dropdown-content {
             display: none; position: absolute; right: 0; top: 40px; 
             background: #1a1a1a; min-width: 160px; border: 1px solid #444; 
