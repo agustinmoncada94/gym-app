@@ -204,26 +204,57 @@
         function adjuntarEventoRegistro() {
             const form = document.getElementById('registroForm');
             if(!form) return;
+
+            // --- NUEVO: Si venimos de "Editar", llenamos los campos ---
+            if (window.socioAEditar) {
+                const s = window.socioAEditar;
+                document.getElementById('nombre').value = s.nombre;
+                document.getElementById('dni').value = s.dni;
+                document.getElementById('dni').readOnly = true; // El DNI no se debería cambiar
+                document.getElementById('nacimiento').value = s.nacimiento || '';
+                document.getElementById('telefono').value = s.telefono || '';
+                document.getElementById('plan').value = s.plan || 'Musculación';
+                
+                // Cambiamos el texto del botón
+                form.querySelector('button').innerText = "ACTUALIZAR DATOS";
+            }
+
             form.onsubmit = async (e) => {
                 e.preventDefault();
                 const btn = form.querySelector('button');
-                btn.innerText = "GUARDANDO..."; btn.disabled = true;
+                btn.innerText = "GUARDANDO...";
+                btn.disabled = true;
+
                 const datos = {
                     nombre: document.getElementById('nombre').value,
                     dni: document.getElementById('dni').value,
                     nacimiento: document.getElementById('nacimiento').value,
                     telefono: document.getElementById('telefono').value,
                     plan: document.getElementById('plan').value,
-                    fechaInicio: document.getElementById('fechaInicioManual').value || new Date().toISOString()
+                    fechaInicio: window.socioAEditar ? window.socioAEditar.fechaInicio : (document.getElementById('fechaInicioManual').value || new Date().toISOString())
                 };
+
                 try {
-                    const res = await fetch('/api/registrar', { 
-                        method: 'POST', 
+                    // Si hay socioAEditar, usamos el método PUT (actualizar), sino POST (nuevo)
+                    const url = window.socioAEditar ? `/api/socios/${datos.dni}` : '/api/registrar';
+                    const metodo = window.socioAEditar ? 'PUT' : 'POST';
+
+                    const res = await fetch(url, { 
+                        method: metodo, 
                         headers: {'Content-Type': 'application/json'}, 
                         body: JSON.stringify(datos) 
                     });
-                    if(res.ok) { alert("Socio guardado correctamente"); switchTab('socios_lista'); }
-                } catch (error) { alert("Error al guardar"); btn.innerText = "DAR DE ALTA"; btn.disabled = false; }
+
+                    if(res.ok) {
+                        alert(window.socioAEditar ? "Datos actualizados" : "Socio guardado");
+                        window.socioAEditar = null; // Limpiamos la memoria después de editar
+                        switchTab('socios_lista'); 
+                    }
+                } catch (error) {
+                    alert("Error al procesar");
+                    btn.innerText = "GUARDAR";
+                    btn.disabled = false;
+                }
             };
         }
 async function cobrarMes(dni) {
