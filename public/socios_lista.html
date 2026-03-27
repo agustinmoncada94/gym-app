@@ -7,9 +7,7 @@
     <div class="search-container">
         <div class="search-wrapper">
             <i class="fas fa-search"></i>
-            <input type="text" id="busqueda" class="admin-input" 
-                   placeholder="Buscar por nombre o DNI..." 
-                   onkeyup="filtrarSocios()">
+            <input type="text" id="busqueda" class="admin-input" placeholder="Buscar por nombre o DNI..." onkeyup="filtrarSocios()">
         </div>
 
         <div class="filter-wrapper">
@@ -25,8 +23,8 @@
     </div>
 
     <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
-        <div style="background: rgba(255, 51, 51, 0.1); border: 1px solid var(--primary-red); padding: 8px 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-users" style="color: var(--primary-red);"></i>
+        <div style="background: rgba(255, 51, 51, 0.1); border: 1px solid var(--primary-red); padding: 8px 15px; border-radius: 8px;">
+            <i class="fas fa-users" style="color: var(--primary-red); margin-right: 10px;"></i>
             <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: bold;">
                 SOCIOS ENCONTRADOS: <span id="contador-socios" style="color: white; font-size: 1.1rem;">0</span>
             </span>
@@ -44,7 +42,8 @@
                     <th style="width: 20%; text-align: center;">Acciones</th>
                 </tr>
             </thead>
-            <tbody id="lista"></tbody>
+            <tbody id="lista">
+                </tbody>
         </table>
     </div>
 </div>
