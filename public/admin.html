@@ -23,50 +23,29 @@
             background: var(--bg-dark); color: var(--text-main); 
         }
 
-        /* SIDEBAR */
+        /* --- SIDEBAR --- */
         .sidebar { 
             width: 250px; height: 100vh; 
             background: var(--card-dark); border-right: 1px solid #1a1a1a; 
             position: fixed; display: flex; flex-direction: column; z-index: 1000;
         }
-        /* --- 1. TITULO EN EL SIDEBAR (DEBAJO DEL LOGO) --- */
-.sidebar-header h1 {
-    font-size: 1.6rem; /* Más grande */
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    margin: 15px 0 0 0;
-    
-    /* EFECTO PLATEADO PREMIUM */
-    background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    
-    /* Sombra para dar relieve */
-    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
-    font-weight: 900;
-}
-
-/* --- 2. TITULO PRINCIPAL DE LA LISTA (LISTA DE SOCIOS) --- */
-.main-content h1 {
-    font-size: 2.8rem; /* Bastante más grande y llamativo */
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    margin: 0;
-    font-weight: 900;
-
-    /* EFECTO PLATEADO PREMIUM CON DEGRADADO */
-    background: linear-gradient(180deg, #ffffff 10%, #aaaaaa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    
-    /* Sombra profunda para destacar sobre el fondo negro */
-    filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.8));
-}
+        
+        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1a1a1a; }
         .sidebar-logo { max-width: 180px; height: auto; }
+
+        /* TÍTULO PLATEADO EN SIDEBAR */
+        .sidebar-header h1 {
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 15px 0 0 0;
+            background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+            font-weight: 900;
+        }
 
         .nav-link { 
             padding: 15px 25px; color: var(--text-muted); text-decoration: none; 
@@ -74,29 +53,45 @@
         }
         .nav-link.active { color: var(--text-main); background: #1a1a1a; border-right: 3px solid var(--primary-red); }
 
+        /* --- CONTENIDO PRINCIPAL --- */
         .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
 
-        /* DISEÑO DE BUSCADORES ESTÉTICOS (Se usan en socios_lista.html) */
+        /* TÍTULO PLATEADO PRINCIPAL */
+        .main-content h1 {
+            font-size: 2.8rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin: 0;
+            font-weight: 900;
+            background: linear-gradient(180deg, #ffffff 10%, #aaaaaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.8));
+        }
+
+        /* ESTILOS PARA COMPONENTES DE LISTA (Se inyectan desde socios_lista.html) */
         .search-container {
             display: flex; gap: 15px; margin-bottom: 30px; align-items: center;
             background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 15px; border: 1px solid #222;
         }
         .search-wrapper { position: relative; flex: 2; }
         .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-red); }
+        
         .admin-input { 
             width: 100%; padding: 12px 15px 12px 45px; border-radius: 10px; border: 1px solid #333; 
             background: var(--input-bg); color: var(--text-main); font-size: 0.95rem; transition: 0.3s;
+            box-sizing: border-box;
         }
         .admin-input:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 15px rgba(255, 51, 51, 0.1); }
         
-        /* TABLA */
         .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; }
         .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .tabla-socios th { padding: 18px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid #1a1a1a; }
+        .tabla-socios th { padding: 18px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid #1a1a1a; text-align: center; }
         .tabla-socios td { padding: 18px; text-align: center; border-bottom: 1px solid #1a1a1a; }
 
         /* PILLS DE ESTADO */
-        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; border: 1px solid transparent; }
+        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; border: 1px solid transparent; text-transform: uppercase; }
         .status-ok { background: rgba(0, 255, 102, 0.1); color: #00ff66; border-color: #00ff66; }
         .status-vencido { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
         .status-por-vencer { background: rgba(255, 165, 0, 0.1); color: #ffa500; border-color: #ffa500; }
@@ -105,7 +100,8 @@
 
         /* DROPDOWN GESTIONAR */
         .dropdown { position: relative; display: inline-block; }
-        .dropbtn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
+        .dropbtn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.3s; }
+        .dropbtn:hover { border-color: var(--primary-red); }
         .dropdown-content { display: none; position: absolute; right: 0; background: #1a1a1a; min-width: 170px; border: 1px solid #444; z-index: 9999; border-radius: 8px; box-shadow: 0 10px 30px black; }
         .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #222; }
         .dropdown-content button:hover { background: #222; color: var(--primary-red); }
@@ -115,7 +111,10 @@
 <body>
 
     <div class="sidebar">
-        <div class="sidebar-header"><img src="img/logo.png" alt="DECLON" class="sidebar-logo"></div>
+        <div class="sidebar-header">
+            <img src="img/logo.png" alt="DECLON" class="sidebar-logo">
+            <h1>ADMIN</h1>
+        </div>
         <nav>
             <div class="nav-link active" onclick="switchTab('socios_lista')"><i class="fas fa-list"></i> Ver Socios</div>
             <div class="nav-link" onclick="switchTab('socios_registro')"><i class="fas fa-user-plus"></i> Registrar Socio</div>
@@ -130,6 +129,7 @@
         let sociosGlobal = [];
         window.socioAEditar = null;
 
+        // --- NAVEGACIÓN ---
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
             try {
@@ -142,15 +142,18 @@
                     if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
                 });
 
-                if (tabName === 'socios_lista') cargarSocios();
-            } catch (e) { console.error(e); }
+                // Carga de datos según la pestaña
+                if (tabName === 'socios_lista') {
+                    await cargarSocios(); 
+                }
+            } catch (e) { console.error("Error al cargar pestaña:", e); }
         }
 
+        // --- LÓGICA DE SOCIOS ---
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
                 sociosGlobal = await r.json();
-                // Importante: Ejecutar filtrarSocios para cargar la tabla y el contador al inicio
                 filtrarSocios(); 
             } catch (e) { console.error("Error al cargar socios:", e); }
         }
@@ -179,7 +182,7 @@
                 return `
                 <tr>
                     <td><b>${s.nombre.toUpperCase()}</b><br><small style="color:var(--text-muted)">${s.dni}</small></td>
-                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'Musculacion'}</span></td>
+                    <td><span style="color:var(--primary-red); font-weight:bold;">${s.plan || 'Musculación'}</span></td>
                     <td><small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br><b>Vence: ${hasta.toLocaleDateString('es-AR')}</b></td>
                     <td><span class="status-pill ${estadoClase}">${estadoTexto}</span></td>
                     <td>
@@ -228,7 +231,7 @@
             if (contadorLabel) contadorLabel.innerText = filtrados.length;
         }
 
-        // --- ACCIONES (COBRAR, BORRAR, EDITAR) ---
+        // --- ACCIONES ---
         async function cobrarMes(dni) {
             if(!confirm("¿Confirmar pago y renovar 30 días?")) return;
             try {
@@ -254,6 +257,7 @@
             switchTab('socios_registro');
         }
 
+        // --- UTILIDADES ---
         function toggleMenu(event, btn) {
             event.stopPropagation();
             document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
