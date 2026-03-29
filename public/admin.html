@@ -1,145 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DECLON Admin - Panel de Control</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { 
-            --primary-red: #ff3333;   
-            --bg-dark: #0a0a0a;       
-            --card-dark: #121212;     
-            --text-main: #ffffff;     
-            --text-muted: #888888;    
-            --status-green: #00ff66;
-            --status-gray: #e0e0e0;
-            --input-bg: #1a1a1a;
-        }
-
-        body { 
-            margin: 0; display: flex; 
-            font-family: 'Segoe UI', sans-serif; 
-            background: var(--bg-dark); color: var(--text-main); 
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar { 
-            width: 250px; height: 100vh; 
-            background: var(--card-dark); border-right: 1px solid #1a1a1a; 
-            position: fixed; display: flex; flex-direction: column; z-index: 1000;
-        }
-        
-        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1a1a1a; }
-        .sidebar-logo { max-width: 180px; height: auto; }
-
-        .sidebar-header h1 {
-            font-size: 1.6rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin: 15px 0 0 0;
-            background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
-            font-weight: 900;
-        }
-
-        .nav-link { 
-            padding: 15px 25px; color: var(--text-muted); text-decoration: none; 
-            display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; 
-        }
-        .nav-link.active { color: var(--text-main); background: #1a1a1a; border-right: 3px solid var(--primary-red); }
-
-        /* --- CONTENIDO PRINCIPAL --- */
-        .main-content { margin-left: 250px; flex: 1; padding: 30px; min-height: 100vh; }
-
-        .main-content h1 {
-            font-size: 2.8rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            margin: 0;
-            font-weight: 900;
-            background: linear-gradient(180deg, #ffffff 10%, #aaaaaa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.8));
-        }
-
-        /* --- INPUTS Y FORMULARIOS --- */
-        .admin-input {
-            width: 100%; 
-            padding: 12px 15px !important; 
-            border-radius: 10px; 
-            border: 1px solid #333; 
-            background: var(--input-bg); 
-            color: var(--text-main); 
-            font-size: 0.95rem; 
-            transition: 0.3s;
-            text-align: left !important; /* Alineación a la izquierda */
-            box-sizing: border-box;
-        }
-        .admin-input:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 15px rgba(255, 51, 51, 0.1); }
-
-        /* --- BOTONES DE ENVÍO --- */
-        .btn-submit {
-            background: #28a745;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 15px;
-        }
-
-        .btn-edit-mode {
-            background: linear-gradient(135deg, #ff3333 0%, #990000 100%) !important;
-            box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
-        /* --- TABLA Y ESTADOS --- */
-        .card { background: var(--card-dark); padding: 25px; border-radius: 12px; border: 1px solid #222; }
-        .tabla-socios { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .tabla-socios th { padding: 18px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid #1a1a1a; }
-        .tabla-socios td { padding: 18px; text-align: center; border-bottom: 1px solid #1a1a1a; }
-
-        .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; border: 1px solid transparent; text-transform: uppercase; }
-        .status-ok { background: rgba(0, 255, 102, 0.1); color: #00ff66; border-color: #00ff66; }
-        .status-vencido { background: rgba(255, 51, 51, 0.1); color: #ff3333; border-color: #ff3333; }
-        .status-por-vencer { background: rgba(255, 165, 0, 0.1); color: #ffa500; border-color: #ffa500; }
-        .status-suspendido { background: rgba(128, 128, 128, 0.1); color: #e0e0e0; border-color: #e0e0e0; }
-        .status-prueba { background: rgba(255, 255, 153, 0.1); color: #ffff99; border-color: #ffff99; }
-
-        .dropdown { position: relative; display: inline-block; }
-        .dropbtn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
-        .dropdown-content { display: none; position: absolute; right: 0; background: #1a1a1a; min-width: 170px; border: 1px solid #444; z-index: 9999; border-radius: 8px; box-shadow: 0 10px 30px black; }
-        .dropdown-content button { color: white; padding: 12px; width: 100%; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #222; }
-        .show { display: block !important; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
+    <div class="admin-shell">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-wrap">
+                    <img src="img/logo.png" alt="DECLON" class="sidebar-logo" />
+                </div>
+                <div>
+                    <p class="sidebar-kicker">Panel administrativo</p>
+                    <h1>DECLON ADMIN</h1>
+                </div>
+            </div>
 
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <img src="img/logo.png" alt="DECLON" class="sidebar-logo">
-            <h1>ADMIN</h1>
-        </div>
-        <nav>
-            <div class="nav-link active" onclick="switchTab('socios_lista')"><i class="fas fa-list"></i> Ver Socios</div>
-            <div class="nav-link" onclick="switchTab('socios_registro')"><i class="fas fa-user-plus"></i> Registrar Socio</div>
-            <div class="nav-link" onclick="switchTab('equipos')"><i class="fas fa-tools"></i> Equipos</div>
-            <div class="nav-link" onclick="switchTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
-        </nav>
+            <nav class="sidebar-nav">
+                <button class="nav-link active" onclick="switchTab('socios_lista')">
+                    <i class="fas fa-list"></i>
+                    <span>Ver Socios</span>
+                </button>
+
+                <button class="nav-link" onclick="switchTab('socios_registro')">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Registrar Socio</span>
+                </button>
+
+                <button class="nav-link" onclick="switchTab('equipos')">
+                    <i class="fas fa-dumbbell"></i>
+                    <span>Equipamiento</span>
+                </button>
+
+                <button class="nav-link" onclick="switchTab('dashboard')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard KPI</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-box">
+                    <span class="status-dot"></span>
+                    <span>Sistema activo</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="topbar-kicker">Gestión integral del gimnasio</p>
+                    <h2>Panel de Control</h2>
+                </div>
+                <div class="topbar-actions">
+                    <button class="ghost-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="ghost-btn">
+                        <i class="fas fa-user-shield"></i>
+                    </button>
+                </div>
+            </header>
+
+            <section class="hero-card">
+                <div>
+                    <p class="hero-label">Resumen</p>
+                    <h3>Administrá socios, pagos, equipos y métricas desde un solo lugar</h3>
+                    <p class="hero-text">
+                        Un entorno más moderno, claro y profesional para operar el gimnasio con rapidez.
+                    </p>
+                </div>
+                <div class="hero-badge">
+                    <i class="fas fa-fire"></i>
+                    <span>Modo Admin</span>
+                </div>
+            </section>
+
+            <section id="view-container"></section>
+        </main>
     </div>
-
-    <main class="main-content" id="view-container"></main>
 
     <script>
         let sociosGlobal = [];
@@ -154,141 +97,138 @@
 
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.classList.remove('active');
-                    if(link.getAttribute('onclick').includes(tabName)) link.classList.add('active');
+                    if (link.getAttribute('onclick').includes(tabName)) {
+                        link.classList.add('active');
+                    }
                 });
 
                 if (tabName === 'socios_lista') await cargarSocios();
-                
+
                 if (tabName === 'socios_registro' && window.socioAEditar) {
                     rellenarFormularioEdicion(window.socioAEditar);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
                 sociosGlobal = await r.json();
-                filtrarSocios(); 
-            } catch (e) { console.error(e); }
+                filtrarSocios();
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function rellenarFormularioEdicion(socio) {
-    // 1. Alinear y formatear fechas correctas
-    // CORRECCIÓN PUNTO 4: Determinar la fecha inicial combinando las dos lógica (inicio o pago)
-    // para que la Adri Debernardi que es de Prueba traiga su fecha de registro.
-    const initialDate = socio.fechaInicio || socio.fechaPago;
-    const formattedInitialDate = initialDate ? initialDate.split('T')[0] : '';
+            const initialDate = socio.fechaInicio || socio.fechaPago;
+            const formattedInitialDate = initialDate ? initialDate.split('T')[0] : '';
 
-    const campos = {
-        'nombre': socio.nombre,
-        'dni': socio.dni,
-        'telefono': socio.telefono,
-        'plan': socio.plan,
-        // CORRECCIÓN PUNTO 2: Agregamos el campo de nacimiento que faltaba
-        'nacimiento': socio.nacimiento ? socio.nacimiento.split('T')[0] : '', 
-        // CORRECCIÓN PUNTO 3: Agregamos el campo del estado actual
-        'estado': socio.estado,
-        'fechaInicio': formattedInitialDate // PUNTO 4: USANDO LÓGICA DE FECHA INICIO/PAGO
-    };
+            const campos = {
+                nombre: socio.nombre,
+                dni: socio.dni,
+                telefono: socio.telefono,
+                plan: socio.plan,
+                nacimiento: socio.nacimiento ? socio.nacimiento.split('T')[0] : '',
+                estado: socio.estado,
+                fechaInicio: formattedInitialDate
+            };
 
-    // Rellenar los campos
-    for (let id in campos) {
-        const input = document.getElementById(id);
-        if (input) {
-            input.value = campos[id];
-        }
-    }
+            for (let id in campos) {
+                const input = document.getElementById(id);
+                if (input) input.value = campos[id];
+            }
 
-    // CORRECCIÓN PUNTO 1: ASEGURARNOS DE QUE EL DNI SEA EDITABLE.
-    // Buscamos el DNI y forzamos su estado editable para que no lo bloquee.
-    const inputDni = document.getElementById('dni');
-    if (inputDni) {
-        inputDni.readOnly = false; // Surgical fix here: aseguramos que NO sea readonly.
-    }
+            const inputDni = document.getElementById('dni');
+            if (inputDni) inputDni.readOnly = false;
 
-    // --- MANTENEMOS ESTÉTICA QUE SÍ FUNCIONABA ---
-    // 1. Cambiar el título a "EDITAR SOCIO"
-    const tituloForm = document.querySelector('.card h1');
-    if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
+            const tituloForm = document.querySelector('.card h1');
+            if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
 
-    // 2. Cambiar texto del botón a "TERMINAR EDICIÓN" y mantener su clase especial
-    const btnAlta = document.querySelector('button[type="submit"]') || document.querySelector('.btn-submit'); 
-    if (btnAlta) {
-        btnAlta.innerText = "TERMINAR EDICIÓN";
-        // Mantener su clase de diseño premium para que combine con el resto.
-        btnAlta.classList.add('btn-edit-mode'); 
-    }
+            const btnAlta = document.querySelector('button[type="submit"]') || document.querySelector('.btn-submit');
+            if (btnAlta) {
+                btnAlta.innerText = "TERMINAR EDICIÓN";
+                btnAlta.classList.add('btn-edit-mode');
+            }
 
-    // Limpiamos la variable global
-    window.socioAEditar = null;
-}
-
-       function renderizarTabla(lista) {
-    const tbody = document.getElementById('lista');
-    if(!tbody) return;
-    const hoy = new Date(); 
-    hoy.setHours(0,0,0,0);
-
-    tbody.innerHTML = lista.map(s => {
-        // Lógica de fechas
-        const desde = new Date(s.fechaInicio || s.fechaPago);
-        const hasta = new Date(desde); 
-        hasta.setDate(desde.getDate() + 30);
-        
-        const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
-        const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
-
-        // Lógica de Estados
-        let estadoTexto = "AL DÍA", estadoClase = "status-ok";
-        if (s.estado === "Suspendido") { 
-            estadoTexto = "SUSPENDIDO"; estadoClase = "status-suspendido"; 
-        } else if (s.plan === "Semana de Prueba") {
-            if (diasDesdeReg <= 7) { estadoTexto = "PRUEBA"; estadoClase = "status-prueba"; }
-            else { estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; }
-        } else if (hoy > hasta) { 
-            estadoTexto = "VENCIDO"; estadoClase = "status-vencido"; 
-        } else if (diffDays <= 5 && diffDays >= 0) { 
-            estadoTexto = "POR VENCER"; estadoClase = "status-por-vencer"; 
+            window.socioAEditar = null;
         }
 
-        return `
-        <tr>
-            <td style="text-align: left; padding-left: 20px;">
-                <b style="font-size: 1.1rem;">${s.nombre.toUpperCase()}</b><br>
-                <small style="color:var(--text-muted); letter-spacing: 1px;">${s.dni}</small>
-            </td>
-            <td>
-                <span style="color:var(--primary-red); font-weight:bold; text-transform: uppercase;">${s.plan || 'Musculación'}</span>
-            </td>
-            <td>
-                <small style="color:var(--text-muted)">Desde: ${desde.toLocaleDateString('es-AR')}</small><br>
-                <b style="color: #eee;">Vence: ${hasta.toLocaleDateString('es-AR')}</b>
-            </td>
-            <td>
-                <span class="status-pill ${estadoClase}">${estadoTexto}</span>
-            </td>
-            <td>
-                <div class="dropdown">
-                    <button class="dropbtn" onclick="toggleMenu(event, this)">
-                        <i class="fas fa-cog"></i> GESTIONAR
-                    </button>
-                    <div class="dropdown-content">
-                        <button onclick='cobrarMes("${s.dni}")'>
-                            <i class="fas fa-money-bill-wave" style="color: #00ff66;"></i> Cobrar Mes
-                        </button>
-                        <button onclick='prepararEdicion(${JSON.stringify(s)})'>
-                            <i class="fas fa-edit" style="color: #aaa;"></i> Editar Datos
-                        </button>
-                        <button onclick="borrarSocio('${s.dni}')" style="color: #ff4444;">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </div>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-}
+        function renderizarTabla(lista) {
+            const tbody = document.getElementById('lista');
+            if (!tbody) return;
+
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            tbody.innerHTML = lista.map(s => {
+                const desde = new Date(s.fechaInicio || s.fechaPago);
+                const hasta = new Date(desde);
+                hasta.setDate(desde.getDate() + 30);
+
+                const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
+
+                let estadoTexto = "AL DÍA", estadoClase = "status-ok";
+
+                if (s.estado === "Suspendido") {
+                    estadoTexto = "SUSPENDIDO";
+                    estadoClase = "status-suspendido";
+                } else if (s.plan === "Semana de Prueba") {
+                    if (diasDesdeReg <= 7) {
+                        estadoTexto = "PRUEBA";
+                        estadoClase = "status-prueba";
+                    } else {
+                        estadoTexto = "VENCIDO";
+                        estadoClase = "status-vencido";
+                    }
+                } else if (hoy > hasta) {
+                    estadoTexto = "VENCIDO";
+                    estadoClase = "status-vencido";
+                } else if (diffDays <= 5 && diffDays >= 0) {
+                    estadoTexto = "POR VENCER";
+                    estadoClase = "status-por-vencer";
+                }
+
+                return `
+                <tr>
+                    <td class="td-socio">
+                        <b class="nombre-socio">${s.nombre.toUpperCase()}</b>
+                        <small class="dni-socio">${s.dni}</small>
+                    </td>
+                    <td>
+                        <span class="plan-pill">${s.plan || 'Musculación'}</span>
+                    </td>
+                    <td>
+                        <small class="fecha-desde">Desde: ${desde.toLocaleDateString('es-AR')}</small>
+                        <b class="fecha-hasta">Vence: ${hasta.toLocaleDateString('es-AR')}</b>
+                    </td>
+                    <td>
+                        <span class="status-pill ${estadoClase}">${estadoTexto}</span>
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="dropbtn" onclick="toggleMenu(event, this)">
+                                <i class="fas fa-cog"></i> Gestionar
+                            </button>
+                            <div class="dropdown-content">
+                                <button onclick='cobrarMes("${s.dni}")'>
+                                    <i class="fas fa-money-bill-wave"></i> Cobrar Mes
+                                </button>
+                                <button onclick='prepararEdicion(${JSON.stringify(s)})'>
+                                    <i class="fas fa-edit"></i> Editar Datos
+                                </button>
+                                <button onclick="borrarSocio('${s.dni}')" class="danger-action">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
 
         function filtrarSocios() {
             const inputBusqueda = document.getElementById('busqueda');
@@ -296,14 +236,16 @@
             if (!inputBusqueda) return;
 
             const busqueda = inputBusqueda.value.toLowerCase();
-            const filtrados = sociosGlobal.filter(s => s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda));
+            const filtrados = sociosGlobal.filter(
+                s => s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda)
+            );
 
             renderizarTabla(filtrados);
             if (contadorLabel) contadorLabel.innerText = filtrados.length;
         }
 
         function prepararEdicion(socio) {
-            window.socioAEditar = socio; 
+            window.socioAEditar = socio;
             switchTab('socios_registro');
         }
 
@@ -313,7 +255,10 @@
             btn.nextElementSibling.classList.toggle('show');
         }
 
-        window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
+        window.onclick = () => {
+            document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
+        };
+
         window.onload = () => switchTab('socios_lista');
     </script>
 </body>
