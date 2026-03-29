@@ -54,8 +54,9 @@ app.post('/api/socios/cobrar', async (req, res) => {
         if (datosSocioJSON) {
             const socio = JSON.parse(datosSocioJSON);
             
-            // 2. Actualizamos solo la fecha de inicio
+            // 2. Actualizamos la fecha de inicio y el estado
             socio.fechaInicio = nuevaFecha;
+            socio.estado = 'Activo';
             
             // 3. Guardamos de nuevo en Redis
             await client.set(`socio:${dni}`, JSON.stringify(socio));

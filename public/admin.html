@@ -298,6 +298,28 @@
             if (contadorLabel) contadorLabel.innerText = filtrados.length;
         }
 
+        async function cobrarMes(dni) {
+            if (!confirm('¿Confirmar cobro del mes para este socio?')) return;
+
+            const nuevaFecha = new Date().toISOString();
+
+            try {
+                const res = await fetch('/api/socios/cobrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dni, nuevaFecha })
+                });
+                const resultado = await res.json();
+                if (resultado.success) {
+                    await cargarSocios();
+                } else {
+                    alert('Error al cobrar: ' + (resultado.mensaje || resultado.error || 'desconocido'));
+                }
+            } catch (err) {
+                alert('Error de conexión: ' + err.message);
+            }
+        }
+
         function prepararEdicion(socio) {
             window.socioAEditar = socio;
             switchTab('socios_registro');
