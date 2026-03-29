@@ -87,6 +87,8 @@
     <script>
         let sociosGlobal = [];
         window.socioAEditar = null;
+        window.modoEdicion = false;
+        window.dniEditando = null;
 
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
@@ -104,8 +106,58 @@
 
                 if (tabName === 'socios_lista') await cargarSocios();
 
-                if (tabName === 'socios_registro' && window.socioAEditar) {
-                    rellenarFormularioEdicion(window.socioAEditar);
+                if (tabName === 'socios_registro') {
+                    if (window.socioAEditar) {
+                        rellenarFormularioEdicion(window.socioAEditar);
+                    } else {
+                        window.modoEdicion = false;
+                        window.dniEditando = null;
+                    }
+
+                    const form = document.getElementById('registroForm');
+                    if (form) {
+                        form.addEventListener('submit', async function (e) {
+                            e.preventDefault();
+                            const datos = {
+                                nombre: document.getElementById('nombre').value.trim(),
+                                dni: document.getElementById('dni').value.trim(),
+                                nacimiento: document.getElementById('nacimiento').value,
+                                telefono: document.getElementById('telefono').value.trim(),
+                                plan: document.getElementById('plan').value,
+                                estado: document.getElementById('estado').value,
+                                fechaInicio: document.getElementById('fechaInicio').value || new Date().toISOString()
+                            };
+
+                            try {
+                                let res;
+                                if (window.modoEdicion && window.dniEditando) {
+                                    res = await fetch(`/api/socios/${window.dniEditando}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(datos)
+                                    });
+                                } else {
+                                    res = await fetch('/api/registrar', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(datos)
+                                    });
+                                }
+
+                                const resultado = await res.json();
+                                if (resultado.success) {
+                                    window.modoEdicion = false;
+                                    window.dniEditando = null;
+                                    alert(window.modoEdicion ? 'Socio actualizado correctamente.' : 'Socio guardado correctamente.');
+                                    switchTab('socios_lista');
+                                } else {
+                                    alert('Error al guardar: ' + (resultado.error || 'desconocido'));
+                                }
+                            } catch (err) {
+                                alert('Error de conexión: ' + err.message);
+                            }
+                        });
+                    }
                 }
             } catch (e) {
                 console.error(e);
@@ -153,6 +205,8 @@
                 btnAlta.classList.add('btn-edit-mode');
             }
 
+            window.modoEdicion = true;
+            window.dniEditando = socio.dni;
             window.socioAEditar = null;
         }
 
