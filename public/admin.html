@@ -230,17 +230,14 @@
                 if (s.estado === "Suspendido") {
                     estadoTexto = "SUSPENDIDO";
                     estadoClase = "status-suspendido";
-                } else if (s.plan === "Semana de Prueba") {
-                    if (diasDesdeReg <= 7) {
-                        estadoTexto = "PRUEBA";
-                        estadoClase = "status-prueba";
-                    } else {
-                        estadoTexto = "VENCIDO";
-                        estadoClase = "status-vencido";
-                    }
                 } else if (hoy > hasta) {
+                    // Venció el período de 30 días — siempre VENCIDO sin importar el plan
                     estadoTexto = "VENCIDO";
                     estadoClase = "status-vencido";
+                } else if (s.plan === "Semana de Prueba" && diffDays > 23) {
+                    // Dentro de los primeros 7 días del período de prueba
+                    estadoTexto = "PRUEBA";
+                    estadoClase = "status-prueba";
                 } else if (diffDays <= 5 && diffDays >= 0) {
                     estadoTexto = "POR VENCER";
                     estadoClase = "status-por-vencer";
