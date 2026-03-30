@@ -82,29 +82,30 @@ app.put('/api/socios/:dni', async (req, res) => {
     }
 });
 
-// ELIMINAR SOCIO CORREGIDO
+// ELIMINAR SOCIO
 app.delete('/api/socios/:dni', async (req, res) => {
     try {
         await conectar();
-        // Limpiamos el DNI de cualquier espacio invisible
-        const dni = String(req.params.dni).trim(); 
-        const clave = `socio:${dni}`;
-        
-        console.log("Intentando borrar clave:", clave); // Esto saldrá en tus logs de Vercel
-        
-        const resultado = await client.del(clave);
-        
+        const dniRequerido = String(req.params.dni).trim();
+
+        // Primero intentamos borrar por la clave directa
+        const resultado = await client.del(`socio:${dniRequerido}`);
         if (resultado >= 1) {
-            res.json({ success: true, mensaje: "Socio eliminado" });
-        } else {
-            // Si no lo encuentra por 'socio:DNI', intentamos borrarlo como clave directa
-            const resultado2 = await client.del(dni);
-            if(resultado2 >= 1) {
-                res.json({ success: true, mensaje: "Socio eliminado (clave directa)" });
-            } else {
-                res.status(404).json({ error: "Socio no encontrado en Redis" });
+            return res.json({ success: true, mensaje: "Socio eliminado" });
+        }
+
+        // Si no se encontró, buscamos entre todas las claves
+        // (por si la clave fue guardada con espacios u otro formato)
+        const keys = await client.keys('socio:*');
+        for (const key of keys) {
+            const data = JSON.parse(await client.get(key));
+            if (data && String(data.dni).trim() === dniRequerido) {
+                await client.del(key);
+                return res.json({ success: true, mensaje: "Socio eliminado" });
             }
         }
+
+        res.status(404).json({ error: "Socio no encontrado" });
     } catch (e) {
         console.error("Error al eliminar:", e);
         res.status(500).json({ error: "Error interno" });
