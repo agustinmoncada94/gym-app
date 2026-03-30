@@ -86,6 +86,7 @@
 
     <script>
         let sociosGlobal = [];
+        const sociosMap = new Map();
 
         // ── Carga de tabs generales ──────────────────────────────────────────
         async function switchTab(tabName) {
@@ -233,7 +234,11 @@
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
 
+            sociosMap.clear();
+
             tbody.innerHTML = lista.map(s => {
+                sociosMap.set(s.dni, s);
+
                 const desde = new Date(s.fechaInicio || s.fechaPago);
                 const hasta = new Date(desde);
                 hasta.setDate(desde.getDate() + 30);
@@ -256,7 +261,6 @@
                     estadoClase = "status-por-vencer";
                 }
 
-                const socioJson = JSON.stringify(s).replace(/'/g, "&#39;");
                 return `
                 <tr>
                     <td class="td-socio">
@@ -274,7 +278,7 @@
                         <span class="status-pill ${estadoClase}">${estadoTexto}</span>
                     </td>
                     <td>
-                        <button class="dropbtn" onclick="toggleMenu(event, '${s.dni}', ${socioJson})">
+                        <button class="dropbtn" onclick="toggleMenu(event, '${s.dni}')">
                             <i class="fas fa-cog"></i> Gestionar
                         </button>
                     </td>
@@ -316,43 +320,46 @@
             }
         }
 
-        function toggleMenu(event, dni, socio) {
+        function toggleMenu(event, dni) {
             event.stopPropagation();
 
-            let menu = document.getElementById('global-dropdown');
-            if (menu && menu.dataset.dni === String(dni) && menu.style.display !== 'none') {
+            const existing = document.getElementById('global-dropdown');
+            if (existing && existing.dataset.dni === String(dni)) {
                 cerrarMenu();
                 return;
             }
-
             cerrarMenu();
 
-            menu = document.createElement('div');
+            const socio = sociosMap.get(dni);
+            if (!socio) return;
+
+            const menu = document.createElement('div');
             menu.id = 'global-dropdown';
-            menu.dataset.dni = dni;
-            menu.innerHTML = `
-                <button onclick="cobrarMes('${dni}'); cerrarMenu()">
-                    <i class="fas fa-money-bill-wave"></i> Cobrar Mes
-                </button>
-                <button onclick="prepararEdicion(${JSON.stringify(socio).replace(/"/g, '&quot;')}); cerrarMenu()">
-                    <i class="fas fa-edit"></i> Editar Datos
-                </button>
-                <button onclick="borrarSocio('${dni}'); cerrarMenu()" class="danger-action">
-                    <i class="fas fa-trash"></i> Eliminar
-                </button>`;
+            menu.dataset.dni = String(dni);
+
+            const b1 = document.createElement('button');
+            b1.innerHTML = '<i class="fas fa-money-bill-wave"></i> Cobrar Mes';
+            b1.onclick = (e) => { e.stopPropagation(); cobrarMes(dni); cerrarMenu(); };
+
+            const b2 = document.createElement('button');
+            b2.innerHTML = '<i class="fas fa-edit"></i> Editar Datos';
+            b2.onclick = (e) => { e.stopPropagation(); prepararEdicion(socio); cerrarMenu(); };
+
+            const b3 = document.createElement('button');
+            b3.className = 'danger-action';
+            b3.innerHTML = '<i class="fas fa-trash"></i> Eliminar';
+            b3.onclick = (e) => { e.stopPropagation(); borrarSocio(dni); cerrarMenu(); };
+
+            menu.append(b1, b2, b3);
             document.body.appendChild(menu);
 
             const r = event.currentTarget.getBoundingClientRect();
-            const mW = 210, mH = menu.offsetHeight || 130;
+            const mH = menu.offsetHeight || 130;
+            const mW = 210;
             const top = (window.innerHeight - r.bottom < mH + 10) ? r.top - mH - 6 : r.bottom + 6;
             const left = Math.max(8, Math.min(r.right - mW, window.innerWidth - mW - 8));
 
-            Object.assign(menu.style, {
-                position: 'fixed',
-                top: top + 'px',
-                left: left + 'px',
-                zIndex: 99999
-            });
+            menu.style.cssText = `position:fixed; top:${top}px; left:${left}px; z-index:99999;`;
         }
 
         function cerrarMenu() {
