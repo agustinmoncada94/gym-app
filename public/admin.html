@@ -150,19 +150,26 @@
                     if (el) el.value = campos[id];
                 }
 
+                // DNI no editable y nacimiento no requerido en edición
+                const inputDni = document.getElementById('dni');
+                if (inputDni) inputDni.readOnly = true;
+                const inputNac = document.getElementById('nacimiento');
+                if (inputNac) inputNac.removeAttribute('required');
+
                 // Ajustar UI para modo edición
                 const titulo = document.querySelector('.card h1');
                 if (titulo) titulo.innerText = 'EDITAR SOCIO';
                 const btn = document.querySelector('#registroForm button[type="submit"]');
                 if (btn) { btn.innerText = 'GUARDAR CAMBIOS'; btn.classList.add('btn-edit-mode'); }
 
-                // Submit → PUT con el DNI original
+                // Submit → PUT con el DNI original (siempre, sin importar el campo del form)
                 const dniOriginal = socio.dni;
                 const form = document.getElementById('registroForm');
                 if (form) {
                     form.addEventListener('submit', async function (e) {
                         e.preventDefault();
                         const datos = leerFormulario();
+                        datos.dni = dniOriginal; // garantizar que el dni no cambie
                         await guardarSocio('PUT', `/api/socios/${dniOriginal}`, datos);
                     });
                 }
