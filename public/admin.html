@@ -256,6 +256,7 @@
                     estadoClase = "status-por-vencer";
                 }
 
+                const socioJson = JSON.stringify(s).replace(/'/g, "&#39;");
                 return `
                 <tr>
                     <td class="td-socio">
@@ -273,22 +274,9 @@
                         <span class="status-pill ${estadoClase}">${estadoTexto}</span>
                     </td>
                     <td>
-                        <div class="dropdown">
-                            <button class="dropbtn" onclick="toggleMenu(event, this)">
-                                <i class="fas fa-cog"></i> Gestionar
-                            </button>
-                            <div class="dropdown-content">
-                                <button onclick='cobrarMes("${s.dni}")'>
-                                    <i class="fas fa-money-bill-wave"></i> Cobrar Mes
-                                </button>
-                                <button onclick='prepararEdicion(${JSON.stringify(s)})'>
-                                    <i class="fas fa-edit"></i> Editar Datos
-                                </button>
-                                <button onclick="borrarSocio('${s.dni}')" class="danger-action">
-                                    <i class="fas fa-trash"></i> Eliminar
-                                </button>
-                            </div>
-                        </div>
+                        <button class="dropbtn" onclick="toggleMenu(event, '${s.dni}', ${socioJson})">
+                            <i class="fas fa-cog"></i> Gestionar
+                        </button>
                     </td>
                 </tr>`;
             }).join('');
@@ -328,35 +316,51 @@
             }
         }
 
-        function toggleMenu(event, btn) {
+        function toggleMenu(event, dni, socio) {
             event.stopPropagation();
-            const menu = btn.nextElementSibling;
-            const yaAbierto = menu.classList.contains('show');
 
-            document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
-
-            if (yaAbierto) return;
-
-            menu.classList.add('show');
-
-            const btnRect = btn.getBoundingClientRect();
-            const menuHeight = 130; // altura aprox del menú (3 botones)
-            const espacioAbajo = window.innerHeight - btnRect.bottom;
-
-            if (espacioAbajo < menuHeight + 10) {
-                // Abre hacia arriba
-                menu.style.top = (btnRect.top - menuHeight - 6) + 'px';
-            } else {
-                // Abre hacia abajo
-                menu.style.top = (btnRect.bottom + 6) + 'px';
+            let menu = document.getElementById('global-dropdown');
+            if (menu && menu.dataset.dni === String(dni) && menu.style.display !== 'none') {
+                cerrarMenu();
+                return;
             }
-            menu.style.left = 'auto';
-            menu.style.right = (window.innerWidth - btnRect.right) + 'px';
+
+            cerrarMenu();
+
+            menu = document.createElement('div');
+            menu.id = 'global-dropdown';
+            menu.dataset.dni = dni;
+            menu.innerHTML = `
+                <button onclick="cobrarMes('${dni}'); cerrarMenu()">
+                    <i class="fas fa-money-bill-wave"></i> Cobrar Mes
+                </button>
+                <button onclick="prepararEdicion(${JSON.stringify(socio).replace(/"/g, '&quot;')}); cerrarMenu()">
+                    <i class="fas fa-edit"></i> Editar Datos
+                </button>
+                <button onclick="borrarSocio('${dni}'); cerrarMenu()" class="danger-action">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>`;
+            document.body.appendChild(menu);
+
+            const r = event.currentTarget.getBoundingClientRect();
+            const mW = 210, mH = menu.offsetHeight || 130;
+            const top = (window.innerHeight - r.bottom < mH + 10) ? r.top - mH - 6 : r.bottom + 6;
+            const left = Math.max(8, Math.min(r.right - mW, window.innerWidth - mW - 8));
+
+            Object.assign(menu.style, {
+                position: 'fixed',
+                top: top + 'px',
+                left: left + 'px',
+                zIndex: 99999
+            });
         }
 
-        window.onclick = () => {
-            document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
-        };
+        function cerrarMenu() {
+            const m = document.getElementById('global-dropdown');
+            if (m) m.remove();
+        }
+
+        window.onclick = () => cerrarMenu();
 
         window.onload = () => switchTab('socios_lista');
     </script>

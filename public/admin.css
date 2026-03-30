@@ -493,19 +493,21 @@ button[type="submit"]:hover {
     transform: translateY(-1px);
 }
 
-.dropdown-content {
-    display: none;
+.dropdown-content,
+#global-dropdown {
+    display: block;
     position: fixed;
     min-width: 210px;
     background: #111821;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 14px;
     overflow: hidden;
-    z-index: 9999;
+    z-index: 99999;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
 }
 
-.dropdown-content button {
+.dropdown-content button,
+#global-dropdown button {
     width: 100%;
     border: none;
     background: transparent;
@@ -524,11 +526,13 @@ button[type="submit"]:hover {
     color: var(--primary);
 }
 
-.dropdown-content button:hover {
+.dropdown-content button:hover,
+#global-dropdown button:hover {
     background: rgba(255,255,255,0.04);
 }
 
-.dropdown-content button:last-child {
+.dropdown-content button:last-child,
+#global-dropdown button:last-child {
     border-bottom: none;
 }
 
