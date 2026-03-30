@@ -233,15 +233,20 @@
             if (!inputBusqueda) return;
 
             const busqueda = inputBusqueda.value.toLowerCase();
-            const filtrados = sociosGlobal.filter(
-                s => s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda)
-            );
+            const filtroEstado = (document.getElementById('filtroEstado')?.value || 'todos');
+            const filtroPlan  = (document.getElementById('filtroPlan')?.value  || 'todos');
 
-            renderizarTabla(filtrados);
+            const filtrados = sociosGlobal.filter(s => {
+                const coincideTexto = s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda);
+                const coincidePlan  = filtroPlan === 'todos' || (s.plan || 'Musculación') === filtroPlan;
+                return coincideTexto && coincidePlan;
+            });
+
+            renderizarTabla(filtrados, filtroEstado);
             if (contadorLabel) contadorLabel.innerText = filtrados.length;
         }
 
-        function renderizarTabla(lista) {
+        function renderizarTabla(lista, filtroEstado = 'todos') {
             const tbody = document.getElementById('lista');
             if (!tbody) return;
 
@@ -250,7 +255,9 @@
 
             sociosMap.clear();
 
-            tbody.innerHTML = lista.map(s => {
+            const filas = [];
+
+            lista.forEach(s => {
                 sociosMap.set(s.dni, s);
 
                 const desde = new Date(s.fechaInicio || s.fechaPago);
@@ -275,7 +282,10 @@
                     estadoClase = "status-por-vencer";
                 }
 
-                return `
+                // Aplicar filtro de estado
+                if (filtroEstado !== 'todos' && estadoTexto !== filtroEstado) return;
+
+                filas.push(`
                 <tr>
                     <td class="td-socio">
                         <b class="nombre-socio">${s.nombre.toUpperCase()}</b>
@@ -296,8 +306,14 @@
                             <i class="fas fa-cog"></i> Gestionar
                         </button>
                     </td>
-                </tr>`;
-            }).join('');
+                </tr>`);
+            });
+
+            tbody.innerHTML = filas.join('');
+
+            // Actualizar contador con los socios visibles
+            const contador = document.getElementById('contador-socios');
+            if (contador) contador.innerText = filas.length;
         }
 
         async function cobrarMes(dni) {
