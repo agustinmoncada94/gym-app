@@ -1,0 +1,93 @@
+<div class="detalle-wrap">
+
+    <!-- Header -->
+    <div class="detalle-header">
+        <div class="detalle-header-left">
+            <div class="detalle-avatar" id="det-avatar"></div>
+            <div>
+                <h1 class="detalle-nombre" id="det-nombre"></h1>
+                <p class="detalle-sub">DNI: <span id="det-dni"></span></p>
+                <p class="detalle-sub">Socio desde: <span id="det-desde"></span></p>
+            </div>
+        </div>
+        <button class="det-btn-volver" onclick="switchTab('socios_lista')">← Volver a la lista</button>
+    </div>
+
+    <!-- Estado + Vencimiento -->
+    <div class="detalle-badges">
+        <div class="det-badge" id="det-badge-estado">
+            <span class="det-badge-label">Estado</span>
+            <span class="det-badge-value" id="det-estado-texto"></span>
+        </div>
+        <div class="det-badge det-badge-blue">
+            <span class="det-badge-label">Próximo vencimiento</span>
+            <span class="det-badge-value" id="det-vencimiento"></span>
+        </div>
+        <div class="det-badge det-badge-neutral">
+            <span class="det-badge-label">Días restantes</span>
+            <span class="det-badge-value" id="det-dias"></span>
+        </div>
+        <div class="det-badge det-badge-neutral">
+            <span class="det-badge-label">Plan activo</span>
+            <span class="det-badge-value" id="det-plan"></span>
+        </div>
+    </div>
+
+    <!-- Grid principal -->
+    <div class="detalle-grid">
+
+        <!-- Columna izquierda -->
+        <div class="detalle-col-main">
+
+            <div class="det-card">
+                <h3 class="det-card-title">Datos personales</h3>
+                <div class="det-info-list">
+                    <div class="det-info-row"><span>Nombre completo</span><b id="det-info-nombre"></b></div>
+                    <div class="det-info-row"><span>DNI</span><b id="det-info-dni"></b></div>
+                    <div class="det-info-row"><span>Fecha de nacimiento</span><b id="det-info-nac"></b></div>
+                    <div class="det-info-row"><span>Teléfono</span><b id="det-info-tel"></b></div>
+                </div>
+            </div>
+
+            <div class="det-card">
+                <h3 class="det-card-title">Datos del gimnasio</h3>
+                <div class="det-info-list">
+                    <div class="det-info-row"><span>Plan actual</span><b id="det-info-plan"></b></div>
+                    <div class="det-info-row"><span>Fecha de alta</span><b id="det-info-alta"></b></div>
+                    <div class="det-info-row"><span>Vencimiento</span><b id="det-info-vence"></b></div>
+                    <div class="det-info-row"><span>Estado administrativo</span><b id="det-info-estado"></b></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Columna derecha: acciones + métricas -->
+        <div class="detalle-col-side">
+
+            <div class="det-card">
+                <h3 class="det-card-title" style="color:var(--primary)">Acciones rápidas</h3>
+                <div class="det-acciones">
+                    <button class="det-accion det-accion-primary" id="det-btn-cobrar">💰 Cobrar Mes</button>
+                    <button class="det-accion" id="det-btn-editar">✏️ Editar Datos</button>
+                    <button class="det-accion det-accion-danger" id="det-btn-eliminar">🗑️ Dar de baja</button>
+                </div>
+            </div>
+
+            <div class="det-metrics">
+                <div class="det-metric">
+                    <span class="det-metric-label">Días restantes</span>
+                    <span class="det-metric-value" id="det-m-dias"></span>
+                </div>
+                <div class="det-metric">
+                    <span class="det-metric-label">Plan</span>
+                    <span class="det-metric-value" id="det-m-plan"></span>
+                </div>
+                <div class="det-metric">
+                    <span class="det-metric-label">Socio desde</span>
+                    <span class="det-metric-value" id="det-m-desde"></span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

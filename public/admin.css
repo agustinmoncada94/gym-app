@@ -591,3 +591,212 @@ button[type="submit"]:hover {
         font-size: 1.6rem;
     }
 }
+
+/* ── DETALLE DE SOCIO ──────────────────────────────────────────────────── */
+.detalle-wrap {
+    padding: 8px 0 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.detalle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-xl);
+    padding: 24px 28px;
+}
+
+.detalle-header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.detalle-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: rgba(197, 224, 97, 0.15);
+    color: var(--primary);
+    font-size: 1.4rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+}
+
+.detalle-nombre {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--text);
+}
+
+.detalle-sub {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-faint);
+}
+
+.det-btn-volver {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--panel-border);
+    color: var(--text-soft);
+    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.det-btn-volver:hover { background: rgba(255,255,255,0.08); }
+
+.detalle-badges {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+.det-badge {
+    background: rgba(53, 224, 138, 0.08);
+    border: 1px solid rgba(53, 224, 138, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.det-badge-blue {
+    background: rgba(96, 165, 250, 0.08);
+    border-color: rgba(96, 165, 250, 0.2);
+}
+.det-badge-neutral {
+    background: rgba(255,255,255,0.04);
+    border-color: var(--panel-border);
+}
+
+.det-badge-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-faint);
+}
+.det-badge-value {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.detalle-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    align-items: start;
+}
+
+.detalle-col-main { display: flex; flex-direction: column; gap: 20px; }
+.detalle-col-side  { display: flex; flex-direction: column; gap: 20px; }
+
+.det-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+}
+
+.det-card-title {
+    margin: 0 0 18px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--text-soft);
+}
+
+.det-info-list { display: flex; flex-direction: column; gap: 0; }
+
+.det-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    gap: 16px;
+}
+.det-info-row:last-child { border-bottom: none; }
+.det-info-row span { font-size: 0.88rem; color: var(--text-faint); }
+.det-info-row b { font-size: 0.9rem; color: var(--text); text-align: right; }
+
+.det-acciones { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+
+.det-accion {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--panel-border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.det-accion:hover { background: rgba(255,255,255,0.07); }
+.det-accion-primary {
+    background: var(--primary);
+    color: #000;
+    border-color: transparent;
+}
+.det-accion-primary:hover { filter: brightness(1.08); }
+.det-accion-danger {
+    background: rgba(255, 92, 92, 0.08);
+    color: var(--danger);
+    border-color: rgba(255,92,92,0.2);
+}
+.det-accion-danger:hover { background: rgba(255,92,92,0.15); }
+
+.det-metrics { display: flex; flex-direction: column; gap: 12px; }
+
+.det-metric {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.det-metric-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+}
+.det-metric-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--text);
+}
+
+@media (max-width: 900px) {
+    .detalle-grid { grid-template-columns: 1fr; }
+    .detalle-nombre { font-size: 1.3rem; }
+}
+
+.nombre-link {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.nombre-link:hover { color: var(--primary); }

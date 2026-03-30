@@ -75,6 +75,59 @@
         const sociosMap = new Map();
 
         // ── Carga de tabs generales ──────────────────────────────────────────
+        async function verDetalle(dni) {
+            const container = document.getElementById('view-container');
+            const html = await (await fetch('socio_detalle.html')).text();
+            container.innerHTML = html;
+
+            const s = sociosMap.get(dni);
+            if (!s) return;
+
+            const hoy = new Date(); hoy.setHours(0,0,0,0);
+            const desde = new Date(s.fechaInicio || s.fechaPago);
+            const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
+            const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
+
+            let estadoTexto = 'AL DÍA', estadoColor = 'rgba(53,224,138,0.08)', estadoBorder = 'rgba(53,224,138,0.25)';
+            if (s.estado === 'Suspendido')                         { estadoTexto = 'SUSPENDIDO'; estadoColor = 'rgba(255,92,92,0.08)';  estadoBorder = 'rgba(255,92,92,0.25)'; }
+            else if (hoy > hasta)                                  { estadoTexto = 'VENCIDO';    estadoColor = 'rgba(255,92,92,0.08)';  estadoBorder = 'rgba(255,92,92,0.25)'; }
+            else if (s.plan === 'Semana de Prueba' && diffDays>23) { estadoTexto = 'PRUEBA';     estadoColor = 'rgba(255,179,71,0.08)'; estadoBorder = 'rgba(255,179,71,0.25)'; }
+            else if (diffDays <= 5)                                { estadoTexto = 'POR VENCER'; estadoColor = 'rgba(255,179,71,0.08)'; estadoBorder = 'rgba(255,179,71,0.25)'; }
+
+            const iniciales = s.nombre.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+            const fmt = d => d ? new Date(d).toLocaleDateString('es-AR') : '—';
+
+            document.getElementById('det-avatar').innerText        = iniciales;
+            document.getElementById('det-nombre').innerText        = s.nombre.toUpperCase();
+            document.getElementById('det-dni').innerText           = s.dni;
+            document.getElementById('det-desde').innerText         = fmt(s.fechaInicio || s.fechaPago);
+            document.getElementById('det-estado-texto').innerText  = estadoTexto;
+            document.getElementById('det-vencimiento').innerText   = fmt(hasta);
+            document.getElementById('det-dias').innerText          = diffDays > 0 ? diffDays + ' días' : 'Vencido';
+            document.getElementById('det-plan').innerText          = s.plan || 'Musculación';
+            document.getElementById('det-info-nombre').innerText   = s.nombre;
+            document.getElementById('det-info-dni').innerText      = s.dni;
+            document.getElementById('det-info-nac').innerText      = s.nacimiento ? fmt(s.nacimiento) : '—';
+            document.getElementById('det-info-tel').innerText      = s.telefono || '—';
+            document.getElementById('det-info-plan').innerText     = s.plan || 'Musculación';
+            document.getElementById('det-info-alta').innerText     = fmt(s.fechaInicio || s.fechaPago);
+            document.getElementById('det-info-vence').innerText    = fmt(hasta);
+            document.getElementById('det-info-estado').innerText   = estadoTexto;
+            document.getElementById('det-m-dias').innerText        = diffDays > 0 ? diffDays + ' días' : 'Vencido';
+            document.getElementById('det-m-plan').innerText        = s.plan || 'Musculación';
+            document.getElementById('det-m-desde').innerText       = fmt(s.fechaInicio || s.fechaPago);
+
+            // Color dinámico del badge de estado
+            const badgeEstado = document.getElementById('det-badge-estado');
+            badgeEstado.style.background    = estadoColor;
+            badgeEstado.style.borderColor   = estadoBorder;
+
+            // Acciones rápidas
+            document.getElementById('det-btn-cobrar').onclick  = async () => { await cobrarMes(dni); verDetalle(dni); };
+            document.getElementById('det-btn-editar').onclick  = () => prepararEdicion(s);
+            document.getElementById('det-btn-eliminar').onclick = () => { borrarSocio(dni); };
+        }
+
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
             try {
@@ -274,7 +327,7 @@
                 filas.push(`
                 <tr>
                     <td class="td-socio">
-                        <b class="nombre-socio">${s.nombre.toUpperCase()}</b>
+                        <b class="nombre-socio nombre-link" onclick="verDetalle('${s.dni}')">${s.nombre.toUpperCase()}</b>
                         <small class="dni-socio">${s.dni}</small>
                     </td>
                     <td>
