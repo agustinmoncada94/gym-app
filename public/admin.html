@@ -311,20 +311,28 @@
             }
         }
 
-        async function borrarSocio(dni) {
-            if (!confirm('¿Eliminar este socio? Esta acción no se puede deshacer.')) return;
-            try {
-                const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
-                const resultado = await res.json();
-                if (resultado.success) {
-                    await cargarSocios();
-                } else {
-                    alert('Error al eliminar: ' + (resultado.error || 'desconocido'));
-                }
-            } catch (err) {
-                alert('Error de conexión: ' + err.message);
-            }
+       async function borrarSocio(dni) {
+    // Convertimos a String por si el DNI viene como número y pierde ceros
+    const dniLimpio = String(dni).trim(); 
+    
+    if (!confirm(`¿Eliminar socio DNI: ${dniLimpio}?`)) return;
+    
+    try {
+        const res = await fetch(`/api/socios/${dniLimpio}`, { 
+            method: 'DELETE' 
+        });
+        
+        if (res.ok) {
+            alert("Socio eliminado con éxito");
+            cargarSocios(); // Recarga la lista para que desaparezca de la pantalla
+        } else {
+            const error = await res.json();
+            alert("Error del servidor: " + error.mensaje);
         }
+    } catch (e) {
+        alert("Error de conexión al intentar eliminar");
+    }
+}
 
         function toggleMenu(event, dni) {
             event.stopPropagation();
