@@ -118,6 +118,10 @@
                     if (form) {
                         form.addEventListener('submit', async function (e) {
                             e.preventDefault();
+
+                            const dniOriginal = document.getElementById('editandoDni').value.trim();
+                            const esEdicion = dniOriginal !== '';
+
                             const datos = {
                                 nombre: document.getElementById('nombre').value.trim(),
                                 dni: document.getElementById('dni').value.trim(),
@@ -130,8 +134,8 @@
 
                             try {
                                 let res;
-                                if (window.modoEdicion && window.dniEditando) {
-                                    res = await fetch(`/api/socios/${window.dniEditando}`, {
+                                if (esEdicion) {
+                                    res = await fetch(`/api/socios/${dniOriginal}`, {
                                         method: 'PUT',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify(datos)
@@ -148,7 +152,6 @@
                                 if (resultado.success) {
                                     window.modoEdicion = false;
                                     window.dniEditando = null;
-                                    alert(window.modoEdicion ? 'Socio actualizado correctamente.' : 'Socio guardado correctamente.');
                                     switchTab('socios_lista');
                                 } else {
                                     alert('Error al guardar: ' + (resultado.error || 'desconocido'));
@@ -208,6 +211,9 @@
             window.modoEdicion = true;
             window.dniEditando = socio.dni;
             window.socioAEditar = null;
+
+            const hiddenDni = document.getElementById('editandoDni');
+            if (hiddenDni) hiddenDni.value = socio.dni;
         }
 
         function renderizarTabla(lista) {
