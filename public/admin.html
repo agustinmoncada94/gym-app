@@ -86,15 +86,12 @@
 
     <script>
         let sociosGlobal = [];
-        window.socioAEditar = null;
-        window.modoEdicion = false;
-        window.dniEditando = null;
 
+        // ── Carga de tabs generales ──────────────────────────────────────────
         async function switchTab(tabName) {
             const container = document.getElementById('view-container');
             try {
-                const response = await fetch(`${tabName}.html`);
-                const html = await response.text();
+                const html = await (await fetch(`${tabName}.html`)).text();
                 container.innerHTML = html;
 
                 document.querySelectorAll('.nav-link').forEach(link => {
@@ -107,66 +104,104 @@
                 if (tabName === 'socios_lista') await cargarSocios();
 
                 if (tabName === 'socios_registro') {
-                    if (window.socioAEditar) {
-                        rellenarFormularioEdicion(window.socioAEditar);
-                    } else {
-                        window.modoEdicion = false;
-                        window.dniEditando = null;
-                    }
-
+                    // Modo REGISTRO NUEVO
                     const form = document.getElementById('registroForm');
                     if (form) {
                         form.addEventListener('submit', async function (e) {
                             e.preventDefault();
-
-                            const dniOriginal = document.getElementById('editandoDni').value.trim();
-                            const esEdicion = dniOriginal !== '';
-
-                            const datos = {
-                                nombre: document.getElementById('nombre').value.trim(),
-                                dni: document.getElementById('dni').value.trim(),
-                                nacimiento: document.getElementById('nacimiento').value,
-                                telefono: document.getElementById('telefono').value.trim(),
-                                plan: document.getElementById('plan').value,
-                                estado: document.getElementById('estado').value,
-                                fechaInicio: document.getElementById('fechaInicio').value || new Date().toISOString()
-                            };
-
-                            try {
-                                let res;
-                                if (esEdicion) {
-                                    res = await fetch(`/api/socios/${dniOriginal}`, {
-                                        method: 'PUT',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(datos)
-                                    });
-                                } else {
-                                    res = await fetch('/api/registrar', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(datos)
-                                    });
-                                }
-
-                                const resultado = await res.json();
-                                if (resultado.success) {
-                                    window.modoEdicion = false;
-                                    window.dniEditando = null;
-                                    switchTab('socios_lista');
-                                } else {
-                                    alert('Error al guardar: ' + (resultado.error || 'desconocido'));
-                                }
-                            } catch (err) {
-                                alert('Error de conexión: ' + err.message);
-                            }
+                            const datos = leerFormulario();
+                            if (!datos.fechaInicio) datos.fechaInicio = new Date().toISOString();
+                            await guardarSocio('POST', '/api/registrar', datos);
                         });
                     }
                 }
-            } catch (e) {
-                console.error(e);
+            } catch (err) {
+                console.error(err);
             }
         }
 
+        // ── Edición de un socio existente ────────────────────────────────────
+        async function prepararEdicion(socio) {
+            const container = document.getElementById('view-container');
+            try {
+                const html = await (await fetch('socios_registro.html')).text();
+                container.innerHTML = html;
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('onclick').includes('socios_registro')) {
+                        link.classList.add('active');
+                    }
+                });
+
+                // Rellenar campos
+                const campos = {
+                    nombre: socio.nombre,
+                    dni: socio.dni,
+                    telefono: socio.telefono,
+                    plan: socio.plan,
+                    nacimiento: socio.nacimiento ? socio.nacimiento.split('T')[0] : '',
+                    estado: socio.estado,
+                    fechaInicio: (socio.fechaInicio || socio.fechaPago || '').split('T')[0]
+                };
+                for (const id in campos) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = campos[id];
+                }
+
+                // Ajustar UI para modo edición
+                const titulo = document.querySelector('.card h1');
+                if (titulo) titulo.innerText = 'EDITAR SOCIO';
+                const btn = document.querySelector('#registroForm button[type="submit"]');
+                if (btn) { btn.innerText = 'GUARDAR CAMBIOS'; btn.classList.add('btn-edit-mode'); }
+
+                // Submit → PUT con el DNI original
+                const dniOriginal = socio.dni;
+                const form = document.getElementById('registroForm');
+                if (form) {
+                    form.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        const datos = leerFormulario();
+                        await guardarSocio('PUT', `/api/socios/${dniOriginal}`, datos);
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // ── Helpers ──────────────────────────────────────────────────────────
+        function leerFormulario() {
+            return {
+                nombre:     document.getElementById('nombre').value.trim(),
+                dni:        document.getElementById('dni').value.trim(),
+                nacimiento: document.getElementById('nacimiento').value,
+                telefono:   document.getElementById('telefono').value.trim(),
+                plan:       document.getElementById('plan').value,
+                estado:     document.getElementById('estado').value,
+                fechaInicio: document.getElementById('fechaInicio').value || new Date().toISOString()
+            };
+        }
+
+        async function guardarSocio(method, url, datos) {
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                const resultado = await res.json();
+                if (resultado.success) {
+                    switchTab('socios_lista');
+                } else {
+                    alert('Error al guardar: ' + (resultado.error || 'desconocido'));
+                }
+            } catch (err) {
+                alert('Error de conexión: ' + err.message);
+            }
+        }
+
+        // ── Socios ───────────────────────────────────────────────────────────
         async function cargarSocios() {
             try {
                 const r = await fetch('/api/socios/todos');
@@ -177,43 +212,18 @@
             }
         }
 
-        function rellenarFormularioEdicion(socio) {
-            const initialDate = socio.fechaInicio || socio.fechaPago;
-            const formattedInitialDate = initialDate ? initialDate.split('T')[0] : '';
+        function filtrarSocios() {
+            const inputBusqueda = document.getElementById('busqueda');
+            const contadorLabel = document.getElementById('contador-socios');
+            if (!inputBusqueda) return;
 
-            const campos = {
-                nombre: socio.nombre,
-                dni: socio.dni,
-                telefono: socio.telefono,
-                plan: socio.plan,
-                nacimiento: socio.nacimiento ? socio.nacimiento.split('T')[0] : '',
-                estado: socio.estado,
-                fechaInicio: formattedInitialDate
-            };
+            const busqueda = inputBusqueda.value.toLowerCase();
+            const filtrados = sociosGlobal.filter(
+                s => s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda)
+            );
 
-            for (let id in campos) {
-                const input = document.getElementById(id);
-                if (input) input.value = campos[id];
-            }
-
-            const inputDni = document.getElementById('dni');
-            if (inputDni) inputDni.readOnly = false;
-
-            const tituloForm = document.querySelector('.card h1');
-            if (tituloForm) tituloForm.innerText = "EDITAR SOCIO";
-
-            const btnAlta = document.querySelector('button[type="submit"]') || document.querySelector('.btn-submit');
-            if (btnAlta) {
-                btnAlta.innerText = "TERMINAR EDICIÓN";
-                btnAlta.classList.add('btn-edit-mode');
-            }
-
-            window.modoEdicion = true;
-            window.dniEditando = socio.dni;
-            window.socioAEditar = null;
-
-            const hiddenDni = document.getElementById('editandoDni');
-            if (hiddenDni) hiddenDni.value = socio.dni;
+            renderizarTabla(filtrados);
+            if (contadorLabel) contadorLabel.innerText = filtrados.length;
         }
 
         function renderizarTabla(lista) {
@@ -229,7 +239,6 @@
                 hasta.setDate(desde.getDate() + 30);
 
                 const diffDays = Math.ceil((hasta - hoy) / (1000 * 60 * 60 * 24));
-                const diasDesdeReg = Math.floor((hoy - desde) / (1000 * 60 * 60 * 24));
 
                 let estadoTexto = "AL DÍA", estadoClase = "status-ok";
 
@@ -237,11 +246,9 @@
                     estadoTexto = "SUSPENDIDO";
                     estadoClase = "status-suspendido";
                 } else if (hoy > hasta) {
-                    // Venció el período de 30 días — siempre VENCIDO sin importar el plan
                     estadoTexto = "VENCIDO";
                     estadoClase = "status-vencido";
                 } else if (s.plan === "Semana de Prueba" && diffDays > 23) {
-                    // Dentro de los primeros 7 días del período de prueba
                     estadoTexto = "PRUEBA";
                     estadoClase = "status-prueba";
                 } else if (diffDays <= 5 && diffDays >= 0) {
@@ -287,30 +294,13 @@
             }).join('');
         }
 
-        function filtrarSocios() {
-            const inputBusqueda = document.getElementById('busqueda');
-            const contadorLabel = document.getElementById('contador-socios');
-            if (!inputBusqueda) return;
-
-            const busqueda = inputBusqueda.value.toLowerCase();
-            const filtrados = sociosGlobal.filter(
-                s => s.nombre.toLowerCase().includes(busqueda) || s.dni.includes(busqueda)
-            );
-
-            renderizarTabla(filtrados);
-            if (contadorLabel) contadorLabel.innerText = filtrados.length;
-        }
-
         async function cobrarMes(dni) {
             if (!confirm('¿Confirmar cobro del mes para este socio?')) return;
-
-            const nuevaFecha = new Date().toISOString();
-
             try {
                 const res = await fetch('/api/socios/cobrar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dni, nuevaFecha })
+                    body: JSON.stringify({ dni, nuevaFecha: new Date().toISOString() })
                 });
                 const resultado = await res.json();
                 if (resultado.success) {
@@ -323,9 +313,19 @@
             }
         }
 
-        function prepararEdicion(socio) {
-            window.socioAEditar = socio;
-            switchTab('socios_registro');
+        async function borrarSocio(dni) {
+            if (!confirm('¿Eliminar este socio? Esta acción no se puede deshacer.')) return;
+            try {
+                const res = await fetch(`/api/socios/${dni}`, { method: 'DELETE' });
+                const resultado = await res.json();
+                if (resultado.success) {
+                    await cargarSocios();
+                } else {
+                    alert('Error al eliminar: ' + (resultado.error || 'desconocido'));
+                }
+            } catch (err) {
+                alert('Error de conexión: ' + err.message);
+            }
         }
 
         function toggleMenu(event, btn) {
