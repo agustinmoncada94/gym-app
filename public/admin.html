@@ -156,6 +156,13 @@
                 const inputNac = document.getElementById('nacimiento');
                 if (inputNac) inputNac.removeAttribute('required');
 
+                // Dejar solo "Suspendido" en el select de estado
+                const selectEstado = document.getElementById('estado');
+                if (selectEstado) {
+                    selectEstado.innerHTML = '<option value="Suspendido">Suspendido (Acceso denegado)</option>';
+                    selectEstado.value = 'Suspendido';
+                }
+
                 const titulo = document.querySelector('.card h1');
                 if (titulo) titulo.innerText = 'EDITAR SOCIO';
 
