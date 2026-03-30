@@ -330,8 +330,27 @@
 
         function toggleMenu(event, btn) {
             event.stopPropagation();
+            const menu = btn.nextElementSibling;
+            const yaAbierto = menu.classList.contains('show');
+
             document.querySelectorAll('.dropdown-content').forEach(m => m.classList.remove('show'));
-            btn.nextElementSibling.classList.toggle('show');
+
+            if (yaAbierto) return;
+
+            menu.classList.add('show');
+
+            const btnRect = btn.getBoundingClientRect();
+            const menuHeight = 130; // altura aprox del menú (3 botones)
+            const espacioAbajo = window.innerHeight - btnRect.bottom;
+
+            if (espacioAbajo < menuHeight + 10) {
+                // Abre hacia arriba
+                menu.style.top = (btnRect.top - menuHeight - 6) + 'px';
+            } else {
+                // Abre hacia abajo
+                menu.style.top = (btnRect.bottom + 6) + 'px';
+            }
+            menu.style.left = (btnRect.right - 210) + 'px';
         }
 
         window.onclick = () => {

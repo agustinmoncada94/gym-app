@@ -495,9 +495,7 @@ button[type="submit"]:hover {
 
 .dropdown-content {
     display: none;
-    position: absolute;
-    right: 0;
-    top: calc(100% + 10px);
+    position: fixed;
     min-width: 210px;
     background: #111821;
     border: 1px solid rgba(255,255,255,0.08);
