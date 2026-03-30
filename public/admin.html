@@ -380,6 +380,28 @@
             const m = document.getElementById('global-dropdown');
             if (m) m.remove();
         }
+        async function borradoEmergencia(identificador) {
+    if (!confirm(`¿Forzar la eliminación de: ${identificador}?`)) return;
+    
+    // Obtenemos todos los socios primero para encontrar el ID real
+    const response = await fetch('/api/socios/todos');
+    const socios = await response.json();
+    
+    // Buscamos el socio que coincida con lo que ves en pantalla
+    const socioEncontrado = socios.find(s => 
+        s.nombre.includes(identificador) || s.dni.includes(identificador)
+    );
+
+    if (socioEncontrado) {
+        const res = await fetch(`/api/socios/${socioEncontrado.dni}`, { method: 'DELETE' });
+        if (res.ok) {
+            alert("¡Eliminado con éxito!");
+            location.reload(); // Recargamos para limpiar la vista
+        }
+    } else {
+        alert("No se encontró ese socio en la base de datos real.");
+    }
+}
 
         window.onclick = () => cerrarMenu();
 
