@@ -350,8 +350,8 @@
                 // Abre hacia abajo
                 menu.style.top = (btnRect.bottom + 6) + 'px';
             }
-            const leftPos = Math.min(btnRect.right - 210, window.innerWidth - 220);
-            menu.style.left = Math.max(leftPos, 8) + 'px';
+            menu.style.left = 'auto';
+            menu.style.right = (window.innerWidth - btnRect.right) + 'px';
         }
 
         window.onclick = () => {
