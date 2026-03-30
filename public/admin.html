@@ -156,11 +156,12 @@
                 const inputNac = document.getElementById('nacimiento');
                 if (inputNac) inputNac.removeAttribute('required');
 
-                // Dejar solo "Suspendido" en el select de estado
+                // Dejar solo "Suspendido" en el select de estado, sin preseleccionar
                 const selectEstado = document.getElementById('estado');
                 if (selectEstado) {
-                    selectEstado.innerHTML = '<option value="Suspendido">Suspendido (Acceso denegado)</option>';
-                    selectEstado.value = 'Suspendido';
+                    selectEstado.innerHTML = `
+                        <option value="" disabled selected>-- Seleccionar estado --</option>
+                        <option value="Suspendido">Suspendido (Acceso denegado)</option>`;
                 }
 
                 const titulo = document.querySelector('.card h1');
