@@ -6,6 +6,7 @@
     <title>DECLON Admin - Panel de Control</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="admin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="admin-shell">
@@ -624,18 +625,21 @@
 
         window.onclick = () => cerrarMenu();
 
-        // ── Dashboard KPIs ─────────────────────────────────────────────
+        // ── Dashboard KPIs + Charts ────────────────────────────────────────
+        let _dashCharts = {};
         async function cargarDashboardKPIs() {
             try {
                 const socios = await fetch('/api/socios/todos').then(r => r.json()).catch(() => []);
                 const hoy        = new Date(); hoy.setHours(0,0,0,0);
                 const mesActual  = hoy.getMonth();
                 const anioActual = hoy.getFullYear();
-                const mesAnt     = mesActual === 0 ? 11 : mesActual - 1;
-                const anioAnt    = mesActual === 0 ? anioActual - 1 : anioActual;
 
+                // ── Estado de socios ────────────────────────────────────
                 let alDia = 0, vencidos = 0, porVencer = 0;
+                const planCount = {};
                 socios.forEach(s => {
+                    const plan = s.plan || 'Musculación';
+                    planCount[plan] = (planCount[plan] || 0) + 1;
                     if (s.estado === 'Suspendido') return;
                     const desde = new Date(s.fechaInicio || s.fechaPago);
                     const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
@@ -644,22 +648,26 @@
                     else if (diff <= 5) porVencer++;
                     else                alDia++;
                 });
-
                 const total = socios.length;
                 const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
-                set('kpi-socios',       total);
-                set('kpi-socios-delta', `${alDia} al día · ${porVencer} por vencer`);
-                set('kpi-vencidos',     vencidos);
+                set('kpi-socios',        total);
+                set('kpi-socios-delta',  `${alDia} al día · ${porVencer} por vencer`);
+                set('kpi-vencidos',      vencidos);
                 set('dash-total-socios', total);
-                set('alerta-vencidos',  `${vencidos} socios con cuota vencida`);
+                set('alerta-vencidos',   `${vencidos} socios con cuota vencida`);
                 set('dash-tasa', total > 0 ? ((alDia / total) * 100).toFixed(1) + '%' : '—');
 
-                // Sumar ingresos del mes desde historial de pagos
+                // ── Pagos: calcular últimos 6 meses ─────────────────────
                 const todosPagos = await Promise.all(
                     socios.map(s => fetch(`/api/socios/${s.dni}/pagos`).then(r => r.json()).catch(() => []))
                 );
-
-                let totalMes = 0, totalAnt = 0;
+                const mesesNombres = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                const totalesMeses = Array(6).fill(0);
+                const labelsMeses  = [];
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date(anioActual, mesActual - i, 1);
+                    labelsMeses.push(mesesNombres[d.getMonth()]);
+                }
                 todosPagos.flat().forEach(p => {
                     if (!p.monto || p.monto === '—' || !p.fecha || p.fecha === '—') return;
                     const n = parseFloat(String(p.monto).replace(/[^0-9]/g, ''));
@@ -668,23 +676,120 @@
                     if (pts.length !== 3) return;
                     const m = parseInt(pts[1], 10) - 1;
                     const a = parseInt(pts[2], 10);
-                    if (m === mesActual && a === anioActual) totalMes += n;
-                    if (m === mesAnt    && a === anioAnt)    totalAnt  += n;
+                    for (let i = 0; i < 6; i++) {
+                        const d = new Date(anioActual, mesActual - (5 - i), 1);
+                        if (m === d.getMonth() && a === d.getFullYear()) totalesMeses[i] += n;
+                    }
                 });
-
+                const totalMes = totalesMeses[5];
+                const totalAnt = totalesMeses[4];
                 set('kpi-ingresos', '$' + totalMes.toLocaleString('es-AR'));
                 const elDelta = document.getElementById('kpi-ingresos-delta');
                 if (elDelta) {
                     if (totalAnt > 0) {
-                        const pct   = ((totalMes - totalAnt) / totalAnt * 100).toFixed(1);
-                        const signo = pct >= 0 ? '+' : '';
-                        elDelta.innerText   = `${signo}${pct}% vs mes anterior`;
+                        const pct = ((totalMes - totalAnt) / totalAnt * 100).toFixed(1);
+                        elDelta.innerText   = `${pct >= 0 ? '+' : ''}${pct}% vs mes anterior`;
                         elDelta.className   = 'dash-kpi-delta ' + (pct >= 0 ? 'dash-delta-ok' : 'dash-delta-danger');
                     } else {
                         elDelta.innerText = 'Sin datos del mes anterior';
                         elDelta.className = 'dash-kpi-delta dash-delta-ok';
                     }
                 }
+
+                // ── Destruir charts previos si existen ──────────────────
+                Object.values(_dashCharts).forEach(c => c.destroy());
+                _dashCharts = {};
+
+                const tooltipStyle = {
+                    backgroundColor:'#08101b', borderColor:'rgba(255,255,255,0.08)',
+                    borderWidth:1, borderRadius:12, titleColor:'#fff',
+                    bodyColor:'rgba(255,255,255,0.7)', padding:12
+                };
+                const gridColor = 'rgba(255,255,255,0.07)';
+
+                // ── Chart 1: Ingresos mensuales ─────────────────────────
+                const ctxIngresos = document.getElementById('chart-ingresos');
+                if (ctxIngresos) {
+                    _dashCharts.ingresos = new Chart(ctxIngresos, {
+                        type: 'bar',
+                        data: {
+                            labels: labelsMeses,
+                            datasets: [{
+                                data: totalesMeses,
+                                backgroundColor: ctx => ctx.dataIndex === 5 ? '#bef264' : 'rgba(190,242,100,0.45)',
+                                borderRadius: 10, borderSkipped: false,
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' $' + ctx.raw.toLocaleString('es-AR') } } },
+                            scales: {
+                                x: { grid: { display: false }, border: { display: false } },
+                                y: { grid: { color: gridColor }, border: { display: false }, ticks: { callback: v => v === 0 ? '$0' : '$' + (v/1000).toFixed(0) + 'k' } }
+                            }
+                        }
+                    });
+                }
+
+                // ── Chart 2: Estado socios (Donut) ──────────────────────
+                const estadoData = [
+                    { name: 'Al día',       value: alDia,     color: '#84cc16' },
+                    { name: 'Vence pronto', value: porVencer, color: '#f59e0b' },
+                    { name: 'Vencidos',     value: vencidos,  color: '#f43f5e' },
+                ];
+                const ctxEstado = document.getElementById('chart-estado');
+                if (ctxEstado) {
+                    _dashCharts.estado = new Chart(ctxEstado, {
+                        type: 'doughnut',
+                        data: { labels: estadoData.map(d => d.name), datasets: [{ data: estadoData.map(d => d.value), backgroundColor: estadoData.map(d => d.color), borderWidth: 0, hoverOffset: 6 }] },
+                        options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { display: false }, tooltip: { ...tooltipStyle } } }
+                    });
+                    const legend = document.getElementById('dash-estado-legend');
+                    if (legend) legend.innerHTML = estadoData.map(d => `<div class="dash-donut-item"><span class="dash-donut-dot" style="background:${d.color}"></span><span>${d.name}</span><b>${d.value}</b></div>`).join('');
+                }
+
+                // ── Chart 3: Asistencia semanal (estático) ──────────────
+                const ctxAsist = document.getElementById('chart-asistencia');
+                if (ctxAsist) {
+                    _dashCharts.asistencia = new Chart(ctxAsist, {
+                        type: 'line',
+                        data: { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], datasets: [{ data: [0,0,0,0,0,0,0], borderColor:'#bef264', backgroundColor:'rgba(190,242,100,0.08)', borderWidth:3, pointBackgroundColor:'#bef264', pointRadius:4, fill:true, tension:0.35 }] },
+                        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{...tooltipStyle} }, scales:{ x:{grid:{display:false},border:{display:false}}, y:{grid:{color:gridColor},border:{display:false}} } }
+                    });
+                }
+
+                // ── Chart 4: Equipos (estático) ─────────────────────────
+                const ctxEquipos = document.getElementById('chart-equipos');
+                if (ctxEquipos) {
+                    _dashCharts.equipos = new Chart(ctxEquipos, {
+                        type:'bar',
+                        data:{ labels:['Cardio','Musculación','Funcional','Accesorios'], datasets:[
+                            { label:'Operativos',       data:[14,17,9,13], backgroundColor:'#84cc16', borderRadius:6, borderSkipped:false },
+                            { label:'En revisión',      data:[2,1,1,0],   backgroundColor:'#f59e0b', borderRadius:6, borderSkipped:false },
+                            { label:'Fuera de servicio',data:[1,1,0,1],   backgroundColor:'#f43f5e', borderRadius:6, borderSkipped:false },
+                        ]},
+                        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{boxWidth:12,padding:16}},tooltip:{...tooltipStyle}}, scales:{x:{stacked:true,grid:{display:false},border:{display:false}},y:{stacked:true,grid:{color:gridColor},border:{display:false}}} }
+                    });
+                }
+
+                // ── Chart 5: Socios por plan (real) ────────────────────
+                const ctxPlanes = document.getElementById('chart-planes');
+                if (ctxPlanes) {
+                    const planesLabels = Object.keys(planCount);
+                    const planesData   = planesLabels.map(k => planCount[k]);
+                    _dashCharts.planes = new Chart(ctxPlanes, {
+                        type:'bar',
+                        data:{ labels:planesLabels, datasets:[{ data:planesData, backgroundColor:'#bef264', borderRadius:8, borderSkipped:false }] },
+                        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{...tooltipStyle,callbacks:{label:ctx=>' '+ctx.raw+' socios'}}}, scales:{x:{grid:{color:gridColor},border:{display:false}},y:{grid:{display:false},border:{display:false}}} }
+                    });
+                    // Panel planes más elegidos
+                    const dashPlanes = document.getElementById('dash-planes');
+                    if (dashPlanes) {
+                        const sorted = planesLabels.map((k,i) => ({nombre:k, valor:planesData[i]})).sort((a,b)=>b.valor-a.valor);
+                        dashPlanes.innerHTML = sorted.slice(0,3).map(p => `<div class="dash-summary-row" style="align-items:flex-start"><div><p style="font-weight:700;font-size:.9rem;color:var(--text)">${p.nombre}</p></div><b style="color:var(--primary);white-space:nowrap">${p.valor} socios</b></div>`).join('');
+                    }
+                }
+
             } catch(e) { console.error('Dashboard KPIs error:', e); }
         }
 
