@@ -43,21 +43,19 @@ app.post('/api/registrar', async (req, res) => {
 });
 // RUTA PARA ACTUALIZAR EL PAGO (COBRAR MES) - VERSIÓN REDIS
 app.post('/api/socios/cobrar', async (req, res) => {
-    const { dni, nuevaFecha } = req.body;
+    const { dni, nuevaFecha, pago } = req.body;
 
     try {
         await conectar();
-        
-        // 1. Obtenemos los datos actuales del socio
         const datosSocioJSON = await client.get(`socio:${dni}`);
-        
+
         if (datosSocioJSON) {
             const socio = JSON.parse(datosSocioJSON);
             socio.fechaInicio = nuevaFecha;
             socio.estado = 'Activo';
             await client.set(`socio:${dni}`, JSON.stringify(socio));
 
-            // Registrar pago automático
+            // Registrar pago con los datos del modal (o valores por defecto)
             const rawPagos = await client.get(`pagos:${dni}`);
             const pagos = rawPagos ? JSON.parse(rawPagos) : [];
             const fecha = new Date(nuevaFecha);
@@ -66,10 +64,10 @@ app.post('/api/socios/cobrar', async (req, res) => {
             pagos.unshift({
                 id: Date.now(),
                 fecha: fecha.toLocaleDateString('es-AR'),
-                concepto: `Mensual ${mes} ${anio}`,
-                monto: '',
-                metodo: 'Efectivo',
-                estado: 'Pagado'
+                concepto: pago?.concepto || `Mensual ${mes} ${anio}`,
+                monto:    pago?.monto    || '',
+                metodo:   pago?.metodo   || 'Efectivo',
+                estado:   'Pagado'
             });
             await client.set(`pagos:${dni}`, JSON.stringify(pagos));
 

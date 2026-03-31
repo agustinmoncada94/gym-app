@@ -436,22 +436,84 @@
         }
 
         async function cobrarMes(dni) {
-            if (!confirm('¿Confirmar cobro del mes para este socio?')) return;
-            try {
-                const res = await fetch('/api/socios/cobrar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dni, nuevaFecha: new Date().toISOString() })
-                });
-                const resultado = await res.json();
-                if (resultado.success) {
-                    await cargarSocios();
-                } else {
-                    alert('Error al cobrar: ' + (resultado.mensaje || resultado.error || 'desconocido'));
-                }
-            } catch (err) {
-                alert('Error de conexión: ' + err.message);
-            }
+            return new Promise((resolve) => {
+                // Crear modal
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal-box">
+                        <h3 class="modal-titulo">💰 Cobrar Mes</h3>
+                        <p style="font-size:.85rem;color:var(--text-faint);margin:-8px 0 16px">Completá los datos del pago para registrarlo en el historial.</p>
+                        <div class="modal-form">
+                            <label>Monto
+                                <input type="number" id="cm-monto" class="hist-input" placeholder="Ej: 15000" min="0">
+                            </label>
+                            <label>Método de pago
+                                <select id="cm-metodo" class="hist-input">
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Transferencia">Transferencia</option>
+                                    <option value="QR">QR</option>
+                                </select>
+                            </label>
+                            <label>Concepto
+                                <input type="text" id="cm-concepto" class="hist-input" placeholder="Ej: Cuota abril 2026">
+                            </label>
+                        </div>
+                        <div class="modal-actions" style="margin-top:20px">
+                            <button class="det-btn-volver" id="cm-cancelar">Cancelar</button>
+                            <button class="eq-btn-primary" id="cm-confirmar">Confirmar cobro</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(overlay);
+
+                // Auto-completar concepto con mes actual
+                const ahora = new Date();
+                const mes = ahora.toLocaleString('es-AR', { month: 'long' });
+                const anio = ahora.getFullYear();
+                document.getElementById('cm-concepto').value = `Mensual ${mes} ${anio}`;
+
+                document.getElementById('cm-cancelar').onclick = () => {
+                    overlay.remove();
+                    resolve(false);
+                };
+
+                document.getElementById('cm-confirmar').onclick = async () => {
+                    const montoRaw  = document.getElementById('cm-monto').value.trim();
+                    const metodo    = document.getElementById('cm-metodo').value;
+                    const concepto  = document.getElementById('cm-concepto').value.trim() || `Mensual ${mes} ${anio}`;
+
+                    // Formatear monto como $15.000
+                    const montoNum  = parseInt(montoRaw, 10);
+                    const montoFmt  = montoRaw
+                        ? '$' + montoNum.toLocaleString('es-AR')
+                        : '';
+
+                    overlay.remove();
+
+                    try {
+                        const res = await fetch('/api/socios/cobrar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                dni,
+                                nuevaFecha: new Date().toISOString(),
+                                pago: { concepto, monto: montoFmt, metodo }
+                            })
+                        });
+                        const resultado = await res.json();
+                        if (resultado.success) {
+                            await cargarSocios();
+                            resolve(true);
+                        } else {
+                            alert('Error al cobrar: ' + (resultado.mensaje || resultado.error || 'desconocido'));
+                            resolve(false);
+                        }
+                    } catch (err) {
+                        alert('Error de conexión: ' + err.message);
+                        resolve(false);
+                    }
+                };
+            });
         }
 
        async function borrarSocio(dni) {
