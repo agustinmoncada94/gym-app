@@ -126,6 +126,52 @@ app.post('/api/socios/:dni/pagos', async (req, res) => {
     }
 });
 
+// INGRESOS DEL MES (para KPI Dashboard)
+app.get('/api/dashboard/ingresos', async (req, res) => {
+    try {
+        await conectar();
+        const keys = await client.keys('pagos:*');
+
+        const ahora = new Date();
+        const mesActual  = ahora.getMonth();
+        const anioActual = ahora.getFullYear();
+
+        // Mes anterior
+        const fechaMesAnt = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
+        const mesAnterior  = fechaMesAnt.getMonth();
+        const anioAnterior = fechaMesAnt.getFullYear();
+
+        let totalMesActual  = 0;
+        let totalMesAnterior = 0;
+
+        for (const key of keys) {
+            const raw = await client.get(key);
+            if (!raw) continue;
+            const pagos = JSON.parse(raw);
+            for (const p of pagos) {
+                if (!p.monto) continue;
+                // monto puede ser "$15.000" o "15000" o 15000
+                const num = parseFloat(String(p.monto).replace(/[$.]/g, '').replace(',', '.'));
+                if (isNaN(num)) continue;
+
+                // fecha guardada como dd/mm/aaaa
+                const partes = String(p.fecha).split('/');
+                if (partes.length !== 3) continue;
+                const d = parseInt(partes[0], 10);
+                const m = parseInt(partes[1], 10) - 1; // 0-based
+                const a = parseInt(partes[2], 10);
+
+                if (m === mesActual  && a === anioActual)  totalMesActual  += num;
+                if (m === mesAnterior && a === anioAnterior) totalMesAnterior += num;
+            }
+        }
+
+        res.json({ mesActual: totalMesActual, mesAnterior: totalMesAnterior });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // ELIMINAR SOCIO
 app.delete('/api/socios/:dni', async (req, res) => {
     try {

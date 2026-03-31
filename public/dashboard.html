@@ -32,8 +32,8 @@
                 <span class="dash-kpi-badge">KPI</span>
             </div>
             <p class="dash-kpi-label">Ingresos del mes</p>
-            <p class="dash-kpi-value">$730.000</p>
-            <p class="dash-kpi-delta dash-delta-ok">+8.4% vs mes anterior</p>
+            <p class="dash-kpi-value" id="kpi-ingresos">—</p>
+            <p class="dash-kpi-delta dash-delta-ok" id="kpi-ingresos-delta">Cargando...</p>
         </div>
         <div class="dash-kpi-card">
             <div class="dash-kpi-top">
@@ -327,9 +327,13 @@
     // ── KPIs dinámicos desde Redis ──────────────────────────────────────
     async function cargarKPIs() {
         try {
-            const socios = await (await fetch('/api/socios/todos')).json();
-            const total  = socios.length;
-            const hoy    = new Date(); hoy.setHours(0,0,0,0);
+            const [socios, ingresos] = await Promise.all([
+                fetch('/api/socios/todos').then(r => r.json()),
+                fetch('/api/dashboard/ingresos').then(r => r.json()),
+            ]);
+
+            const total = socios.length;
+            const hoy   = new Date(); hoy.setHours(0,0,0,0);
 
             let alDia = 0, vencidos = 0, porVencer = 0;
             socios.forEach(s => {
@@ -349,6 +353,22 @@
             document.getElementById('alerta-vencidos').innerText   = `${vencidos} socios con cuota vencida`;
             const tasa = total > 0 ? ((alDia / total) * 100).toFixed(1) + '%' : '—';
             document.getElementById('dash-tasa').innerText = tasa;
+
+            // KPI Ingresos del mes
+            const actual   = ingresos.mesActual   || 0;
+            const anterior = ingresos.mesAnterior || 0;
+            document.getElementById('kpi-ingresos').innerText = actual > 0
+                ? '$' + actual.toLocaleString('es-AR')
+                : '$0';
+            if (anterior > 0) {
+                const diff = ((actual - anterior) / anterior * 100).toFixed(1);
+                const signo = diff >= 0 ? '+' : '';
+                document.getElementById('kpi-ingresos-delta').innerText = `${signo}${diff}% vs mes anterior`;
+                document.getElementById('kpi-ingresos-delta').className =
+                    'dash-kpi-delta ' + (diff >= 0 ? 'dash-delta-ok' : 'dash-delta-danger');
+            } else {
+                document.getElementById('kpi-ingresos-delta').innerText = 'Sin datos del mes anterior';
+            }
         } catch (e) {
             console.error('Error cargando KPIs:', e);
         }
