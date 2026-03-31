@@ -310,6 +310,11 @@ textarea {
     transition: 0.2s ease;
 }
 
+select {
+    background-color: #0e1a2a;
+    color: #ffffff;
+}
+
 .admin-input::placeholder,
 input::placeholder,
 textarea::placeholder {
@@ -838,6 +843,22 @@ button[type="submit"]:hover {
     transition: border-color 0.2s;
 }
 .hist-input:focus { border-color: var(--primary); }
+
+/* Select options — fuerza fondo oscuro en todos los navegadores */
+select.hist-input,
+select.admin-input,
+select.eq-label select,
+select.hist-input option,
+select.admin-input option {
+    background-color: #0e1a2a;
+    color: var(--text);
+}
+
+select option {
+    background-color: #0e1a2a !important;
+    color: #ffffff !important;
+    padding: 8px 12px;
+}
 
 .historial-tabla-wrap {
     border: 1px solid var(--panel-border);
