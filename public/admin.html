@@ -227,6 +227,7 @@
                 });
 
                 if (tabName === 'socios_lista') await cargarSocios();
+                if (tabName === 'dashboard')    cargarDashboardKPIs();
 
                 if (tabName === 'socios_registro') {
                     // Modo REGISTRO NUEVO
@@ -614,6 +615,70 @@
 }
 
         window.onclick = () => cerrarMenu();
+
+        // ── Dashboard KPIs ─────────────────────────────────────────────
+        async function cargarDashboardKPIs() {
+            try {
+                const socios = await fetch('/api/socios/todos').then(r => r.json()).catch(() => []);
+                const hoy        = new Date(); hoy.setHours(0,0,0,0);
+                const mesActual  = hoy.getMonth();
+                const anioActual = hoy.getFullYear();
+                const mesAnt     = mesActual === 0 ? 11 : mesActual - 1;
+                const anioAnt    = mesActual === 0 ? anioActual - 1 : anioActual;
+
+                let alDia = 0, vencidos = 0, porVencer = 0;
+                socios.forEach(s => {
+                    if (s.estado === 'Suspendido') return;
+                    const desde = new Date(s.fechaInicio || s.fechaPago);
+                    const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
+                    const diff  = Math.ceil((hasta - hoy) / 86400000);
+                    if (hoy > hasta)    vencidos++;
+                    else if (diff <= 5) porVencer++;
+                    else                alDia++;
+                });
+
+                const total = socios.length;
+                const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+                set('kpi-socios',       total);
+                set('kpi-socios-delta', `${alDia} al día · ${porVencer} por vencer`);
+                set('kpi-vencidos',     vencidos);
+                set('dash-total-socios', total);
+                set('alerta-vencidos',  `${vencidos} socios con cuota vencida`);
+                set('dash-tasa', total > 0 ? ((alDia / total) * 100).toFixed(1) + '%' : '—');
+
+                // Sumar ingresos del mes desde historial de pagos
+                const todosPagos = await Promise.all(
+                    socios.map(s => fetch(`/api/socios/${s.dni}/pagos`).then(r => r.json()).catch(() => []))
+                );
+
+                let totalMes = 0, totalAnt = 0;
+                todosPagos.flat().forEach(p => {
+                    if (!p.monto || p.monto === '—' || !p.fecha || p.fecha === '—') return;
+                    const n = parseFloat(String(p.monto).replace(/[^0-9]/g, ''));
+                    if (!n || isNaN(n)) return;
+                    const pts = String(p.fecha).split('/');
+                    if (pts.length !== 3) return;
+                    const m = parseInt(pts[1], 10) - 1;
+                    const a = parseInt(pts[2], 10);
+                    if (m === mesActual && a === anioActual) totalMes += n;
+                    if (m === mesAnt    && a === anioAnt)    totalAnt  += n;
+                });
+
+                set('kpi-ingresos', '$' + totalMes.toLocaleString('es-AR'));
+                const elDelta = document.getElementById('kpi-ingresos-delta');
+                if (elDelta) {
+                    if (totalAnt > 0) {
+                        const pct   = ((totalMes - totalAnt) / totalAnt * 100).toFixed(1);
+                        const signo = pct >= 0 ? '+' : '';
+                        elDelta.innerText   = `${signo}${pct}% vs mes anterior`;
+                        elDelta.className   = 'dash-kpi-delta ' + (pct >= 0 ? 'dash-delta-ok' : 'dash-delta-danger');
+                    } else {
+                        elDelta.innerText = 'Sin datos del mes anterior';
+                        elDelta.className = 'dash-kpi-delta dash-delta-ok';
+                    }
+                }
+            } catch(e) { console.error('Dashboard KPIs error:', e); }
+        }
 
         window.onload = () => switchTab('socios_lista');
     </script>
