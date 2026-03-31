@@ -113,9 +113,6 @@
             document.getElementById('det-info-alta').innerText     = fmt(s.fechaInicio || s.fechaPago);
             document.getElementById('det-info-vence').innerText    = fmt(hasta);
             document.getElementById('det-info-estado').innerText   = estadoTexto;
-            document.getElementById('det-m-dias').innerText        = diffDays > 0 ? diffDays + ' días' : 'Vencido';
-            document.getElementById('det-m-plan').innerText        = s.plan || 'Musculación';
-            document.getElementById('det-m-desde').innerText       = fmt(s.fechaInicio || s.fechaPago);
 
             // Color dinámico del badge de estado
             const badgeEstado = document.getElementById('det-badge-estado');
