@@ -33,9 +33,27 @@ app.get('/api/socios/todos', async (req, res) => {
 app.post('/api/registrar', async (req, res) => {
     try {
         await conectar();
-        const socio = req.body;
+        const { primerPago, ...socio } = req.body;
         if (!socio.fechaInicio) socio.fechaInicio = new Date().toISOString();
         await client.set(`socio:${socio.dni}`, JSON.stringify(socio));
+
+        // Guardar primer pago en historial si se proporcionó monto
+        if (primerPago && primerPago.monto) {
+            const fechaPago = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+            const ahora = new Date();
+            const mes   = ahora.toLocaleString('es-AR', { month: 'long', timeZone: 'America/Argentina/Buenos_Aires' });
+            const anio  = ahora.toLocaleString('es-AR', { year: 'numeric', timeZone: 'America/Argentina/Buenos_Aires' });
+            const pagos = [{
+                id:       Date.now(),
+                fecha:    fechaPago,
+                concepto: primerPago.concepto || `Mensual ${mes} ${anio}`,
+                monto:    primerPago.monto,
+                metodo:   primerPago.metodo || 'Efectivo',
+                estado:   'Pagado'
+            }];
+            await client.set(`pagos:${socio.dni}`, JSON.stringify(pagos));
+        }
+
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });

@@ -312,6 +312,9 @@
 
         // ── Helpers ──────────────────────────────────────────────────────────
         function leerFormulario() {
+            const montoRaw = (document.getElementById('pago-monto')?.value || '').trim();
+            const montoNum = parseInt(montoRaw, 10);
+            const montoFmt = montoRaw ? '$' + montoNum.toLocaleString('es-AR') : '';
             return {
                 nombre:     document.getElementById('nombre').value.trim(),
                 dni:        document.getElementById('dni').value.trim(),
@@ -319,7 +322,12 @@
                 telefono:   document.getElementById('telefono').value.trim(),
                 plan:       document.getElementById('plan').value,
                 estado:     document.getElementById('estado').value,
-                fechaInicio: document.getElementById('fechaInicio').value || new Date().toISOString()
+                fechaInicio: document.getElementById('fechaInicio').value || new Date().toISOString(),
+                primerPago: montoFmt ? {
+                    monto:    montoFmt,
+                    metodo:   document.getElementById('pago-metodo')?.value || 'Efectivo',
+                    concepto: document.getElementById('pago-concepto')?.value.trim() || ''
+                } : null
             };
         }
 
