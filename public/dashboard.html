@@ -328,8 +328,8 @@
     async function cargarKPIs() {
         try {
             const [socios, ingresos] = await Promise.all([
-                fetch('/api/socios/todos').then(r => r.json()),
-                fetch('/api/dashboard/ingresos').then(r => r.json()),
+                fetch('/api/socios/todos').then(r => r.json()).catch(() => []),
+                fetch('/api/dashboard/ingresos').then(r => r.json()).catch(() => ({ mesActual: 0, mesAnterior: 0 })),
             ]);
 
             const total = socios.length;
