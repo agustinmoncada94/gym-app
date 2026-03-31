@@ -58,12 +58,13 @@ app.post('/api/socios/cobrar', async (req, res) => {
             // Registrar pago con los datos del modal (o valores por defecto)
             const rawPagos = await client.get(`pagos:${dni}`);
             const pagos = rawPagos ? JSON.parse(rawPagos) : [];
-            const fecha = new Date(nuevaFecha);
-            const mes = fecha.toLocaleString('es-AR', { month: 'long' });
-            const anio = fecha.getFullYear();
+            const ahora = new Date();
+            const mes   = ahora.toLocaleString('es-AR', { month: 'long', timeZone: 'America/Argentina/Buenos_Aires' });
+            const anio  = ahora.toLocaleString('es-AR', { year: 'numeric', timeZone: 'America/Argentina/Buenos_Aires' });
+            const fechaPago = ahora.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
             pagos.unshift({
                 id: Date.now(),
-                fecha: fecha.toLocaleDateString('es-AR'),
+                fecha: fechaPago,
                 concepto: pago?.concepto || `Mensual ${mes} ${anio}`,
                 monto:    pago?.monto    || '',
                 metodo:   pago?.metodo   || 'Efectivo',
