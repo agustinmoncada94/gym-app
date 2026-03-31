@@ -1,0 +1,348 @@
+<div class="equip-wrap">
+
+    <!-- Page header -->
+    <div class="equip-page-header">
+        <div>
+            <p class="equip-kicker">Gestión integral del gimnasio</p>
+            <h1 class="equip-titulo">Equipamiento</h1>
+        </div>
+        <div class="equip-header-actions">
+            <button class="det-btn-volver" id="eq-btn-exportar">Exportar inventario</button>
+            <button class="eq-btn-primary" id="eq-btn-registrar">+ Registrar equipo</button>
+        </div>
+    </div>
+
+    <div class="equip-main-grid">
+
+        <!-- ── Columna izquierda: formulario + métricas ── -->
+        <div class="equip-col-left">
+
+            <!-- Formulario alta -->
+            <div class="det-card">
+                <div class="eq-form-header">
+                    <div>
+                        <p class="det-card-title" style="color:var(--primary)">Alta de equipo</p>
+                        <h2 class="eq-form-titulo">Cargar nuevo equipamiento</h2>
+                    </div>
+                    <div class="eq-form-icon">🏋️</div>
+                </div>
+
+                <form id="equipoForm" class="eq-form-body">
+                    <div class="eq-field-full">
+                        <label class="eq-label">Nombre del equipo
+                            <input type="text" id="eq-nombre" class="hist-input" placeholder="Ej: Cinta de correr X900" required>
+                        </label>
+                    </div>
+
+                    <div class="eq-grid-2">
+                        <label class="eq-label">Categoría
+                            <select id="eq-categoria" class="hist-input">
+                                <option value="">Seleccionar</option>
+                                <option>Cardio</option>
+                                <option>Musculación</option>
+                                <option>Accesorios</option>
+                                <option>Funcional</option>
+                            </select>
+                        </label>
+                        <label class="eq-label">Estado inicial
+                            <select id="eq-estado" class="hist-input">
+                                <option>Operativo</option>
+                                <option>En revisión</option>
+                                <option>Fuera de servicio</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="eq-grid-2">
+                        <label class="eq-label">Marca
+                            <input type="text" id="eq-marca" class="hist-input" placeholder="Ej: Technogym">
+                        </label>
+                        <label class="eq-label">Modelo
+                            <input type="text" id="eq-modelo" class="hist-input" placeholder="Ej: Run Pro 900">
+                        </label>
+                    </div>
+
+                    <div class="eq-grid-2">
+                        <label class="eq-label">Número de serie
+                            <input type="text" id="eq-serie" class="hist-input" placeholder="Ej: EQ-2026-001">
+                        </label>
+                        <label class="eq-label">Ubicación / sector
+                            <input type="text" id="eq-sector" class="hist-input" placeholder="Ej: Sala principal">
+                        </label>
+                    </div>
+
+                    <div class="eq-grid-2">
+                        <label class="eq-label">Fecha de compra
+                            <input type="date" id="eq-compra" class="hist-input">
+                        </label>
+                        <label class="eq-label">Próximo mantenimiento
+                            <input type="date" id="eq-mantenimiento" class="hist-input">
+                        </label>
+                    </div>
+
+                    <div class="eq-grid-2">
+                        <label class="eq-label">Proveedor
+                            <input type="text" id="eq-proveedor" class="hist-input" placeholder="Ej: Fitness Pro">
+                        </label>
+                        <label class="eq-label">Responsable
+                            <input type="text" id="eq-responsable" class="hist-input" placeholder="Ej: Mariano López">
+                        </label>
+                    </div>
+
+                    <div class="eq-field-full">
+                        <label class="eq-label">Observaciones
+                            <textarea id="eq-obs" class="hist-input eq-textarea" rows="3" placeholder="Detalle técnico, fallas previas, garantía, repuestos, etc."></textarea>
+                        </label>
+                    </div>
+
+                    <div class="eq-form-actions">
+                        <button type="button" id="eq-limpiar" class="det-btn-volver">Limpiar</button>
+                        <button type="submit" class="eq-btn-primary">Guardar equipo</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Métricas -->
+            <div class="eq-metrics-grid">
+                <div class="det-metric">
+                    <span class="det-metric-label">Total de equipos</span>
+                    <span class="det-metric-value" id="eq-m-total">—</span>
+                    <span class="eq-metric-helper">Inventario general</span>
+                </div>
+                <div class="det-metric">
+                    <span class="det-metric-label">Operativos</span>
+                    <span class="det-metric-value eq-val-ok" id="eq-m-op">—</span>
+                    <span class="eq-metric-helper">Disponibles para uso</span>
+                </div>
+                <div class="det-metric">
+                    <span class="det-metric-label">En revisión</span>
+                    <span class="det-metric-value eq-val-warn" id="eq-m-rev">—</span>
+                    <span class="eq-metric-helper">Pendientes de control</span>
+                </div>
+                <div class="det-metric">
+                    <span class="det-metric-label">Fuera de servicio</span>
+                    <span class="det-metric-value eq-val-danger" id="eq-m-fs">—</span>
+                    <span class="eq-metric-helper">Requieren intervención</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Columna derecha: tabla + alertas ── -->
+        <div class="equip-col-right">
+
+            <!-- Tabla inventario -->
+            <div class="det-card">
+                <div class="historial-header">
+                    <div>
+                        <p class="det-card-title" style="color:var(--primary)">Inventario</p>
+                        <h2 class="historial-titulo">Listado de equipos</h2>
+                    </div>
+                    <div id="eq-alerta-badge" class="eq-alerta-badge" style="display:none">
+                        ⚠️ Equipos con alerta: <span id="eq-alerta-num">0</span>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="historial-filtros" style="grid-template-columns: repeat(auto-fit, minmax(140px,1fr))">
+                    <input type="text" id="eq-buscar" class="hist-input" placeholder="Buscar por nombre o serie...">
+                    <select id="eq-f-categoria" class="hist-input">
+                        <option value="">Todas las categorías</option>
+                        <option>Cardio</option>
+                        <option>Musculación</option>
+                        <option>Accesorios</option>
+                        <option>Funcional</option>
+                    </select>
+                    <select id="eq-f-estado" class="hist-input">
+                        <option value="">Todos los estados</option>
+                        <option>Operativo</option>
+                        <option>En revisión</option>
+                        <option>Fuera de servicio</option>
+                    </select>
+                    <select id="eq-f-sector" class="hist-input">
+                        <option value="">Todos los sectores</option>
+                        <option>Sala principal</option>
+                        <option>Sala 2</option>
+                        <option>Peso libre</option>
+                        <option>Funcional</option>
+                    </select>
+                </div>
+
+                <!-- Tabla -->
+                <div class="historial-tabla-wrap">
+                    <div class="eq-thead">
+                        <span>Equipo</span>
+                        <span>Categoría</span>
+                        <span>Sector</span>
+                        <span>Estado</span>
+                        <span>Mantenimiento</span>
+                        <span>Responsable</span>
+                        <span>Acción</span>
+                    </div>
+                    <div id="eq-tbody"></div>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div class="eq-alerts-grid">
+                <div class="det-card">
+                    <h3 class="eq-alert-titulo">📅 Mantenimientos próximos</h3>
+                    <div id="eq-alert-mant" class="eq-alert-list"></div>
+                </div>
+                <div class="det-card">
+                    <h3 class="eq-alert-titulo">🔧 Equipos con incidencia</h3>
+                    <div id="eq-alert-inc" class="eq-alert-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // ── Datos de ejemplo (se reemplazarán con API) ──────────────────────
+    let equiposData = [
+        { id: 1, nombre: "Cinta de correr X900",    categoria: "Cardio",       sector: "Sala principal", estado: "Operativo",         mantenimiento: "12/04/2026", responsable: "Mariano López",   serie: "EQ-001" },
+        { id: 2, nombre: "Banco plano reforzado",   categoria: "Musculación",  sector: "Peso libre",     estado: "En revisión",       mantenimiento: "05/04/2026", responsable: "Sofía Ruiz",       serie: "EQ-002" },
+        { id: 3, nombre: "Bicicleta fija ProBike",  categoria: "Cardio",       sector: "Sala 2",         estado: "Operativo",         mantenimiento: "20/04/2026", responsable: "Mariano López",   serie: "EQ-003" },
+        { id: 4, nombre: "Polea alta multifunción", categoria: "Musculación",  sector: "Sala principal", estado: "Fuera de servicio", mantenimiento: "28/03/2026", responsable: "Técnico externo", serie: "EQ-004" },
+        { id: 5, nombre: "Remo magnético R200",     categoria: "Cardio",       sector: "Sala 2",         estado: "En revisión",       mantenimiento: "15/04/2026", responsable: "Sofía Ruiz",       serie: "EQ-005" },
+    ];
+
+    const estadoPill = {
+        "Operativo":          "eq-pill-ok",
+        "En revisión":        "eq-pill-warn",
+        "Fuera de servicio":  "eq-pill-danger"
+    };
+
+    function renderTabla() {
+        const buscar    = document.getElementById('eq-buscar').value.toLowerCase();
+        const fCat      = document.getElementById('eq-f-categoria').value;
+        const fEst      = document.getElementById('eq-f-estado').value;
+        const fSec      = document.getElementById('eq-f-sector').value;
+        const tbody     = document.getElementById('eq-tbody');
+
+        const lista = equiposData.filter(e => {
+            const textoMatch = e.nombre.toLowerCase().includes(buscar) || e.serie.toLowerCase().includes(buscar);
+            return textoMatch
+                && (!fCat || e.categoria === fCat)
+                && (!fEst || e.estado    === fEst)
+                && (!fSec || e.sector    === fSec);
+        });
+
+        if (!lista.length) {
+            tbody.innerHTML = '<div class="historial-empty">Sin equipos que coincidan con los filtros</div>';
+            return;
+        }
+
+        tbody.innerHTML = lista.map(e => `
+            <div class="eq-row">
+                <span class="eq-row-nombre">${e.nombre}</span>
+                <span>${e.categoria}</span>
+                <span>${e.sector}</span>
+                <span><span class="hist-pill ${estadoPill[e.estado]}">${e.estado}</span></span>
+                <span>${e.mantenimiento}</span>
+                <span>${e.responsable}</span>
+                <span>
+                    <button class="det-btn-volver" style="font-size:0.8rem;padding:6px 14px"
+                        onclick="gestionarEquipo(${e.id})">Gestionar</button>
+                </span>
+            </div>`).join('');
+
+        actualizarMetricas();
+        actualizarAlertas();
+    }
+
+    function actualizarMetricas() {
+        const total = equiposData.length;
+        const op    = equiposData.filter(e => e.estado === 'Operativo').length;
+        const rev   = equiposData.filter(e => e.estado === 'En revisión').length;
+        const fs    = equiposData.filter(e => e.estado === 'Fuera de servicio').length;
+
+        document.getElementById('eq-m-total').innerText = total;
+        document.getElementById('eq-m-op').innerText    = op;
+        document.getElementById('eq-m-rev').innerText   = rev;
+        document.getElementById('eq-m-fs').innerText    = fs;
+
+        const alertas = rev + fs;
+        const badge = document.getElementById('eq-alerta-badge');
+        document.getElementById('eq-alerta-num').innerText = alertas;
+        badge.style.display = alertas > 0 ? 'block' : 'none';
+    }
+
+    function actualizarAlertas() {
+        const mant = document.getElementById('eq-alert-mant');
+        const inc  = document.getElementById('eq-alert-inc');
+
+        const proximos = equiposData
+            .filter(e => e.estado === 'Operativo')
+            .sort((a, b) => a.mantenimiento.split('/').reverse().join('').localeCompare(b.mantenimiento.split('/').reverse().join('')))
+            .slice(0, 4);
+
+        mant.innerHTML = proximos.length
+            ? proximos.map(e => `<div class="eq-alert-item">${e.nombre} · ${e.mantenimiento}</div>`).join('')
+            : '<div class="eq-alert-item eq-alert-empty">Sin mantenimientos próximos</div>';
+
+        const incidencias = equiposData.filter(e => e.estado !== 'Operativo');
+        inc.innerHTML = incidencias.length
+            ? incidencias.map(e => `<div class="eq-alert-item eq-alert-warn">${e.nombre} · ${e.estado}</div>`).join('')
+            : '<div class="eq-alert-item eq-alert-empty">Sin incidencias activas ✅</div>';
+    }
+
+    // ── Formulario ──────────────────────────────────────────────────────
+    document.getElementById('equipoForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const nuevo = {
+            id:             Date.now(),
+            nombre:         document.getElementById('eq-nombre').value.trim(),
+            categoria:      document.getElementById('eq-categoria').value || 'Sin categoría',
+            estado:         document.getElementById('eq-estado').value,
+            marca:          document.getElementById('eq-marca').value.trim(),
+            modelo:         document.getElementById('eq-modelo').value.trim(),
+            serie:          document.getElementById('eq-serie').value.trim() || ('EQ-' + Date.now()),
+            sector:         document.getElementById('eq-sector').value.trim(),
+            mantenimiento:  document.getElementById('eq-mantenimiento').value
+                                ? new Date(document.getElementById('eq-mantenimiento').value).toLocaleDateString('es-AR')
+                                : '—',
+            responsable:    document.getElementById('eq-responsable').value.trim() || '—',
+            obs:            document.getElementById('eq-obs').value.trim()
+        };
+        equiposData.unshift(nuevo);
+        this.reset();
+        renderTabla();
+    });
+
+    document.getElementById('eq-limpiar').onclick = () => document.getElementById('equipoForm').reset();
+
+    // ── Filtros en tiempo real ──────────────────────────────────────────
+    ['eq-buscar','eq-f-categoria','eq-f-estado','eq-f-sector'].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('input',  renderTabla);
+        el.addEventListener('change', renderTabla);
+    });
+
+    // ── Exportar CSV ────────────────────────────────────────────────────
+    document.getElementById('eq-btn-exportar').onclick = () => {
+        const csv = ['Nombre,Categoría,Sector,Estado,Mantenimiento,Responsable,Serie',
+            ...equiposData.map(e => `${e.nombre},${e.categoria},${e.sector},${e.estado},${e.mantenimiento},${e.responsable},${e.serie}`)
+        ].join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = 'inventario_equipos.csv';
+        a.click();
+    };
+
+    // ── Scroll al form desde el botón header ───────────────────────────
+    document.getElementById('eq-btn-registrar').onclick = () => {
+        document.getElementById('eq-nombre').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('eq-nombre').focus();
+    };
+
+    // ── Gestionar equipo (placeholder) ─────────────────────────────────
+    window.gestionarEquipo = function (id) {
+        const eq = equiposData.find(e => e.id === id);
+        if (eq) alert(`Equipo: ${eq.nombre}\nEstado: ${eq.estado}\nSerie: ${eq.serie}\nSector: ${eq.sector}`);
+    };
+
+    renderTabla();
+})();
+</script>
