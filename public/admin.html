@@ -126,6 +126,86 @@
             document.getElementById('det-btn-cobrar').onclick  = async () => { await cobrarMes(dni); verDetalle(dni); };
             document.getElementById('det-btn-editar').onclick  = () => prepararEdicion(s);
             document.getElementById('det-btn-eliminar').onclick = () => { borrarSocio(dni); };
+
+            // ── Historial de pagos ────────────────────────────────────────
+            let pagosData = [];
+
+            async function cargarPagos() {
+                const res = await fetch(`/api/socios/${dni}/pagos`);
+                pagosData = await res.json();
+                renderPagos();
+            }
+
+            function renderPagos() {
+                const buscar  = document.getElementById('hist-buscar').value.toLowerCase();
+                const estado  = document.getElementById('hist-estado').value;
+                const metodo  = document.getElementById('hist-metodo').value;
+                const orden   = document.getElementById('hist-orden').value;
+                const body    = document.getElementById('historial-body');
+
+                let lista = [...pagosData];
+                if (buscar) lista = lista.filter(p => p.concepto.toLowerCase().includes(buscar) || p.monto.includes(buscar));
+                if (estado) lista = lista.filter(p => p.estado === estado);
+                if (metodo) lista = lista.filter(p => p.metodo === metodo);
+                if (orden === 'antiguos') lista.reverse();
+
+                if (!lista.length) {
+                    body.innerHTML = '<div class="historial-empty">Sin movimientos registrados</div>';
+                    return;
+                }
+
+                body.innerHTML = lista.map(p => {
+                    const cls = p.estado === 'Pagado' ? 'pill-pagado' : 'pill-pendiente';
+                    return `
+                    <div class="historial-row">
+                        <span>${p.fecha}</span>
+                        <span>${p.concepto}</span>
+                        <span class="historial-monto">${p.monto || '—'}</span>
+                        <span>${p.metodo}</span>
+                        <span><span class="hist-pill ${cls}">${p.estado}</span></span>
+                        <span><button class="det-btn-volver" style="font-size:0.8rem;padding:6px 12px">Ver detalle</button></span>
+                    </div>`;
+                }).join('');
+            }
+
+            // Filtros en tiempo real
+            ['hist-buscar','hist-estado','hist-metodo','hist-orden'].forEach(id => {
+                document.getElementById(id).addEventListener('input', renderPagos);
+                document.getElementById(id).addEventListener('change', renderPagos);
+            });
+
+            // Modal registrar pago
+            const modal = document.getElementById('modal-pago');
+            document.getElementById('det-btn-nuevo-pago').onclick = () => modal.style.display = 'flex';
+            document.getElementById('mp-cancelar').onclick        = () => modal.style.display = 'none';
+            document.getElementById('mp-guardar').onclick = async () => {
+                const body = {
+                    concepto: document.getElementById('mp-concepto').value || 'Mensual',
+                    monto:    document.getElementById('mp-monto').value,
+                    metodo:   document.getElementById('mp-metodo').value,
+                    estado:   document.getElementById('mp-estado').value
+                };
+                await fetch(`/api/socios/${dni}/pagos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                modal.style.display = 'none';
+                await cargarPagos();
+            };
+
+            // Exportar CSV
+            document.getElementById('det-btn-exportar').onclick = () => {
+                const csv = ['Fecha,Concepto,Monto,Método,Estado',
+                    ...pagosData.map(p => `${p.fecha},${p.concepto},${p.monto},${p.metodo},${p.estado}`)
+                ].join('\n');
+                const a = document.createElement('a');
+                a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+                a.download = `pagos_${s.nombre.replace(/ /g,'_')}.csv`;
+                a.click();
+            };
+
+            cargarPagos();
         }
 
         async function switchTab(tabName) {

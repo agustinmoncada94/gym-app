@@ -90,4 +90,62 @@
 
         </div>
     </div>
+
+    <!-- Historial de pagos -->
+    <div class="det-card" style="margin-top:4px">
+        <div class="historial-header">
+            <div>
+                <p class="det-card-title" style="color:var(--primary); margin-bottom:4px">Historial de pagos</p>
+                <h3 class="historial-titulo">Movimientos del socio</h3>
+            </div>
+            <div class="historial-header-actions">
+                <button class="det-btn-volver" id="det-btn-exportar">Exportar</button>
+                <button class="det-accion det-accion-primary" id="det-btn-nuevo-pago">+ Registrar pago</button>
+            </div>
+        </div>
+
+        <div class="historial-filtros">
+            <input type="text" id="hist-buscar" class="hist-input" placeholder="Buscar pago...">
+            <select id="hist-estado" class="hist-input">
+                <option value="">Todos los estados</option>
+                <option value="Pagado">Pagado</option>
+                <option value="Pendiente">Pendiente</option>
+            </select>
+            <select id="hist-metodo" class="hist-input">
+                <option value="">Todos los métodos</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Tarjeta">Tarjeta</option>
+            </select>
+            <select id="hist-orden" class="hist-input">
+                <option value="recientes">Más recientes primero</option>
+                <option value="antiguos">Más antiguos primero</option>
+            </select>
+        </div>
+
+        <div class="historial-tabla-wrap">
+            <div class="historial-thead">
+                <span>Fecha</span><span>Concepto</span><span>Monto</span><span>Método</span><span>Estado</span><span>Acción</span>
+            </div>
+            <div id="historial-body"></div>
+        </div>
+
+        <!-- Modal registrar pago -->
+        <div id="modal-pago" class="modal-overlay" style="display:none">
+            <div class="modal-box">
+                <h3 class="modal-titulo">Registrar pago</h3>
+                <div class="modal-form">
+                    <label>Concepto<input type="text" id="mp-concepto" class="hist-input" placeholder="Mensual abril..."></label>
+                    <label>Monto<input type="text" id="mp-monto" class="hist-input" placeholder="$18.000"></label>
+                    <label>Método<select id="mp-metodo" class="hist-input"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select></label>
+                    <label>Estado<select id="mp-estado" class="hist-input"><option>Pagado</option><option>Pendiente</option></select></label>
+                </div>
+                <div class="modal-actions">
+                    <button class="det-btn-volver" id="mp-cancelar">Cancelar</button>
+                    <button class="det-accion det-accion-primary" id="mp-guardar">Guardar pago</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>

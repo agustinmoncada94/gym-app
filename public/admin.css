@@ -800,3 +800,120 @@ button[type="submit"]:hover {
     transition: color 0.2s;
 }
 .nombre-link:hover { color: var(--primary); }
+
+/* ── HISTORIAL DE PAGOS ────────────────────────────────────────────────── */
+.historial-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.historial-titulo {
+    margin: 4px 0 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--text);
+}
+.historial-header-actions { display: flex; gap: 10px; align-items: center; }
+
+.historial-filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.hist-input {
+    background: var(--input-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+.hist-input:focus { border-color: var(--primary); }
+
+.historial-tabla-wrap {
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.historial-thead {
+    display: grid;
+    grid-template-columns: 1fr 1.8fr 0.9fr 1fr 0.9fr 0.8fr;
+    gap: 8px;
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.03);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+}
+
+.historial-row {
+    display: grid;
+    grid-template-columns: 1fr 1.8fr 0.9fr 1fr 0.9fr 0.8fr;
+    gap: 8px;
+    padding: 14px 20px;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: var(--input-bg);
+    font-size: 0.88rem;
+    color: var(--text-soft);
+    transition: background 0.15s;
+}
+.historial-row:hover { background: rgba(255,255,255,0.04); }
+.historial-monto { font-weight: 800; color: var(--text); }
+
+.hist-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.pill-pagado   { background: rgba(53,224,138,0.12); color: #35e08a; border: 1px solid rgba(53,224,138,0.25); }
+.pill-pendiente{ background: rgba(255,92,92,0.12);  color: #ff5c5c; border: 1px solid rgba(255,92,92,0.25); }
+
+.historial-empty {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99998;
+}
+.modal-box {
+    background: #0e1a2a;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.modal-titulo { margin: 0; font-size: 1.2rem; font-weight: 900; color: var(--text); }
+.modal-form { display: flex; flex-direction: column; gap: 12px; }
+.modal-form label { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; font-weight: 600; color: var(--text-faint); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
