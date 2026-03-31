@@ -218,6 +218,14 @@
                     }
                 });
 
+                // Re-ejecutar scripts inline del HTML cargado (innerHTML no los ejecuta automáticamente)
+                container.querySelectorAll('script').forEach(oldScript => {
+                    const s = document.createElement('script');
+                    s.textContent = oldScript.textContent;
+                    document.body.appendChild(s);
+                    document.body.removeChild(s);
+                });
+
                 if (tabName === 'socios_lista') await cargarSocios();
 
                 if (tabName === 'socios_registro') {
