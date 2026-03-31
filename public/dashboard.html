@@ -325,15 +325,23 @@
         </div>`).join('');
 
     // ── KPIs dinámicos desde Redis ──────────────────────────────────────
+    function parsearMonto(str) {
+        // Acepta "$20.000", "20000", 20000, "$20,000"
+        if (!str || str === '—') return 0;
+        const num = parseFloat(String(str).replace(/[^0-9]/g, ''));
+        return isNaN(num) ? 0 : num;
+    }
+
     async function cargarKPIs() {
         try {
-            const [socios, ingresos] = await Promise.all([
-                fetch('/api/socios/todos').then(r => r.json()).catch(() => []),
-                fetch('/api/dashboard/ingresos').then(r => r.json()).catch(() => ({ mesActual: 0, mesAnterior: 0 })),
-            ]);
+            const socios = await fetch('/api/socios/todos').then(r => r.json()).catch(() => []);
 
             const total = socios.length;
             const hoy   = new Date(); hoy.setHours(0,0,0,0);
+            const mesActual  = hoy.getMonth();      // 0-based
+            const anioActual = hoy.getFullYear();
+            const mesAnterior  = mesActual === 0 ? 11 : mesActual - 1;
+            const anioAnterior = mesActual === 0 ? anioActual - 1 : anioActual;
 
             let alDia = 0, vencidos = 0, porVencer = 0;
             socios.forEach(s => {
@@ -354,21 +362,38 @@
             const tasa = total > 0 ? ((alDia / total) * 100).toFixed(1) + '%' : '—';
             document.getElementById('dash-tasa').innerText = tasa;
 
-            // KPI Ingresos del mes
-            const actual   = ingresos.mesActual   || 0;
-            const anterior = ingresos.mesAnterior || 0;
-            document.getElementById('kpi-ingresos').innerText = actual > 0
-                ? '$' + actual.toLocaleString('es-AR')
-                : '$0';
-            if (anterior > 0) {
-                const diff = ((actual - anterior) / anterior * 100).toFixed(1);
-                const signo = diff >= 0 ? '+' : '';
-                document.getElementById('kpi-ingresos-delta').innerText = `${signo}${diff}% vs mes anterior`;
-                document.getElementById('kpi-ingresos-delta').className =
-                    'dash-kpi-delta ' + (diff >= 0 ? 'dash-delta-ok' : 'dash-delta-danger');
+            // ── Ingresos del mes: buscar pagos de cada socio ──────────────
+            const todosPagos = await Promise.all(
+                socios.map(s => fetch(`/api/socios/${s.dni}/pagos`).then(r => r.json()).catch(() => []))
+            );
+
+            let totalMesActual = 0, totalMesAnterior = 0;
+            todosPagos.flat().forEach(p => {
+                const monto = parsearMonto(p.monto);
+                if (!monto || !p.fecha || p.fecha === '—') return;
+                // fecha guardada como "dd/mm/aaaa"
+                const partes = String(p.fecha).split('/');
+                if (partes.length !== 3) return;
+                const m = parseInt(partes[1], 10) - 1; // 0-based
+                const a = parseInt(partes[2], 10);
+                if (m === mesActual   && a === anioActual)  totalMesActual   += monto;
+                if (m === mesAnterior && a === anioAnterior) totalMesAnterior += monto;
+            });
+
+            document.getElementById('kpi-ingresos').innerText =
+                '$' + totalMesActual.toLocaleString('es-AR');
+
+            if (totalMesAnterior > 0) {
+                const pct    = ((totalMesActual - totalMesAnterior) / totalMesAnterior * 100).toFixed(1);
+                const signo  = pct >= 0 ? '+' : '';
+                document.getElementById('kpi-ingresos-delta').innerText   = `${signo}${pct}% vs mes anterior`;
+                document.getElementById('kpi-ingresos-delta').className   =
+                    'dash-kpi-delta ' + (pct >= 0 ? 'dash-delta-ok' : 'dash-delta-danger');
             } else {
                 document.getElementById('kpi-ingresos-delta').innerText = 'Sin datos del mes anterior';
+                document.getElementById('kpi-ingresos-delta').className = 'dash-kpi-delta dash-delta-ok';
             }
+
         } catch (e) {
             console.error('Error cargando KPIs:', e);
         }
