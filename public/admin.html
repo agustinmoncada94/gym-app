@@ -767,15 +767,19 @@
                     });
                 }
 
-                // ── Chart 4: Equipos (estático) ─────────────────────────
+                // ── Chart 4: Equipos por estado (real) ─────────────────
                 const ctxEquipos = document.getElementById('chart-equipos');
                 if (ctxEquipos) {
+                    const cats = ['Cardio','Musculación','Funcional','Accesorios'];
+                    const eOp  = cats.map(c => equipos.filter(e => e.categoria === c && e.estado === 'Operativo').length);
+                    const eRev = cats.map(c => equipos.filter(e => e.categoria === c && e.estado === 'En revisión').length);
+                    const eFS  = cats.map(c => equipos.filter(e => e.categoria === c && e.estado === 'Fuera de servicio').length);
                     _dashCharts.equipos = new Chart(ctxEquipos, {
                         type:'bar',
-                        data:{ labels:['Cardio','Musculación','Funcional','Accesorios'], datasets:[
-                            { label:'Operativos',       data:[14,17,9,13], backgroundColor:'#84cc16', borderRadius:6, borderSkipped:false },
-                            { label:'En revisión',      data:[2,1,1,0],   backgroundColor:'#f59e0b', borderRadius:6, borderSkipped:false },
-                            { label:'Fuera de servicio',data:[1,1,0,1],   backgroundColor:'#f43f5e', borderRadius:6, borderSkipped:false },
+                        data:{ labels: cats, datasets:[
+                            { label:'Operativos',        data: eOp,  backgroundColor:'#84cc16', borderRadius:6, borderSkipped:false },
+                            { label:'En revisión',       data: eRev, backgroundColor:'#f59e0b', borderRadius:6, borderSkipped:false },
+                            { label:'Fuera de servicio', data: eFS,  backgroundColor:'#f43f5e', borderRadius:6, borderSkipped:false },
                         ]},
                         options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{boxWidth:12,padding:16}},tooltip:{...tooltipStyle}}, scales:{x:{stacked:true,grid:{display:false},border:{display:false}},y:{stacked:true,grid:{color:gridColor},border:{display:false}}} }
                     });
