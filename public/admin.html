@@ -770,10 +770,12 @@
                 // ── Chart 4: Equipos por estado (real) ─────────────────
                 const ctxEquipos = document.getElementById('chart-equipos');
                 if (ctxEquipos) {
-                    const cats = ['Cardio','Musculación','Funcional','Accesorios'];
-                    const eOp  = cats.map(c => equipos.filter(e => e.categoria === c && e.estado === 'Operativo').length);
-                    const eRev = cats.map(c => equipos.filter(e => e.categoria === c && e.estado === 'En revisión').length);
-                    const eFS  = cats.map(c => equipos.filter(e => e.categoria === c && e.estado === 'Fuera de servicio').length);
+                    // Tomar categorías reales de los datos, caer a las 4 fijas si no hay equipos
+                    const catsReales = [...new Set(equipos.map(e => e.categoria || 'Sin categoría'))];
+                    const cats = catsReales.length ? catsReales : ['Cardio','Musculación','Funcional','Accesorios'];
+                    const eOp  = cats.map(c => equipos.filter(e => (e.categoria||'Sin categoría') === c && e.estado === 'Operativo').length);
+                    const eRev = cats.map(c => equipos.filter(e => (e.categoria||'Sin categoría') === c && e.estado === 'En revisión').length);
+                    const eFS  = cats.map(c => equipos.filter(e => (e.categoria||'Sin categoría') === c && e.estado === 'Fuera de servicio').length);
                     _dashCharts.equipos = new Chart(ctxEquipos, {
                         type:'bar',
                         data:{ labels: cats, datasets:[
