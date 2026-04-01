@@ -629,7 +629,10 @@
         let _dashCharts = {};
         async function cargarDashboardKPIs() {
             try {
-                const socios = await fetch('/api/socios/todos').then(r => r.json()).catch(() => []);
+                const [socios, equipos] = await Promise.all([
+                    fetch('/api/socios/todos').then(r => r.json()).catch(() => []),
+                    fetch('/api/equipos').then(r => r.json()).catch(() => []),
+                ]);
                 const hoy        = new Date(); hoy.setHours(0,0,0,0);
                 const mesActual  = hoy.getMonth();
                 const anioActual = hoy.getFullYear();
@@ -656,6 +659,12 @@
                 set('dash-total-socios', total);
                 set('alerta-vencidos',   `${vencidos} socios con cuota vencida`);
                 set('dash-tasa', total > 0 ? ((alDia / total) * 100).toFixed(1) + '%' : '—');
+
+                // ── KPI Equipos ─────────────────────────────────────────
+                const operativos = equipos.filter(e => e.estado === 'Operativo').length;
+                const conAlerta  = equipos.filter(e => e.estado !== 'Operativo').length;
+                set('kpi-equipos',       operativos);
+                set('kpi-equipos-delta', conAlerta > 0 ? `${conAlerta} con alerta técnica` : 'Todos operativos');
 
                 // ── Pagos: calcular últimos 6 meses ─────────────────────
                 const todosPagos = await Promise.all(

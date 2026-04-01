@@ -199,14 +199,7 @@
 
 <script>
 (function () {
-    // ── Datos de ejemplo (se reemplazarán con API) ──────────────────────
-    let equiposData = [
-        { id: 1, nombre: "Cinta de correr X900",    categoria: "Cardio",       sector: "Sala principal", estado: "Operativo",         mantenimiento: "12/04/2026", responsable: "Mariano López",   serie: "EQ-001" },
-        { id: 2, nombre: "Banco plano reforzado",   categoria: "Musculación",  sector: "Peso libre",     estado: "En revisión",       mantenimiento: "05/04/2026", responsable: "Sofía Ruiz",       serie: "EQ-002" },
-        { id: 3, nombre: "Bicicleta fija ProBike",  categoria: "Cardio",       sector: "Sala 2",         estado: "Operativo",         mantenimiento: "20/04/2026", responsable: "Mariano López",   serie: "EQ-003" },
-        { id: 4, nombre: "Polea alta multifunción", categoria: "Musculación",  sector: "Sala principal", estado: "Fuera de servicio", mantenimiento: "28/03/2026", responsable: "Técnico externo", serie: "EQ-004" },
-        { id: 5, nombre: "Remo magnético R200",     categoria: "Cardio",       sector: "Sala 2",         estado: "En revisión",       mantenimiento: "15/04/2026", responsable: "Sofía Ruiz",       serie: "EQ-005" },
-    ];
+    let equiposData = [];
 
     const estadoPill = {
         "Operativo":          "eq-pill-ok",
@@ -288,27 +281,32 @@
             : '<div class="eq-alert-item eq-alert-empty">Sin incidencias activas ✅</div>';
     }
 
+    // ── Cargar equipos desde API ────────────────────────────────────────
+    async function cargarEquipos() {
+        equiposData = await fetch('/api/equipos').then(r => r.json()).catch(() => []);
+        renderTabla();
+    }
+
     // ── Formulario ──────────────────────────────────────────────────────
-    document.getElementById('equipoForm').addEventListener('submit', function (e) {
+    document.getElementById('equipoForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const nuevo = {
-            id:             Date.now(),
-            nombre:         document.getElementById('eq-nombre').value.trim(),
-            categoria:      document.getElementById('eq-categoria').value || 'Sin categoría',
-            estado:         document.getElementById('eq-estado').value,
-            marca:          document.getElementById('eq-marca').value.trim(),
-            modelo:         document.getElementById('eq-modelo').value.trim(),
-            serie:          document.getElementById('eq-serie').value.trim() || ('EQ-' + Date.now()),
-            sector:         document.getElementById('eq-sector').value.trim(),
-            mantenimiento:  document.getElementById('eq-mantenimiento').value
-                                ? new Date(document.getElementById('eq-mantenimiento').value).toLocaleDateString('es-AR')
-                                : '—',
-            responsable:    document.getElementById('eq-responsable').value.trim() || '—',
-            obs:            document.getElementById('eq-obs').value.trim()
+            nombre:        document.getElementById('eq-nombre').value.trim(),
+            categoria:     document.getElementById('eq-categoria').value || 'Sin categoría',
+            estado:        document.getElementById('eq-estado').value,
+            marca:         document.getElementById('eq-marca').value.trim(),
+            modelo:        document.getElementById('eq-modelo').value.trim(),
+            serie:         document.getElementById('eq-serie').value.trim() || ('EQ-' + Date.now()),
+            sector:        document.getElementById('eq-sector').value.trim(),
+            mantenimiento: document.getElementById('eq-mantenimiento').value
+                               ? new Date(document.getElementById('eq-mantenimiento').value).toLocaleDateString('es-AR')
+                               : '—',
+            responsable:   document.getElementById('eq-responsable').value.trim() || '—',
+            obs:           document.getElementById('eq-obs').value.trim()
         };
-        equiposData.unshift(nuevo);
-        this.reset();
-        renderTabla();
+        const res = await fetch('/api/equipos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(nuevo) });
+        if (res.ok) { this.reset(); await cargarEquipos(); }
+        else alert('Error al guardar el equipo.');
     });
 
     document.getElementById('eq-limpiar').onclick = () => document.getElementById('equipoForm').reset();
@@ -337,12 +335,17 @@
         document.getElementById('eq-nombre').focus();
     };
 
-    // ── Gestionar equipo (placeholder) ─────────────────────────────────
-    window.gestionarEquipo = function (id) {
+    // ── Gestionar equipo ────────────────────────────────────────────────
+    window.gestionarEquipo = async function (id) {
         const eq = equiposData.find(e => e.id === id);
-        if (eq) alert(`Equipo: ${eq.nombre}\nEstado: ${eq.estado}\nSerie: ${eq.serie}\nSector: ${eq.sector}`);
+        if (!eq) return;
+        const accion = confirm(`¿Eliminar "${eq.nombre}"?\nEstado: ${eq.estado}`);
+        if (accion) {
+            await fetch(`/api/equipos/${id}`, { method: 'DELETE' });
+            await cargarEquipos();
+        }
     };
 
-    renderTabla();
+    cargarEquipos();
 })();
 </script>

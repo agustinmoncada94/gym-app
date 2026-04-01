@@ -144,6 +144,33 @@ app.post('/api/socios/:dni/pagos', async (req, res) => {
     }
 });
 
+// EQUIPOS
+app.get('/api/equipos', async (req, res) => {
+    try {
+        await conectar();
+        const keys = await client.keys('equipo:*');
+        const equipos = await Promise.all(keys.map(async k => JSON.parse(await client.get(k))));
+        res.json(equipos.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/equipos', async (req, res) => {
+    try {
+        await conectar();
+        const equipo = { id: Date.now(), ...req.body };
+        await client.set(`equipo:${equipo.id}`, JSON.stringify(equipo));
+        res.json({ success: true, equipo });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/equipos/:id', async (req, res) => {
+    try {
+        await conectar();
+        await client.del(`equipo:${req.params.id}`);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // INGRESOS DEL MES (para KPI Dashboard)
 app.get('/api/dashboard/ingresos', async (req, res) => {
     try {
