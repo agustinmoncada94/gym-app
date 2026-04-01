@@ -93,7 +93,7 @@
             if (s.estado === 'Suspendido')                         { estadoTexto = 'SUSPENDIDO'; estadoColor = 'rgba(255,92,92,0.08)';  estadoBorder = 'rgba(255,92,92,0.25)'; }
             else if (hoy > hasta)                                  { estadoTexto = 'VENCIDO';    estadoColor = 'rgba(255,92,92,0.08)';  estadoBorder = 'rgba(255,92,92,0.25)'; }
             else if (s.plan === 'Semana de Prueba' && diffDays>23) { estadoTexto = 'PRUEBA';     estadoColor = 'rgba(255,179,71,0.08)'; estadoBorder = 'rgba(255,179,71,0.25)'; }
-            else if (diffDays <= 5)                                { estadoTexto = 'POR VENCER'; estadoColor = 'rgba(255,179,71,0.08)'; estadoBorder = 'rgba(255,179,71,0.25)'; }
+            else if (diffDays <= 4)                                { estadoTexto = 'POR VENCER'; estadoColor = 'rgba(255,179,71,0.08)'; estadoBorder = 'rgba(255,179,71,0.25)'; }
 
             const iniciales = s.nombre.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
             const fmt = d => d ? new Date(d).toLocaleDateString('es-AR') : '—';
@@ -411,7 +411,7 @@
                 } else if (s.plan === "Semana de Prueba" && diffDays > 23) {
                     estadoTexto = "PRUEBA";
                     estadoClase = "status-prueba";
-                } else if (diffDays <= 5 && diffDays >= 0) {
+                } else if (diffDays <= 4 && diffDays >= 0) {
                     estadoTexto = "POR VENCER";
                     estadoClase = "status-por-vencer";
                 }
@@ -645,7 +645,7 @@
                     const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
                     const diff  = Math.ceil((hasta - hoy) / 86400000);
                     if (hoy > hasta)    vencidos++;
-                    else if (diff <= 5) porVencer++;
+                    else if (diff <= 4) porVencer++;
                     else                alDia++;
                 });
                 const total = socios.length;
