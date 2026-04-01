@@ -144,6 +144,31 @@ app.post('/api/socios/:dni/pagos', async (req, res) => {
     }
 });
 
+// CHECK-IN SOCIO (pantalla de acceso)
+app.get('/api/checkin/:dni', async (req, res) => {
+    try {
+        await conectar();
+        const raw = await client.get(`socio:${req.params.dni}`);
+        if (!raw) return res.status(404).json({ estado: 'NO_ENCONTRADO', message: 'Socio no encontrado.' });
+
+        const socio = JSON.parse(raw);
+        const desde = new Date(socio.fechaInicio || socio.fechaPago);
+        const hasta = new Date(desde);
+        hasta.setDate(desde.getDate() + 30);
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+        if (socio.estado === 'Suspendido') {
+            return res.json({ estado: 'VENCIDO', message: `Membresía suspendida para ${socio.nombre}.` });
+        }
+        if (hoy > hasta) {
+            return res.json({ estado: 'VENCIDO', message: `Membresía vencida para ${socio.nombre}. Por favor regularizá tu situación.` });
+        }
+        res.json({ estado: 'OK', message: `¡Hola ${socio.nombre}! Bienvenido al gym.` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // EQUIPOS
 app.get('/api/equipos', async (req, res) => {
     try {
