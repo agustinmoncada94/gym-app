@@ -32,10 +32,9 @@
             </div>
 
             <nav class="sidebar-nav">
-                <button class="nav-link active" onclick="switchTab('socios_lista')" style="position:relative">
+                <button class="nav-link active" onclick="switchTab('socios_lista')">
                     <i class="fas fa-list"></i>
                     <span>Ver Socios</span>
-                    <span id="badge-alertas" style="display:none;position:absolute;top:6px;right:10px;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:900;border-radius:20px;padding:2px 7px;min-width:20px;text-align:center;line-height:1.4"></span>
                 </button>
 
                 <button class="nav-link" onclick="switchTab('socios_registro')">
@@ -392,7 +391,6 @@
             });
 
             renderizarTabla(filtrados, filtroEstado);
-            if (contadorLabel) contadorLabel.innerText = filtrados.length;
         }
 
         function renderizarTabla(lista, filtroEstado = 'todos') {
