@@ -233,6 +233,18 @@ app.post('/api/equipos', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.put('/api/equipos/:id', async (req, res) => {
+    try {
+        await conectar();
+        const key = `equipo:${req.params.id}`;
+        const existing = await client.get(key);
+        if (!existing) return res.status(404).json({ error: 'Equipo no encontrado' });
+        const updated = { ...JSON.parse(existing), ...req.body, id: parseInt(req.params.id) };
+        await client.set(key, JSON.stringify(updated));
+        res.json({ success: true, equipo: updated });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.delete('/api/equipos/:id', async (req, res) => {
     try {
         await conectar();

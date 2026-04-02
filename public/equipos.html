@@ -335,15 +335,78 @@
         document.getElementById('eq-nombre').focus();
     };
 
-    // ── Gestionar equipo ────────────────────────────────────────────────
-    window.gestionarEquipo = async function (id) {
+    // ── Gestionar equipo (modal edición/eliminación) ────────────────────
+    window.gestionarEquipo = function (id) {
         const eq = equiposData.find(e => e.id === id);
         if (!eq) return;
-        const accion = confirm(`¿Eliminar "${eq.nombre}"?\nEstado: ${eq.estado}`);
-        if (accion) {
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal-box" style="max-width:480px">
+                <h3 class="modal-titulo">Gestionar equipo</h3>
+                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:20px">${eq.nombre}</p>
+
+                <label class="modal-label">NOMBRE</label>
+                <input id="ed-nombre" class="admin-input" value="${eq.nombre}">
+
+                <label class="modal-label">CATEGORÍA</label>
+                <select id="ed-categoria" class="admin-input">
+                    ${['Cardio','Musculación','Funcional','Accesorios'].map(c =>
+                        `<option ${eq.categoria===c?'selected':''}>${c}</option>`).join('')}
+                </select>
+
+                <label class="modal-label">ESTADO</label>
+                <select id="ed-estado" class="admin-input">
+                    ${['Operativo','En revisión','Fuera de servicio'].map(s =>
+                        `<option ${eq.estado===s?'selected':''}>${s}</option>`).join('')}
+                </select>
+
+                <label class="modal-label">SECTOR</label>
+                <input id="ed-sector" class="admin-input" value="${eq.sector||''}">
+
+                <label class="modal-label">RESPONSABLE</label>
+                <input id="ed-responsable" class="admin-input" value="${eq.responsable||''}">
+
+                <label class="modal-label">PRÓXIMO MANTENIMIENTO</label>
+                <input id="ed-mantenimiento" class="admin-input" value="${eq.mantenimiento||''}">
+
+                <div style="display:flex;gap:10px;margin-top:20px">
+                    <button id="ed-cancelar" class="det-btn-volver" style="flex:1">Cancelar</button>
+                    <button id="ed-eliminar" style="flex:1;padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:#f87171;font-weight:700;cursor:pointer">Eliminar</button>
+                    <button id="ed-guardar" style="flex:1;padding:10px;background:#bef264;border:none;border-radius:10px;color:#000;font-weight:900;cursor:pointer">Guardar</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(overlay);
+
+        overlay.querySelector('#ed-cancelar').onclick = () => document.body.removeChild(overlay);
+        overlay.addEventListener('click', e => { if (e.target === overlay) document.body.removeChild(overlay); });
+
+        overlay.querySelector('#ed-guardar').onclick = async () => {
+            const actualizado = {
+                nombre:        overlay.querySelector('#ed-nombre').value.trim(),
+                categoria:     overlay.querySelector('#ed-categoria').value,
+                estado:        overlay.querySelector('#ed-estado').value,
+                sector:        overlay.querySelector('#ed-sector').value.trim(),
+                responsable:   overlay.querySelector('#ed-responsable').value.trim(),
+                mantenimiento: overlay.querySelector('#ed-mantenimiento').value.trim(),
+            };
+            const res = await fetch(`/api/equipos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(actualizado)
+            });
+            if (res.ok) { document.body.removeChild(overlay); await cargarEquipos(); }
+            else alert('Error al guardar los cambios.');
+        };
+
+        overlay.querySelector('#ed-eliminar').onclick = async () => {
+            if (!confirm(`¿Eliminar "${eq.nombre}"? Esta acción no se puede deshacer.`)) return;
             await fetch(`/api/equipos/${id}`, { method: 'DELETE' });
+            document.body.removeChild(overlay);
             await cargarEquipos();
-        }
+        };
     };
 
     cargarEquipos();
