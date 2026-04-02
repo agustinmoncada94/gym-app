@@ -32,13 +32,16 @@
         </div>
     </div>
 
-    <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
         <div style="background: rgba(255, 51, 51, 0.1); border: 1px solid var(--primary-red); padding: 8px 15px; border-radius: 8px;">
             <i class="fas fa-users" style="color: var(--primary-red); margin-right: 10px;"></i>
             <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: bold;">
                 SOCIOS ENCONTRADOS: <span id="contador-socios" style="color: white; font-size: 1.1rem;">0</span>
             </span>
         </div>
+        <button onclick="exportarSociosCSV()" style="padding: 8px 18px; background: rgba(190,242,100,0.1); border: 1px solid rgba(190,242,100,0.3); border-radius: 8px; color: #bef264; font-weight: 700; font-size: 0.8rem; letter-spacing: 1px; cursor: pointer;">
+            ⬇ EXPORTAR CSV
+        </button>
     </div>
     
     <div style="overflow-x: auto; overflow-y: auto; max-height: 60vh; border-radius: 8px;">

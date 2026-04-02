@@ -664,6 +664,35 @@
             window.location.href = '/login.html';
         }
 
+        function exportarSociosCSV() {
+            if (!sociosMap || sociosMap.size === 0) { alert('No hay socios para exportar.'); return; }
+            const cabecera = ['Nombre','DNI','Teléfono','Nacimiento','Plan','Estado','Fecha Inicio','Fecha Vencimiento'];
+            const filas = [];
+            sociosMap.forEach(s => {
+                const desde = new Date(s.fechaInicio || s.fechaPago);
+                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
+                const fmt = d => { try { return new Date(d).toLocaleDateString('es-AR'); } catch { return '—'; } };
+                filas.push([
+                    `"${s.nombre || ''}"`,
+                    s.dni || '',
+                    `"${s.telefono || ''}"`,
+                    s.nacimiento ? fmt(s.nacimiento) : '—',
+                    `"${s.plan || ''}"`,
+                    `"${s.estado || ''}"`,
+                    fmt(s.fechaInicio || s.fechaPago),
+                    fmt(hasta)
+                ].join(','));
+            });
+            const csv  = [cabecera.join(','), ...filas].join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `socios_${new Date().toLocaleDateString('es-AR').replace(/\//g,'-')}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         // ── Dashboard KPIs + Charts ────────────────────────────────────────
         let _dashCharts = {};
         async function cargarDashboardKPIs() {
