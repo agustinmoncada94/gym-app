@@ -32,9 +32,10 @@
             </div>
 
             <nav class="sidebar-nav">
-                <button class="nav-link active" onclick="switchTab('socios_lista')">
+                <button class="nav-link active" onclick="switchTab('socios_lista')" style="position:relative">
                     <i class="fas fa-list"></i>
                     <span>Ver Socios</span>
+                    <span id="badge-alertas" style="display:none;position:absolute;top:6px;right:10px;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:900;border-radius:20px;padding:2px 7px;min-width:20px;text-align:center;line-height:1.4"></span>
                 </button>
 
                 <button class="nav-link" onclick="switchTab('socios_registro')">
@@ -368,6 +369,7 @@
             try {
                 const r = await fetch('/api/socios/todos');
                 sociosGlobal = await r.json();
+                actualizarBadgeAlertas(sociosGlobal);
                 filtrarSocios();
             } catch (e) {
                 console.error(e);
@@ -662,6 +664,22 @@
         function cerrarSesion() {
             localStorage.removeItem('gym_session');
             window.location.href = '/login.html';
+        }
+
+        function actualizarBadgeAlertas(socios) {
+            const hoy = new Date(); hoy.setHours(0,0,0,0);
+            let count = 0;
+            socios.forEach(s => {
+                if (s.estado === 'Suspendido') return;
+                const desde = new Date(s.fechaInicio || s.fechaPago);
+                const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
+                const diff  = Math.ceil((hasta - hoy) / 86400000);
+                if (diff <= 4) count++; // vencidos + por vencer (4 días o menos)
+            });
+            const badge = document.getElementById('badge-alertas');
+            if (!badge) return;
+            if (count > 0) { badge.style.display = 'inline-block'; badge.textContent = count; }
+            else             { badge.style.display = 'none'; }
         }
 
         function exportarSociosCSV() {
