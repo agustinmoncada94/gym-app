@@ -17,6 +17,19 @@ async function conectar() {
     if (!client.isOpen) await client.connect();
 }
 
+// AUTH LOGIN
+app.post('/api/auth/login', (req, res) => {
+    const { usuario, password } = req.body;
+    const adminUser = process.env.ADMIN_USER || 'Admin';
+    const adminPass = process.env.ADMIN_PASS || 'mateomartino';
+    if (usuario === adminUser && password === adminPass) {
+        const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        res.json({ ok: true, token, expiry: Date.now() + 8 * 60 * 60 * 1000 });
+    } else {
+        res.status(401).json({ ok: false, message: 'Usuario o contraseña incorrectos.' });
+    }
+});
+
 // OBTENER TODOS LOS SOCIOS
 app.get('/api/socios/todos', async (req, res) => {
     try {

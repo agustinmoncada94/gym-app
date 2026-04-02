@@ -7,6 +7,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="admin.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script>
+        // Verificar sesión antes de cargar nada
+        (function () {
+            const s = JSON.parse(localStorage.getItem('gym_session') || 'null');
+            if (!s || Date.now() > s.expiry) {
+                localStorage.removeItem('gym_session');
+                window.location.href = '/login.html';
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="admin-shell">
@@ -48,6 +58,9 @@
                     <span class="status-dot"></span>
                     <span>Sistema activo</span>
                 </div>
+                <button onclick="cerrarSesion()" style="margin-top:10px;width:100%;padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;color:#f87171;font-weight:700;font-size:0.8rem;cursor:pointer;letter-spacing:1px">
+                    🔒 CERRAR SESIÓN
+                </button>
             </div>
         </aside>
 
@@ -645,6 +658,11 @@
 }
 
         window.onclick = () => cerrarMenu();
+
+        function cerrarSesion() {
+            localStorage.removeItem('gym_session');
+            window.location.href = '/login.html';
+        }
 
         // ── Dashboard KPIs + Charts ────────────────────────────────────────
         let _dashCharts = {};

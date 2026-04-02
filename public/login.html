@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Iniciar sesión</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: #050b14;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #fff;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 36px;
+            background: #09111d;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 28px;
+            box-shadow: 0 0 60px rgba(0,0,0,0.4);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-logo-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(190,242,100,0.1);
+            border: 1px solid rgba(190,242,100,0.2);
+            border-radius: 18px;
+            font-size: 1.8rem;
+            margin-bottom: 14px;
+        }
+
+        .login-kicker {
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(190,242,100,0.85);
+            margin-bottom: 6px;
+        }
+
+        .login-titulo {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .login-label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 7px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 13px 16px;
+            background: #0e1a2a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 18px;
+        }
+
+        .login-input:focus {
+            border-color: rgba(190,242,100,0.4);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #bef264;
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: filter 0.2s;
+            margin-top: 4px;
+        }
+
+        .login-btn:hover { filter: brightness(1.08); }
+        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .login-error {
+            display: none;
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #f87171;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="login-logo-box">🔐</div>
+            <p class="login-kicker">Panel administrativo</p>
+            <h1 class="login-titulo">DECLON ADMIN</h1>
+        </div>
+
+        <label class="login-label" for="inp-usuario">Usuario</label>
+        <input class="login-input" type="text" id="inp-usuario" placeholder="Ingresá tu usuario" autocomplete="username">
+
+        <label class="login-label" for="inp-pass">Contraseña</label>
+        <input class="login-input" type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password">
+
+        <button class="login-btn" id="btn-login">INGRESAR</button>
+
+        <div class="login-error" id="login-error"></div>
+    </div>
+
+    <script>
+        // Si ya tiene sesión válida, ir directo al admin
+        (function () {
+            const s = JSON.parse(localStorage.getItem('gym_session') || 'null');
+            if (s && Date.now() < s.expiry) window.location.href = '/admin.html';
+        })();
+
+        async function intentarLogin() {
+            const usuario  = document.getElementById('inp-usuario').value.trim();
+            const password = document.getElementById('inp-pass').value;
+            const btn      = document.getElementById('btn-login');
+            const errDiv   = document.getElementById('login-error');
+
+            if (!usuario || !password) {
+                errDiv.style.display = 'block';
+                errDiv.textContent   = 'Completá usuario y contraseña.';
+                return;
+            }
+
+            btn.disabled    = true;
+            btn.textContent = 'VERIFICANDO...';
+            errDiv.style.display = 'none';
+
+            try {
+                const res  = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, password })
+                });
+                const data = await res.json();
+
+                if (data.ok) {
+                    localStorage.setItem('gym_session', JSON.stringify({ token: data.token, expiry: data.expiry }));
+                    window.location.href = '/admin.html';
+                } else {
+                    errDiv.style.display = 'block';
+                    errDiv.textContent   = data.message || 'Credenciales incorrectas.';
+                    btn.disabled    = false;
+                    btn.textContent = 'INGRESAR';
+                }
+            } catch (e) {
+                errDiv.style.display = 'block';
+                errDiv.textContent   = 'Error de conexión. Intentá de nuevo.';
+                btn.disabled    = false;
+                btn.textContent = 'INGRESAR';
+            }
+        }
+
+        document.getElementById('btn-login').onclick = intentarLogin;
+        document.addEventListener('keydown', e => { if (e.key === 'Enter') intentarLogin(); });
+    </script>
+</body>
+</html>
