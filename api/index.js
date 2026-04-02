@@ -176,7 +176,39 @@ app.get('/api/checkin/:dni', async (req, res) => {
         if (hoy > hasta) {
             return res.json({ estado: 'VENCIDO', message: `Membresía vencida para ${socio.nombre}. Por favor regularizá tu situación.` });
         }
+
+        // Guardar asistencia en Redis
+        const fechaHoy = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+        const horaAhora = new Date().toLocaleTimeString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit' });
+        const claveAsist = `asistencia:${fechaHoy}`;
+        const existente = await client.get(claveAsist);
+        const registros = existente ? JSON.parse(existente) : [];
+        registros.push({ dni: socio.dni, nombre: socio.nombre, hora: horaAhora });
+        await client.set(claveAsist, JSON.stringify(registros));
+        // Expirar en 35 días para no acumular indefinidamente
+        await client.expire(claveAsist, 35 * 24 * 60 * 60);
+
         res.json({ estado: 'OK', message: `¡Hola ${socio.nombre}! Bienvenido al gym.` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ASISTENCIA ÚLTIMOS 7 DÍAS
+app.get('/api/asistencia', async (req, res) => {
+    try {
+        await conectar();
+        const resultado = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const fecha = d.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+            const raw = await client.get(`asistencia:${fecha}`);
+            const registros = raw ? JSON.parse(raw) : [];
+            const diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+            resultado.push({ dia: diasSemana[d.getDay()], fecha, cantidad: registros.length });
+        }
+        res.json(resultado);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

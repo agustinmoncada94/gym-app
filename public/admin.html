@@ -668,9 +668,10 @@
         let _dashCharts = {};
         async function cargarDashboardKPIs() {
             try {
-                const [socios, equipos] = await Promise.all([
+                const [socios, equipos, asistencia] = await Promise.all([
                     fetch('/api/socios/todos').then(r => r.json()).catch(() => []),
                     fetch('/api/equipos').then(r => r.json()).catch(() => []),
+                    fetch('/api/asistencia').then(r => r.json()).catch(() => []),
                 ]);
                 const hoy        = new Date(); hoy.setHours(0,0,0,0);
                 const mesActual  = hoy.getMonth();
@@ -796,14 +797,23 @@
                     if (legend) legend.innerHTML = estadoData.map(d => `<div class="dash-donut-item"><span class="dash-donut-dot" style="background:${d.color}"></span><span>${d.name}</span><b>${d.value}</b></div>`).join('');
                 }
 
-                // ── Chart 3: Asistencia semanal (estático) ──────────────
+                // ── Chart 3: Asistencia semanal (real) ─────────────────
                 const ctxAsist = document.getElementById('chart-asistencia');
                 if (ctxAsist) {
+                    const labAsist  = asistencia.map(d => d.dia);
+                    const dataAsist = asistencia.map(d => d.cantidad);
+                    const maxAsist  = Math.max(...dataAsist);
                     _dashCharts.asistencia = new Chart(ctxAsist, {
                         type: 'line',
-                        data: { labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], datasets: [{ data: [0,0,0,0,0,0,0], borderColor:'#bef264', backgroundColor:'rgba(190,242,100,0.08)', borderWidth:3, pointBackgroundColor:'#bef264', pointRadius:4, fill:true, tension:0.35 }] },
-                        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{...tooltipStyle} }, scales:{ x:{grid:{display:false},border:{display:false}}, y:{grid:{color:gridColor},border:{display:false}} } }
+                        data: { labels: labAsist, datasets: [{ data: dataAsist, borderColor:'#bef264', backgroundColor:'rgba(190,242,100,0.08)', borderWidth:3, pointBackgroundColor: dataAsist.map(v => v === maxAsist && maxAsist > 0 ? '#fff' : '#bef264'), pointRadius: dataAsist.map(v => v === maxAsist && maxAsist > 0 ? 6 : 4), fill:true, tension:0.35 }] },
+                        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{...tooltipStyle, callbacks:{ label: ctx => ' ' + ctx.raw + ' ingresos' }} }, scales:{ x:{grid:{display:false},border:{display:false}}, y:{grid:{color:gridColor},border:{display:false}, ticks:{stepSize:1}} } }
                     });
+                    // Actualizar panel alerta
+                    if (maxAsist > 0) {
+                        const diaMax = asistencia.find(d => d.cantidad === maxAsist);
+                        const elAlerta = document.getElementById('alerta-asistencia');
+                        if (elAlerta) elAlerta.innerText = `${diaMax.dia} fue el día con más asistencia (${maxAsist} ingresos)`;
+                    }
                 }
 
                 // ── Chart 4: Equipos por estado (real) ─────────────────
