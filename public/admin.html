@@ -666,24 +666,25 @@
 
         function exportarSociosCSV() {
             if (!sociosMap || sociosMap.size === 0) { alert('No hay socios para exportar.'); return; }
-            const cabecera = ['Nombre','DNI','Teléfono','Nacimiento','Plan','Estado','Fecha Inicio','Fecha Vencimiento'];
+            const SEP = ';'; // Excel reconoce ; como separador de columnas
+            const cabecera = ['Nombre','DNI','Teléfono','Nacimiento','Plan','Estado','Fecha Inicio','Fecha Vencimiento'].join(SEP);
             const filas = [];
             sociosMap.forEach(s => {
                 const desde = new Date(s.fechaInicio || s.fechaPago);
                 const hasta = new Date(desde); hasta.setDate(desde.getDate() + 30);
-                const fmt = d => { try { return new Date(d).toLocaleDateString('es-AR'); } catch { return '—'; } };
+                const fmt = d => { try { return new Date(d).toLocaleDateString('es-AR'); } catch { return ''; } };
                 filas.push([
-                    `"${s.nombre || ''}"`,
+                    `"${(s.nombre || '').replace(/"/g,'""')}"`,
                     s.dni || '',
-                    `"${s.telefono || ''}"`,
-                    s.nacimiento ? fmt(s.nacimiento) : '—',
-                    `"${s.plan || ''}"`,
-                    `"${s.estado || ''}"`,
+                    `"${(s.telefono || '').replace(/"/g,'""')}"`,
+                    s.nacimiento ? fmt(s.nacimiento) : '',
+                    `"${(s.plan || '').replace(/"/g,'""')}"`,
+                    `"${(s.estado || '').replace(/"/g,'""')}"`,
                     fmt(s.fechaInicio || s.fechaPago),
                     fmt(hasta)
-                ].join(','));
+                ].join(SEP));
             });
-            const csv  = [cabecera.join(','), ...filas].join('\n');
+            const csv  = [cabecera, ...filas].join('\r\n');
             const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
             const url  = URL.createObjectURL(blob);
             const a    = document.createElement('a');
