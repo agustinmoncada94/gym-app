@@ -532,22 +532,43 @@
         }
 
        async function borrarSocio(dni) {
-    // Convertimos a String por si el DNI viene como número y pierde ceros
-    const dniLimpio = String(dni).trim(); 
-    
-    if (!confirm(`¿Eliminar socio DNI: ${dniLimpio}?`)) return;
-    
+    const dniLimpio = String(dni).trim();
+    const socio = sociosMap.get(dniLimpio);
+    const nombre = socio ? socio.nombre : `DNI ${dniLimpio}`;
+
+    // Modal de confirmación
+    const confirmado = await new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal-box" style="max-width:420px;text-align:center">
+                <div style="font-size:2.2rem;margin-bottom:12px">🗑️</div>
+                <h3 class="modal-titulo" style="color:#f87171">Eliminar socio</h3>
+                <p style="font-size:.95rem;color:var(--text-muted);margin:8px 0 4px">Estás por eliminar a:</p>
+                <p style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:6px">${nombre.toUpperCase()}</p>
+                <p style="font-size:.8rem;color:var(--text-faint);margin-bottom:24px">DNI ${dniLimpio} · Esta acción no se puede deshacer.</p>
+                <div style="display:flex;gap:10px;justify-content:center">
+                    <button id="conf-cancelar" class="det-btn-volver" style="flex:1">Cancelar</button>
+                    <button id="conf-eliminar" style="flex:1;padding:10px 20px;background:#ef4444;border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;font-size:.9rem">Sí, eliminar</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#conf-cancelar').onclick  = () => { document.body.removeChild(overlay); resolve(false); };
+        overlay.querySelector('#conf-eliminar').onclick  = () => { document.body.removeChild(overlay); resolve(true); };
+        overlay.addEventListener('click', e => { if (e.target === overlay) { document.body.removeChild(overlay); resolve(false); } });
+    });
+
+    if (!confirmado) return;
+
     try {
-        const res = await fetch(`/api/socios/${dniLimpio}`, { 
-            method: 'DELETE' 
-        });
-        
+        const res = await fetch(`/api/socios/${dniLimpio}`, { method: 'DELETE' });
         if (res.ok) {
-            alert("Socio eliminado con éxito");
-            cargarSocios(); // Recarga la lista para que desaparezca de la pantalla
+            cargarSocios();
+            const container = document.getElementById('view-container');
+            if (container) switchTab('socios_lista');
         } else {
             const error = await res.json();
-            alert("Error del servidor: " + error.mensaje);
+            alert("Error: " + error.mensaje);
         }
     } catch (e) {
         alert("Error de conexión al intentar eliminar");
