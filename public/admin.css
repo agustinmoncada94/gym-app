@@ -1079,7 +1079,11 @@ select option {
 /* Alertas */
 .eq-alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .eq-alert-titulo { margin: 0 0 14px; font-size: 1rem; font-weight: 900; color: var(--text); }
-.eq-alert-list { display: flex; flex-direction: column; gap: 8px; }
+.eq-alert-list { display: flex; flex-direction: column; gap: 8px; max-height: calc(5 * 52px); overflow-y: auto; padding-right: 4px; }
+.eq-alert-list::-webkit-scrollbar { width: 4px; }
+.eq-alert-list::-webkit-scrollbar-track { background: transparent; }
+.eq-alert-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+.eq-alert-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
 .eq-alert-item {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.06);

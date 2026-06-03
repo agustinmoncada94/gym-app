@@ -266,8 +266,7 @@
 
         const proximos = equiposData
             .filter(e => e.estado === 'Operativo')
-            .sort((a, b) => a.mantenimiento.split('/').reverse().join('').localeCompare(b.mantenimiento.split('/').reverse().join('')))
-            .slice(0, 4);
+            .sort((a, b) => a.mantenimiento.split('/').reverse().join('').localeCompare(b.mantenimiento.split('/').reverse().join('')));
 
         mant.innerHTML = proximos.length
             ? proximos.map(e => `<div class="eq-alert-item">${e.nombre} · ${e.mantenimiento}</div>`).join('')
@@ -282,7 +281,7 @@
         const abiertas = todas.filter(i => i.estado !== 'Resuelta');
         const prioColor = { 'Alta': '#f87171', 'Media': '#fbbf24', 'Baja': '#94a3b8' };
         inc.innerHTML = abiertas.length
-            ? abiertas.slice(0, 5).map(i => {
+            ? abiertas.map(i => {
                 const eq = equiposData.find(e => e.id === i.equipoId);
                 const nombre = eq ? eq.nombre : 'Equipo';
                 return `<div class="eq-alert-item eq-alert-warn" style="cursor:pointer" onclick="gestionarEquipo(${i.equipoId})">
