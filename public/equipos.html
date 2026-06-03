@@ -263,7 +263,6 @@
 
     function actualizarAlertas() {
         const mant = document.getElementById('eq-alert-mant');
-        const inc  = document.getElementById('eq-alert-inc');
 
         const proximos = equiposData
             .filter(e => e.estado === 'Operativo')
@@ -274,9 +273,23 @@
             ? proximos.map(e => `<div class="eq-alert-item">${e.nombre} · ${e.mantenimiento}</div>`).join('')
             : '<div class="eq-alert-item eq-alert-empty">Sin mantenimientos próximos</div>';
 
-        const incidencias = equiposData.filter(e => e.estado !== 'Operativo');
-        inc.innerHTML = incidencias.length
-            ? incidencias.map(e => `<div class="eq-alert-item eq-alert-warn">${e.nombre} · ${e.estado}</div>`).join('')
+        actualizarAlertasDesdeAPI();
+    }
+
+    async function actualizarAlertasDesdeAPI() {
+        const inc = document.getElementById('eq-alert-inc');
+        const todas = await fetch('/api/incidencias/todas').then(r => r.json()).catch(() => []);
+        const abiertas = todas.filter(i => i.estado !== 'Resuelta');
+        const prioColor = { 'Alta': '#f87171', 'Media': '#fbbf24', 'Baja': '#94a3b8' };
+        inc.innerHTML = abiertas.length
+            ? abiertas.slice(0, 5).map(i => {
+                const eq = equiposData.find(e => e.id === i.equipoId);
+                const nombre = eq ? eq.nombre : 'Equipo';
+                return `<div class="eq-alert-item eq-alert-warn" style="cursor:pointer" onclick="gestionarEquipo(${i.equipoId})">
+                    <span style="color:${prioColor[i.prioridad]||'#94a3b8'};font-weight:700;margin-right:6px">●</span>
+                    <strong>${nombre}</strong> · ${i.tipo} · <em>${i.estado}</em>
+                </div>`;
+              }).join('')
             : '<div class="eq-alert-item eq-alert-empty">Sin incidencias activas ✅</div>';
     }
 
@@ -334,15 +347,39 @@
         document.getElementById('eq-nombre').focus();
     };
 
-    // ── Gestionar equipo (modal edición/eliminación) ────────────────────
-    window.gestionarEquipo = function (id) {
+    // ── Gestionar equipo (modal edición/eliminación/incidencias) ─────────
+    window.gestionarEquipo = async function (id) {
         const eq = equiposData.find(e => e.id === id);
         if (!eq) return;
+
+        const incidencias = await fetch(`/api/equipos/${id}/incidencias`).then(r => r.json()).catch(() => []);
+
+        const prioridadClass = { 'Alta': 'inc-prio-alta', 'Media': 'inc-prio-media', 'Baja': 'inc-prio-baja' };
+        const estadoClass    = { 'Abierta': 'inc-estado-abierta', 'En progreso': 'inc-estado-progreso', 'Resuelta': 'inc-estado-resuelta' };
+
+        function renderIncidencias(lista) {
+            if (!lista.length) return '<p class="inc-empty">Sin incidencias registradas</p>';
+            return lista.map(inc => `
+                <div class="inc-item" id="inc-item-${inc.id}">
+                    <div class="inc-item-header">
+                        <span class="inc-tipo">${inc.tipo}</span>
+                        <span class="inc-badge ${prioridadClass[inc.prioridad]||''}">${inc.prioridad}</span>
+                        <span class="inc-badge ${estadoClass[inc.estado]||''}">${inc.estado}</span>
+                        <span class="inc-fecha">${inc.fecha}</span>
+                    </div>
+                    <p class="inc-desc">${inc.descripcion}</p>
+                    ${inc.estado === 'Resuelta' && inc.resolucion ? `<p class="inc-resolucion">Resolución: ${inc.resolucion}</p>` : ''}
+                    <div class="inc-actions">
+                        ${inc.estado !== 'Resuelta' ? `<button class="inc-btn-resolver" onclick="resolverIncidencia(${id},${inc.id})">Resolver</button>` : ''}
+                        <button class="inc-btn-eliminar" onclick="eliminarIncidencia(${id},${inc.id})">Eliminar</button>
+                    </div>
+                </div>`).join('');
+        }
 
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
         overlay.innerHTML = `
-            <div class="modal-box" style="max-width:480px">
+            <div class="modal-box" style="max-width:520px;max-height:90vh;overflow-y:auto">
                 <h3 class="modal-titulo">Gestionar equipo</h3>
                 <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:20px">${eq.nombre}</p>
 
@@ -370,9 +407,41 @@
                 <label class="modal-label">PRÓXIMO MANTENIMIENTO</label>
                 <input id="ed-mantenimiento" class="admin-input" value="${eq.mantenimiento||''}">
 
+                <div class="inc-section">
+                    <div class="inc-section-header">
+                        <span class="inc-section-titulo">Incidencias</span>
+                        <button class="inc-btn-nueva" id="ed-btn-inc">+ Reportar incidencia</button>
+                    </div>
+
+                    <div id="inc-form-wrap" style="display:none" class="inc-form-wrap">
+                        <label class="modal-label">TIPO</label>
+                        <select id="inc-tipo" class="admin-input">
+                            <option>Falla mecánica</option>
+                            <option>Falla eléctrica</option>
+                            <option>Daño físico</option>
+                            <option>Desgaste</option>
+                            <option>Otro</option>
+                        </select>
+                        <label class="modal-label">PRIORIDAD</label>
+                        <select id="inc-prioridad" class="admin-input">
+                            <option>Alta</option>
+                            <option selected>Media</option>
+                            <option>Baja</option>
+                        </select>
+                        <label class="modal-label">DESCRIPCIÓN</label>
+                        <textarea id="inc-descripcion" class="admin-input eq-textarea" rows="3" placeholder="Describí la falla o situación..."></textarea>
+                        <div style="display:flex;gap:8px;margin-top:10px">
+                            <button id="inc-cancelar-form" class="det-btn-volver" style="flex:1">Cancelar</button>
+                            <button id="inc-guardar-form" style="flex:1;padding:10px;background:#bef264;border:none;border-radius:10px;color:#000;font-weight:900;cursor:pointer">Registrar</button>
+                        </div>
+                    </div>
+
+                    <div id="inc-lista">${renderIncidencias(incidencias)}</div>
+                </div>
+
                 <div style="display:flex;gap:10px;margin-top:20px">
                     <button id="ed-cancelar" class="det-btn-volver" style="flex:1">Cancelar</button>
-                    <button id="ed-eliminar" style="flex:1;padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:#f87171;font-weight:700;cursor:pointer">Eliminar</button>
+                    <button id="ed-eliminar" style="flex:1;padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:#f87171;font-weight:700;cursor:pointer">Eliminar equipo</button>
                     <button id="ed-guardar" style="flex:1;padding:10px;background:#bef264;border:none;border-radius:10px;color:#000;font-weight:900;cursor:pointer">Guardar</button>
                 </div>
             </div>`;
@@ -381,6 +450,37 @@
 
         overlay.querySelector('#ed-cancelar').onclick = () => document.body.removeChild(overlay);
         overlay.addEventListener('click', e => { if (e.target === overlay) document.body.removeChild(overlay); });
+
+        // Toggle form incidencia
+        overlay.querySelector('#ed-btn-inc').onclick = () => {
+            const wrap = overlay.querySelector('#inc-form-wrap');
+            wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+        };
+        overlay.querySelector('#inc-cancelar-form').onclick = () => {
+            overlay.querySelector('#inc-form-wrap').style.display = 'none';
+        };
+
+        overlay.querySelector('#inc-guardar-form').onclick = async () => {
+            const tipo        = overlay.querySelector('#inc-tipo').value;
+            const prioridad   = overlay.querySelector('#inc-prioridad').value;
+            const descripcion = overlay.querySelector('#inc-descripcion').value.trim();
+            if (!descripcion) { alert('Ingresá una descripción.'); return; }
+
+            const res = await fetch(`/api/equipos/${id}/incidencias`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo, prioridad, descripcion })
+            });
+            if (res.ok) {
+                const nuevas = await fetch(`/api/equipos/${id}/incidencias`).then(r => r.json());
+                overlay.querySelector('#inc-lista').innerHTML = renderIncidencias(nuevas);
+                overlay.querySelector('#inc-form-wrap').style.display = 'none';
+                overlay.querySelector('#inc-descripcion').value = '';
+                await actualizarAlertasDesdeAPI();
+            } else {
+                alert('Error al registrar la incidencia.');
+            }
+        };
 
         overlay.querySelector('#ed-guardar').onclick = async () => {
             const actualizado = {
@@ -405,6 +505,29 @@
             await fetch(`/api/equipos/${id}`, { method: 'DELETE' });
             document.body.removeChild(overlay);
             await cargarEquipos();
+        };
+
+        // Resolver / eliminar incidencia desde dentro del modal
+        window.resolverIncidencia = async function(eqId, incId) {
+            const resolucion = prompt('Descripción de la resolución (opcional):') || '';
+            const res = await fetch(`/api/equipos/${eqId}/incidencias/${incId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: 'Resuelta', resolucion })
+            });
+            if (res.ok) {
+                const nuevas = await fetch(`/api/equipos/${eqId}/incidencias`).then(r => r.json());
+                overlay.querySelector('#inc-lista').innerHTML = renderIncidencias(nuevas);
+                await actualizarAlertasDesdeAPI();
+            }
+        };
+
+        window.eliminarIncidencia = async function(eqId, incId) {
+            if (!confirm('¿Eliminar esta incidencia?')) return;
+            await fetch(`/api/equipos/${eqId}/incidencias/${incId}`, { method: 'DELETE' });
+            const nuevas = await fetch(`/api/equipos/${eqId}/incidencias`).then(r => r.json());
+            overlay.querySelector('#inc-lista').innerHTML = renderIncidencias(nuevas);
+            await actualizarAlertasDesdeAPI();
         };
     };
 

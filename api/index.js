@@ -253,6 +253,76 @@ app.delete('/api/equipos/:id', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// INCIDENCIAS DE EQUIPO
+app.get('/api/equipos/:id/incidencias', async (req, res) => {
+    try {
+        await conectar();
+        const raw = await client.get(`incidencias:equipo:${req.params.id}`);
+        res.json(raw ? JSON.parse(raw) : []);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/equipos/:id/incidencias', async (req, res) => {
+    try {
+        await conectar();
+        const raw = await client.get(`incidencias:equipo:${req.params.id}`);
+        const lista = raw ? JSON.parse(raw) : [];
+        const ahora = new Date();
+        const nueva = {
+            id:          Date.now(),
+            equipoId:    parseInt(req.params.id),
+            fecha:       ahora.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
+            tipo:        req.body.tipo        || 'Otro',
+            prioridad:   req.body.prioridad   || 'Media',
+            descripcion: req.body.descripcion || '',
+            estado:      'Abierta',
+            resolucion:  '',
+            fechaResolucion: ''
+        };
+        lista.unshift(nueva);
+        await client.set(`incidencias:equipo:${req.params.id}`, JSON.stringify(lista));
+        res.json({ success: true, incidencia: nueva });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/equipos/:id/incidencias/:incId', async (req, res) => {
+    try {
+        await conectar();
+        const raw = await client.get(`incidencias:equipo:${req.params.id}`);
+        if (!raw) return res.status(404).json({ error: 'No hay incidencias para este equipo' });
+        const lista = JSON.parse(raw);
+        const idx = lista.findIndex(i => i.id === parseInt(req.params.incId));
+        if (idx === -1) return res.status(404).json({ error: 'Incidencia no encontrada' });
+        lista[idx] = { ...lista[idx], ...req.body };
+        if (req.body.estado === 'Resuelta' && !lista[idx].fechaResolucion) {
+            lista[idx].fechaResolucion = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+        }
+        await client.set(`incidencias:equipo:${req.params.id}`, JSON.stringify(lista));
+        res.json({ success: true, incidencia: lista[idx] });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/equipos/:id/incidencias/:incId', async (req, res) => {
+    try {
+        await conectar();
+        const raw = await client.get(`incidencias:equipo:${req.params.id}`);
+        if (!raw) return res.status(404).json({ error: 'No hay incidencias' });
+        const lista = JSON.parse(raw).filter(i => i.id !== parseInt(req.params.incId));
+        await client.set(`incidencias:equipo:${req.params.id}`, JSON.stringify(lista));
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// TODAS LAS INCIDENCIAS (para panel de alertas)
+app.get('/api/incidencias/todas', async (req, res) => {
+    try {
+        await conectar();
+        const keys = await client.keys('incidencias:equipo:*');
+        const todas = (await Promise.all(keys.map(async k => JSON.parse(await client.get(k))))).flat();
+        res.json(todas.sort((a, b) => b.id - a.id));
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // INGRESOS DEL MES (para KPI Dashboard)
 app.get('/api/dashboard/ingresos', async (req, res) => {
     try {
