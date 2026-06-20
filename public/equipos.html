@@ -1,196 +1,190 @@
-<div class="equip-wrap">
+<div class="eqv2-wrap">
 
-    <!-- Page header -->
-    <div class="equip-page-header">
+    <!-- Header -->
+    <div class="eqv2-header">
         <div>
             <h1 class="equip-titulo">Equipamiento</h1>
         </div>
-        <div class="equip-header-actions">
-            <button class="det-btn-volver" id="eq-btn-exportar">Exportar inventario</button>
-            <button class="eq-btn-primary" id="eq-btn-registrar">+ Registrar equipo</button>
+        <button class="eq-btn-primary" id="eqv2-btn-nuevo">+ Registrar equipo</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="eqv2-tabs">
+        <button class="eqv2-tab active" id="eqv2-tab-inventario">📦 Inventario</button>
+        <button class="eqv2-tab" id="eqv2-tab-registrar">➕ Registrar</button>
+        <button class="eqv2-tab" id="eqv2-tab-mantenimientos">🔧 Mantenimientos</button>
+        <button class="eqv2-tab" id="eqv2-tab-incidencias">
+            ⚠️ Incidencias <span class="eqv2-tab-badge" id="eqv2-badge-inc" style="display:none">0</span>
+        </button>
+    </div>
+
+    <!-- ══ PANEL: INVENTARIO ══ -->
+    <div class="eqv2-panel active" id="eqv2-panel-inventario">
+
+        <div class="eqv2-stats-row">
+            <div class="eqv2-stat-box"><div class="eqv2-stat-val" id="st-total">—</div><div class="eqv2-stat-lbl">Total equipos</div></div>
+            <div class="eqv2-stat-box"><div class="eqv2-stat-val" style="color:#84cc16" id="st-op">—</div><div class="eqv2-stat-lbl">Operativos</div></div>
+            <div class="eqv2-stat-box"><div class="eqv2-stat-val" style="color:#f59e0b" id="st-rev">—</div><div class="eqv2-stat-lbl">En revisión</div></div>
+            <div class="eqv2-stat-box"><div class="eqv2-stat-val" style="color:#f43f5e" id="st-fs">—</div><div class="eqv2-stat-lbl">Fuera de servicio</div></div>
+        </div>
+
+        <div class="eqv2-card">
+            <div class="eqv2-card-title">Inventario · Listado de equipos</div>
+
+            <div class="eqv2-toolbar">
+                <input class="eqv2-input" id="inv-buscar" placeholder="🔍 Buscar por nombre o serie…">
+                <select class="eqv2-select" id="inv-cat">
+                    <option value="">Todas las categorías</option>
+                    <option>Cardio</option><option>Musculación</option>
+                    <option>Funcional</option><option>Accesorios</option>
+                </select>
+                <select class="eqv2-select" id="inv-estado">
+                    <option value="">Todos los estados</option>
+                    <option>Operativo</option><option>En revisión</option><option>Fuera de servicio</option>
+                </select>
+                <select class="eqv2-select" id="inv-sector">
+                    <option value="">Todos los sectores</option>
+                    <option>Sala principal</option><option>Sala 2</option>
+                    <option>Peso libre</option><option>Funcional</option>
+                </select>
+                <span class="eqv2-badge-alerta" id="inv-alerta" style="display:none">⚠️ Equipos con alerta: 0</span>
+            </div>
+
+            <div style="overflow-x:auto">
+                <table class="eqv2-table">
+                    <thead>
+                        <tr>
+                            <th>Equipo</th><th>Categoría</th><th>Sector</th>
+                            <th>Estado</th><th>Próx. Mant.</th><th>Responsable</th><th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inv-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="equip-main-grid">
+    <!-- ══ PANEL: REGISTRAR ══ -->
+    <div class="eqv2-panel" id="eqv2-panel-registrar">
+        <div class="eqv2-card">
+            <div class="eqv2-card-title" id="eqv2-form-titulo">Alta de equipo · Cargar nuevo equipamiento</div>
 
-        <!-- ── Columna izquierda: formulario + métricas ── -->
-        <div class="equip-col-left">
-
-            <!-- Formulario alta -->
-            <div class="det-card">
-                <div class="eq-form-header">
-                    <div>
-                        <p class="det-card-title" style="color:var(--primary)">Alta de equipo</p>
-                        <h2 class="eq-form-titulo">Cargar nuevo equipamiento</h2>
-                    </div>
-                    <div class="eq-form-icon">🏋️</div>
+            <div class="eqv2-form-grid">
+                <div class="full">
+                    <label class="eqv2-label">Nombre del equipo *</label>
+                    <input class="eqv2-input" id="eq-nombre" placeholder="Ej: Cinta de correr X900">
                 </div>
-
-                <form id="equipoForm" class="eq-form-body">
-                    <div class="eq-field-full">
-                        <label class="eq-label">Nombre del equipo
-                            <input type="text" id="eq-nombre" class="hist-input" placeholder="Ej: Cinta de correr X900" required>
-                        </label>
-                    </div>
-
-                    <div class="eq-grid-2">
-                        <label class="eq-label">Categoría
-                            <select id="eq-categoria" class="hist-input">
-                                <option value="">Seleccionar</option>
-                                <option>Cardio</option>
-                                <option>Musculación</option>
-                                <option>Accesorios</option>
-                                <option>Funcional</option>
-                            </select>
-                        </label>
-                        <label class="eq-label">Estado inicial
-                            <select id="eq-estado" class="hist-input">
-                                <option>Operativo</option>
-                                <option>En revisión</option>
-                                <option>Fuera de servicio</option>
-                            </select>
-                        </label>
-                    </div>
-
-                    <div class="eq-grid-2">
-                        <label class="eq-label">Marca
-                            <input type="text" id="eq-marca" class="hist-input" placeholder="Ej: Technogym">
-                        </label>
-                        <label class="eq-label">Modelo
-                            <input type="text" id="eq-modelo" class="hist-input" placeholder="Ej: Run Pro 900">
-                        </label>
-                    </div>
-
-                    <div class="eq-grid-2">
-                        <label class="eq-label">Número de serie
-                            <input type="text" id="eq-serie" class="hist-input" placeholder="Ej: EQ-2026-001">
-                        </label>
-                        <label class="eq-label">Ubicación / sector
-                            <input type="text" id="eq-sector" class="hist-input" placeholder="Ej: Sala principal">
-                        </label>
-                    </div>
-
-                    <div class="eq-grid-2">
-                        <label class="eq-label">Fecha de compra
-                            <input type="date" id="eq-compra" class="hist-input">
-                        </label>
-                        <label class="eq-label">Próximo mantenimiento
-                            <input type="date" id="eq-mantenimiento" class="hist-input">
-                        </label>
-                    </div>
-
-                    <div class="eq-grid-2">
-                        <label class="eq-label">Proveedor
-                            <input type="text" id="eq-proveedor" class="hist-input" placeholder="Ej: Fitness Pro">
-                        </label>
-                        <label class="eq-label">Responsable
-                            <input type="text" id="eq-responsable" class="hist-input" placeholder="Ej: Mariano López">
-                        </label>
-                    </div>
-
-                    <div class="eq-field-full">
-                        <label class="eq-label">Observaciones
-                            <textarea id="eq-obs" class="hist-input eq-textarea" rows="3" placeholder="Detalle técnico, fallas previas, garantía, repuestos, etc."></textarea>
-                        </label>
-                    </div>
-
-                    <div class="eq-form-actions">
-                        <button type="button" id="eq-limpiar" class="det-btn-volver">Limpiar</button>
-                        <button type="submit" class="eq-btn-primary">Guardar equipo</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Métricas -->
-            <div class="eq-metrics-grid">
-                <div class="det-metric">
-                    <span class="det-metric-label">Total de equipos</span>
-                    <span class="det-metric-value" id="eq-m-total">—</span>
-                    <span class="eq-metric-helper">Inventario general</span>
+                <div>
+                    <label class="eqv2-label">Categoría *</label>
+                    <select class="eqv2-select" id="eq-cat" style="width:100%">
+                        <option value="" disabled selected>Seleccionar</option>
+                        <option>Cardio</option><option>Musculación</option>
+                        <option>Funcional</option><option>Accesorios</option>
+                    </select>
                 </div>
-                <div class="det-metric">
-                    <span class="det-metric-label">Operativos</span>
-                    <span class="det-metric-value eq-val-ok" id="eq-m-op">—</span>
-                    <span class="eq-metric-helper">Disponibles para uso</span>
+                <div>
+                    <label class="eqv2-label">Estado inicial</label>
+                    <select class="eqv2-select" id="eq-estado" style="width:100%">
+                        <option>Operativo</option><option>En revisión</option><option>Fuera de servicio</option>
+                    </select>
                 </div>
-                <div class="det-metric">
-                    <span class="det-metric-label">En revisión</span>
-                    <span class="det-metric-value eq-val-warn" id="eq-m-rev">—</span>
-                    <span class="eq-metric-helper">Pendientes de control</span>
+                <div>
+                    <label class="eqv2-label">Marca</label>
+                    <input class="eqv2-input" id="eq-marca" placeholder="Ej: Technogym">
                 </div>
-                <div class="det-metric">
-                    <span class="det-metric-label">Fuera de servicio</span>
-                    <span class="det-metric-value eq-val-danger" id="eq-m-fs">—</span>
-                    <span class="eq-metric-helper">Requieren intervención</span>
+                <div>
+                    <label class="eqv2-label">Modelo</label>
+                    <input class="eqv2-input" id="eq-modelo" placeholder="Ej: Run Pro 900">
+                </div>
+                <div>
+                    <label class="eqv2-label">Número de serie</label>
+                    <input class="eqv2-input" id="eq-serie" placeholder="Ej: EQ-2026-001">
+                </div>
+                <div>
+                    <label class="eqv2-label">Ubicación / Sector</label>
+                    <select class="eqv2-select" id="eq-sector" style="width:100%">
+                        <option value="" disabled selected>Seleccionar</option>
+                        <option>Sala principal</option><option>Sala 2</option>
+                        <option>Peso libre</option><option>Funcional</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="eqv2-label">Fecha de compra</label>
+                    <input class="eqv2-input" type="date" id="eq-compra">
+                </div>
+                <div>
+                    <label class="eqv2-label">Próximo mantenimiento</label>
+                    <input class="eqv2-input" type="date" id="eq-mant">
+                </div>
+                <div>
+                    <label class="eqv2-label">Responsable de mantenimiento</label>
+                    <input class="eqv2-input" id="eq-resp" placeholder="Ej: Mariano López">
+                </div>
+                <div class="full">
+                    <label class="eqv2-label">Notas / Observaciones</label>
+                    <input class="eqv2-input" id="eq-obs" placeholder="Ej: Revisar correa cada 6 meses">
+                </div>
+                <div class="full" style="display:flex;gap:12px;margin-top:8px">
+                    <button class="eqv2-btn-ghost" id="eqv2-btn-limpiar">Limpiar</button>
+                    <button class="eq-btn-primary" id="eqv2-btn-guardar" style="margin-left:auto">Registrar equipo</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ── Columna derecha: tabla + alertas ── -->
-        <div class="equip-col-right">
+    <!-- ══ PANEL: MANTENIMIENTOS ══ -->
+    <div class="eqv2-panel" id="eqv2-panel-mantenimientos">
+        <div class="eqv2-card">
+            <div class="eqv2-card-title">Próximos mantenimientos</div>
+            <div class="eqv2-mant-list" id="eqv2-mant-list"></div>
+        </div>
+    </div>
 
-            <!-- Tabla inventario -->
-            <div class="det-card">
-                <div class="historial-header">
-                    <div>
-                        <p class="det-card-title" style="color:var(--primary)">Inventario</p>
-                        <h2 class="historial-titulo">Listado de equipos</h2>
-                    </div>
-                    <div id="eq-alerta-badge" class="eq-alerta-badge" style="display:none">
-                        ⚠️ Equipos con alerta: <span id="eq-alerta-num">0</span>
-                    </div>
-                </div>
+    <!-- ══ PANEL: INCIDENCIAS ══ -->
+    <div class="eqv2-panel" id="eqv2-panel-incidencias">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+            <select class="eqv2-select" id="inc-filtro">
+                <option value="">Todas las incidencias</option>
+                <option value="Abierta">Abiertas</option>
+                <option value="En progreso">En progreso</option>
+                <option value="Resuelta">Resueltas</option>
+            </select>
+            <button class="eq-btn-primary" id="eqv2-btn-nueva-inc">+ Nueva incidencia</button>
+        </div>
+        <div class="eqv2-inc-list" id="eqv2-inc-list"></div>
+    </div>
 
-                <!-- Filtros -->
-                <div class="historial-filtros" style="grid-template-columns: repeat(auto-fit, minmax(140px,1fr))">
-                    <input type="text" id="eq-buscar" class="hist-input" placeholder="Buscar por nombre o serie...">
-                    <select id="eq-f-categoria" class="hist-input">
-                        <option value="">Todas las categorías</option>
-                        <option>Cardio</option>
-                        <option>Musculación</option>
-                        <option>Accesorios</option>
-                        <option>Funcional</option>
-                    </select>
-                    <select id="eq-f-estado" class="hist-input">
-                        <option value="">Todos los estados</option>
-                        <option>Operativo</option>
-                        <option>En revisión</option>
-                        <option>Fuera de servicio</option>
-                    </select>
-                    <select id="eq-f-sector" class="hist-input">
-                        <option value="">Todos los sectores</option>
-                        <option>Sala principal</option>
-                        <option>Sala 2</option>
-                        <option>Peso libre</option>
-                        <option>Funcional</option>
-                    </select>
-                </div>
+</div>
 
-                <!-- Tabla -->
-                <div class="historial-tabla-wrap">
-                    <div class="eq-thead">
-                        <span>Equipo</span>
-                        <span>Categoría</span>
-                        <span>Sector</span>
-                        <span>Estado</span>
-                        <span>Mantenimiento</span>
-                        <span>Responsable</span>
-                        <span>Acción</span>
-                    </div>
-                    <div id="eq-tbody"></div>
-                </div>
+<!-- Modal nueva incidencia -->
+<div id="eqv2-modal-inc" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center">
+    <div class="modal-box" style="max-width:460px">
+        <h3 class="modal-titulo">⚠️ Registrar incidencia</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
+            <div>
+                <label class="modal-label">EQUIPO *</label>
+                <select class="admin-input" id="inc-equipo-sel"></select>
             </div>
-
-            <!-- Alertas -->
-            <div class="eq-alerts-grid">
-                <div class="det-card">
-                    <h3 class="eq-alert-titulo">📅 Mantenimientos próximos</h3>
-                    <div id="eq-alert-mant" class="eq-alert-list"></div>
-                </div>
-                <div class="det-card">
-                    <h3 class="eq-alert-titulo">🔧 Equipos con incidencia</h3>
-                    <div id="eq-alert-inc" class="eq-alert-list"></div>
-                </div>
+            <div>
+                <label class="modal-label">TIPO *</label>
+                <select class="admin-input" id="inc-tipo-sel">
+                    <option>Falla mecánica</option><option>Falla eléctrica</option>
+                    <option>Daño físico</option><option>Desgaste</option><option>Otro</option>
+                </select>
+            </div>
+            <div>
+                <label class="modal-label">PRIORIDAD</label>
+                <select class="admin-input" id="inc-prio-sel">
+                    <option>Alta</option><option selected>Media</option><option>Baja</option>
+                </select>
+            </div>
+            <div>
+                <label class="modal-label">DESCRIPCIÓN *</label>
+                <textarea class="admin-input" id="inc-desc-inp" rows="3" placeholder="Detalle del problema…" style="resize:vertical"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+                <button class="det-btn-volver" style="flex:1" id="eqv2-modal-cancelar">Cancelar</button>
+                <button class="eq-btn-primary" style="flex:1" id="eqv2-modal-guardar">Guardar</button>
             </div>
         </div>
     </div>
@@ -199,337 +193,368 @@
 <script>
 (function () {
     let equiposData = [];
+    let incidenciasData = [];
+    let modoEdicion = null; // id del equipo en edición
 
-    const estadoPill = {
-        "Operativo":          "eq-pill-ok",
-        "En revisión":        "eq-pill-warn",
-        "Fuera de servicio":  "eq-pill-danger"
-    };
+    // ── Helpers ───────────────────────────────────────────────────────────
 
-    function renderTabla() {
-        const buscar    = document.getElementById('eq-buscar').value.toLowerCase();
-        const fCat      = document.getElementById('eq-f-categoria').value;
-        const fEst      = document.getElementById('eq-f-estado').value;
-        const fSec      = document.getElementById('eq-f-sector').value;
-        const tbody     = document.getElementById('eq-tbody');
+    // Convierte "dd/mm/yyyy" o "—" a "yyyy-mm-dd" para input[type=date]
+    function toInputDate(str) {
+        if (!str || str === '—') return '';
+        const p = str.split('/');
+        if (p.length !== 3) return '';
+        return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    }
 
-        const lista = equiposData.filter(e => {
-            const textoMatch = e.nombre.toLowerCase().includes(buscar) || e.serie.toLowerCase().includes(buscar);
-            return textoMatch
-                && (!fCat || e.categoria === fCat)
-                && (!fEst || e.estado    === fEst)
-                && (!fSec || e.sector    === fSec);
-        });
+    // Convierte "yyyy-mm-dd" a "dd/mm/yyyy"
+    function toDisplayDate(str) {
+        if (!str) return '—';
+        const [y, m, d] = str.split('-');
+        return `${d}/${m}/${y}`;
+    }
 
+    // ── Carga de datos ────────────────────────────────────────────────────
+
+    async function cargarEquipos() {
+        equiposData = await fetch('/api/equipos').then(r => r.json()).catch(() => []);
+    }
+
+    async function cargarIncidencias() {
+        incidenciasData = await fetch('/api/incidencias/todas').then(r => r.json()).catch(() => []);
+        actualizarBadgeInc();
+    }
+
+    function actualizarBadgeInc() {
+        const abiertas = incidenciasData.filter(i => i.estado !== 'Resuelta').length;
+        const badge = document.getElementById('eqv2-badge-inc');
+        if (abiertas > 0) {
+            badge.textContent = abiertas;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // ── Tabs ──────────────────────────────────────────────────────────────
+
+    function activarTab(nombre) {
+        document.querySelectorAll('.eqv2-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.eqv2-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('eqv2-panel-' + nombre).classList.add('active');
+        document.getElementById('eqv2-tab-' + nombre).classList.add('active');
+        if (nombre === 'inventario')     renderInventario();
+        if (nombre === 'mantenimientos') renderMantenimientos();
+        if (nombre === 'incidencias')    renderIncidencias();
+        if (nombre === 'registrar' && !modoEdicion) limpiarFormulario();
+    }
+
+    document.getElementById('eqv2-tab-inventario').onclick     = () => activarTab('inventario');
+    document.getElementById('eqv2-tab-registrar').onclick      = () => { modoEdicion = null; activarTab('registrar'); };
+    document.getElementById('eqv2-tab-mantenimientos').onclick  = () => activarTab('mantenimientos');
+    document.getElementById('eqv2-tab-incidencias').onclick     = () => activarTab('incidencias');
+    document.getElementById('eqv2-btn-nuevo').onclick           = () => { modoEdicion = null; activarTab('registrar'); };
+
+    // ── Inventario ────────────────────────────────────────────────────────
+
+    function renderInventario() {
+        const buscar = document.getElementById('inv-buscar').value.toLowerCase();
+        const cat    = document.getElementById('inv-cat').value;
+        const estado = document.getElementById('inv-estado').value;
+        const sector = document.getElementById('inv-sector').value;
+
+        const lista = equiposData.filter(e =>
+            (!buscar || e.nombre.toLowerCase().includes(buscar) || (e.serie||'').toLowerCase().includes(buscar)) &&
+            (!cat    || e.categoria === cat) &&
+            (!estado || e.estado    === estado) &&
+            (!sector || e.sector    === sector)
+        );
+
+        // Stats
+        document.getElementById('st-total').innerText = equiposData.length;
+        document.getElementById('st-op').innerText    = equiposData.filter(e => e.estado === 'Operativo').length;
+        document.getElementById('st-rev').innerText   = equiposData.filter(e => e.estado === 'En revisión').length;
+        document.getElementById('st-fs').innerText    = equiposData.filter(e => e.estado === 'Fuera de servicio').length;
+
+        // Badge alerta
+        const conAlerta = equiposData.filter(e => e.estado !== 'Operativo').length;
+        const badge = document.getElementById('inv-alerta');
+        if (conAlerta > 0) { badge.style.display = 'inline-block'; badge.textContent = `⚠️ Equipos con alerta: ${conAlerta}`; }
+        else badge.style.display = 'none';
+
+        const tbody = document.getElementById('inv-body');
         if (!lista.length) {
-            tbody.innerHTML = '<div class="historial-empty">Sin equipos que coincidan con los filtros</div>';
+            tbody.innerHTML = `<tr><td colspan="7">
+                <div class="eqv2-empty"><div class="eqv2-empty-icon">🏋️</div><p>No se encontraron equipos con esos filtros.</p></div>
+            </td></tr>`;
             return;
         }
 
-        tbody.innerHTML = lista.map(e => `
-            <div class="eq-row">
-                <span class="eq-row-nombre">${e.nombre}</span>
-                <span>${e.categoria}</span>
-                <span>${e.sector}</span>
-                <span><span class="hist-pill ${estadoPill[e.estado]}">${e.estado}</span></span>
-                <span>${e.mantenimiento}</span>
-                <span>${e.responsable}</span>
-                <span>
-                    <button class="det-btn-volver" style="font-size:0.8rem;padding:6px 14px"
-                        onclick="gestionarEquipo(${e.id})">Gestionar</button>
-                </span>
-            </div>`).join('');
-
-        actualizarMetricas();
-        actualizarAlertas();
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
+        tbody.innerHTML = lista.map(e => {
+            const pillClass = e.estado === 'Operativo' ? 'eqv2-pill-op' : e.estado === 'En revisión' ? 'eqv2-pill-rev' : 'eqv2-pill-fs';
+            const mantRaw   = toInputDate(e.mantenimiento);
+            const mantDate  = mantRaw ? new Date(mantRaw + 'T00:00:00') : null;
+            const mantStr   = e.mantenimiento || '—';
+            const diffMant  = mantDate ? Math.ceil((mantDate - hoy) / 86400000) : 999;
+            const mantColor = diffMant <= 7 ? 'color:#f43f5e' : diffMant <= 30 ? 'color:#f59e0b' : 'color:var(--text-soft)';
+            return `
+            <tr>
+                <td><div class="eqv2-eq-nombre">${e.nombre}</div><div class="eqv2-eq-marca">${e.marca||''} ${e.modelo||''} · ${e.serie||''}</div></td>
+                <td>${e.categoria||'—'}</td>
+                <td>${e.sector||'—'}</td>
+                <td><span class="eqv2-pill ${pillClass}">${e.estado}</span></td>
+                <td style="${mantColor};font-size:.82rem;font-weight:700">${mantStr}</td>
+                <td style="font-size:.82rem;color:var(--text-soft)">${e.responsable||'—'}</td>
+                <td>
+                    <div style="display:flex;gap:6px">
+                        <button class="eqv2-btn-ghost" style="padding:7px 12px;font-size:.8rem" onclick="eqv2EditarEquipo(${e.id})">✏️ Editar</button>
+                        <button class="eqv2-btn-danger" onclick="eqv2EliminarEquipo(${e.id})">🗑️</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
     }
 
-    function actualizarMetricas() {
-        const total = equiposData.length;
-        const op    = equiposData.filter(e => e.estado === 'Operativo').length;
-        const rev   = equiposData.filter(e => e.estado === 'En revisión').length;
-        const fs    = equiposData.filter(e => e.estado === 'Fuera de servicio').length;
+    ['inv-buscar','inv-cat','inv-estado','inv-sector'].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', renderInventario);
+        el.addEventListener('change', renderInventario);
+    });
 
-        document.getElementById('eq-m-total').innerText = total;
-        document.getElementById('eq-m-op').innerText    = op;
-        document.getElementById('eq-m-rev').innerText   = rev;
-        document.getElementById('eq-m-fs').innerText    = fs;
+    // ── Formulario ────────────────────────────────────────────────────────
 
-        const alertas = rev + fs;
-        const badge = document.getElementById('eq-alerta-badge');
-        document.getElementById('eq-alerta-num').innerText = alertas;
-        badge.style.display = alertas > 0 ? 'block' : 'none';
+    function limpiarFormulario() {
+        modoEdicion = null;
+        ['eq-nombre','eq-marca','eq-modelo','eq-serie','eq-resp','eq-obs','eq-compra','eq-mant'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
+        const cat = document.getElementById('eq-cat'); if (cat) cat.selectedIndex = 0;
+        const sec = document.getElementById('eq-sector'); if (sec) sec.selectedIndex = 0;
+        const est = document.getElementById('eq-estado'); if (est) est.selectedIndex = 0;
+        document.getElementById('eqv2-form-titulo').innerText = 'Alta de equipo · Cargar nuevo equipamiento';
+        document.getElementById('eqv2-btn-guardar').innerText = 'Registrar equipo';
     }
 
-    function actualizarAlertas() {
-        const mant = document.getElementById('eq-alert-mant');
+    window.eqv2EditarEquipo = function(id) {
+        const e = equiposData.find(x => x.id === id);
+        if (!e) return;
+        modoEdicion = id;
+        activarTab('registrar');
+        document.getElementById('eqv2-form-titulo').innerText = 'Editar equipo';
+        document.getElementById('eqv2-btn-guardar').innerText = 'Guardar cambios';
+        const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
+        set('eq-nombre', e.nombre);
+        set('eq-marca',  e.marca);
+        set('eq-modelo', e.modelo);
+        set('eq-serie',  e.serie);
+        set('eq-resp',   e.responsable);
+        set('eq-obs',    e.obs);
+        set('eq-cat',    e.categoria);
+        set('eq-estado', e.estado);
+        set('eq-sector', e.sector);
+        set('eq-mant',   toInputDate(e.mantenimiento));
+        set('eq-compra', toInputDate(e.compra));
+    };
 
-        const proximos = equiposData
-            .filter(e => e.estado === 'Operativo')
-            .sort((a, b) => a.mantenimiento.split('/').reverse().join('').localeCompare(b.mantenimiento.split('/').reverse().join('')));
+    window.eqv2EliminarEquipo = async function(id) {
+        const e = equiposData.find(x => x.id === id);
+        if (!confirm(`¿Eliminar "${e?.nombre}"? Esta acción no se puede deshacer.`)) return;
+        await fetch(`/api/equipos/${id}`, { method: 'DELETE' });
+        await cargarEquipos();
+        await cargarIncidencias();
+        renderInventario();
+    };
 
-        mant.innerHTML = proximos.length
-            ? proximos.map(e => `<div class="eq-alert-item">${e.nombre} · ${e.mantenimiento}</div>`).join('')
-            : '<div class="eq-alert-item eq-alert-empty">Sin mantenimientos próximos</div>';
+    document.getElementById('eqv2-btn-limpiar').onclick = limpiarFormulario;
 
-        actualizarAlertasDesdeAPI();
-    }
+    document.getElementById('eqv2-btn-guardar').onclick = async function() {
+        const nombre = document.getElementById('eq-nombre').value.trim();
+        const cat    = document.getElementById('eq-cat').value;
+        if (!nombre || !cat) { alert('Completá al menos el nombre y la categoría.'); return; }
 
-    async function actualizarAlertasDesdeAPI() {
-        const inc = document.getElementById('eq-alert-inc');
-        const todas = await fetch('/api/incidencias/todas').then(r => r.json()).catch(() => []);
-        const abiertas = todas.filter(i => i.estado !== 'Resuelta');
-        const prioColor = { 'Alta': '#f87171', 'Media': '#fbbf24', 'Baja': '#94a3b8' };
-        inc.innerHTML = abiertas.length
-            ? abiertas.map(i => {
-                const eq = equiposData.find(e => e.id === i.equipoId);
-                const nombre = eq ? eq.nombre : 'Equipo';
-                return `<div class="eq-alert-item eq-alert-warn" style="cursor:pointer" onclick="gestionarEquipo(${i.equipoId})">
-                    <span style="color:${prioColor[i.prioridad]||'#94a3b8'};font-weight:700;margin-right:6px">●</span>
-                    <strong>${nombre}</strong> · ${i.tipo} · <em>${i.estado}</em>
-                </div>`;
-              }).join('')
-            : '<div class="eq-alert-item eq-alert-empty">Sin incidencias activas ✅</div>';
-    }
-
-    // ── Cargar equipos desde API ────────────────────────────────────────
-    async function cargarEquipos() {
-        equiposData = await fetch('/api/equipos').then(r => r.json()).catch(() => []);
-        renderTabla();
-    }
-
-    // ── Formulario ──────────────────────────────────────────────────────
-    document.getElementById('equipoForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const nuevo = {
-            nombre:        document.getElementById('eq-nombre').value.trim(),
-            categoria:     document.getElementById('eq-categoria').value || 'Sin categoría',
+        const datos = {
+            nombre,
+            categoria:     cat,
             estado:        document.getElementById('eq-estado').value,
             marca:         document.getElementById('eq-marca').value.trim(),
             modelo:        document.getElementById('eq-modelo').value.trim(),
             serie:         document.getElementById('eq-serie').value.trim() || ('EQ-' + Date.now()),
-            sector:        document.getElementById('eq-sector').value.trim(),
-            mantenimiento: document.getElementById('eq-mantenimiento').value
-                               ? new Date(document.getElementById('eq-mantenimiento').value).toLocaleDateString('es-AR')
-                               : '—',
-            responsable:   document.getElementById('eq-responsable').value.trim() || '—',
-            obs:           document.getElementById('eq-obs').value.trim()
+            sector:        document.getElementById('eq-sector').value,
+            mantenimiento: toDisplayDate(document.getElementById('eq-mant').value),
+            compra:        toDisplayDate(document.getElementById('eq-compra').value),
+            responsable:   document.getElementById('eq-resp').value.trim(),
+            obs:           document.getElementById('eq-obs').value.trim(),
         };
-        const res = await fetch('/api/equipos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(nuevo) });
-        if (res.ok) { this.reset(); await cargarEquipos(); }
-        else alert('Error al guardar el equipo.');
-    });
 
-    document.getElementById('eq-limpiar').onclick = () => document.getElementById('equipoForm').reset();
-
-    // ── Filtros en tiempo real ──────────────────────────────────────────
-    ['eq-buscar','eq-f-categoria','eq-f-estado','eq-f-sector'].forEach(id => {
-        const el = document.getElementById(id);
-        el.addEventListener('input',  renderTabla);
-        el.addEventListener('change', renderTabla);
-    });
-
-    // ── Exportar CSV ────────────────────────────────────────────────────
-    document.getElementById('eq-btn-exportar').onclick = () => {
-        const csv = ['Nombre,Categoría,Sector,Estado,Mantenimiento,Responsable,Serie',
-            ...equiposData.map(e => `${e.nombre},${e.categoria},${e.sector},${e.estado},${e.mantenimiento},${e.responsable},${e.serie}`)
-        ].join('\n');
-        const a = document.createElement('a');
-        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-        a.download = 'inventario_equipos.csv';
-        a.click();
-    };
-
-    // ── Scroll al form desde el botón header ───────────────────────────
-    document.getElementById('eq-btn-registrar').onclick = () => {
-        document.getElementById('eq-nombre').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        document.getElementById('eq-nombre').focus();
-    };
-
-    // ── Gestionar equipo (modal edición/eliminación/incidencias) ─────────
-    window.gestionarEquipo = async function (id) {
-        const eq = equiposData.find(e => e.id === id);
-        if (!eq) return;
-
-        const incidencias = await fetch(`/api/equipos/${id}/incidencias`).then(r => r.json()).catch(() => []);
-
-        const prioridadClass = { 'Alta': 'inc-prio-alta', 'Media': 'inc-prio-media', 'Baja': 'inc-prio-baja' };
-        const estadoClass    = { 'Abierta': 'inc-estado-abierta', 'En progreso': 'inc-estado-progreso', 'Resuelta': 'inc-estado-resuelta' };
-
-        function renderIncidencias(lista) {
-            if (!lista.length) return '<p class="inc-empty">Sin incidencias registradas</p>';
-            return lista.map(inc => `
-                <div class="inc-item" id="inc-item-${inc.id}">
-                    <div class="inc-item-header">
-                        <span class="inc-tipo">${inc.tipo}</span>
-                        <span class="inc-badge ${prioridadClass[inc.prioridad]||''}">${inc.prioridad}</span>
-                        <span class="inc-badge ${estadoClass[inc.estado]||''}">${inc.estado}</span>
-                        <span class="inc-fecha">${inc.fecha}</span>
-                    </div>
-                    <p class="inc-desc">${inc.descripcion}</p>
-                    ${inc.estado === 'Resuelta' && inc.resolucion ? `<p class="inc-resolucion">Resolución: ${inc.resolucion}</p>` : ''}
-                    <div class="inc-actions">
-                        ${inc.estado !== 'Resuelta' ? `<button class="inc-btn-resolver" onclick="resolverIncidencia(${id},${inc.id})">Resolver</button>` : ''}
-                        <button class="inc-btn-eliminar" onclick="eliminarIncidencia(${id},${inc.id})">Eliminar</button>
-                    </div>
-                </div>`).join('');
+        if (modoEdicion) {
+            await fetch(`/api/equipos/${modoEdicion}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos)
+            });
+        } else {
+            await fetch('/api/equipos', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos)
+            });
         }
 
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        overlay.innerHTML = `
-            <div class="modal-box" style="max-width:520px;max-height:90vh;overflow-y:auto">
-                <h3 class="modal-titulo">Gestionar equipo</h3>
-                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:20px">${eq.nombre}</p>
-
-                <label class="modal-label">NOMBRE</label>
-                <input id="ed-nombre" class="admin-input" value="${eq.nombre}">
-
-                <label class="modal-label">CATEGORÍA</label>
-                <select id="ed-categoria" class="admin-input">
-                    ${['Cardio','Musculación','Funcional','Accesorios'].map(c =>
-                        `<option ${eq.categoria===c?'selected':''}>${c}</option>`).join('')}
-                </select>
-
-                <label class="modal-label">ESTADO</label>
-                <select id="ed-estado" class="admin-input">
-                    ${['Operativo','En revisión','Fuera de servicio'].map(s =>
-                        `<option ${eq.estado===s?'selected':''}>${s}</option>`).join('')}
-                </select>
-
-                <label class="modal-label">SECTOR</label>
-                <input id="ed-sector" class="admin-input" value="${eq.sector||''}">
-
-                <label class="modal-label">RESPONSABLE</label>
-                <input id="ed-responsable" class="admin-input" value="${eq.responsable||''}">
-
-                <label class="modal-label">PRÓXIMO MANTENIMIENTO</label>
-                <input id="ed-mantenimiento" class="admin-input" value="${eq.mantenimiento||''}">
-
-                <div class="inc-section">
-                    <div class="inc-section-header">
-                        <span class="inc-section-titulo">Incidencias</span>
-                        <button class="inc-btn-nueva" id="ed-btn-inc">+ Reportar incidencia</button>
-                    </div>
-
-                    <div id="inc-form-wrap" style="display:none" class="inc-form-wrap">
-                        <label class="modal-label">TIPO</label>
-                        <select id="inc-tipo" class="admin-input">
-                            <option>Falla mecánica</option>
-                            <option>Falla eléctrica</option>
-                            <option>Daño físico</option>
-                            <option>Desgaste</option>
-                            <option>Otro</option>
-                        </select>
-                        <label class="modal-label">PRIORIDAD</label>
-                        <select id="inc-prioridad" class="admin-input">
-                            <option>Alta</option>
-                            <option selected>Media</option>
-                            <option>Baja</option>
-                        </select>
-                        <label class="modal-label">DESCRIPCIÓN</label>
-                        <textarea id="inc-descripcion" class="admin-input eq-textarea" rows="3" placeholder="Describí la falla o situación..."></textarea>
-                        <div style="display:flex;gap:8px;margin-top:10px">
-                            <button id="inc-cancelar-form" class="det-btn-volver" style="flex:1">Cancelar</button>
-                            <button id="inc-guardar-form" style="flex:1;padding:10px;background:#bef264;border:none;border-radius:10px;color:#000;font-weight:900;cursor:pointer">Registrar</button>
-                        </div>
-                    </div>
-
-                    <div id="inc-lista">${renderIncidencias(incidencias)}</div>
-                </div>
-
-                <div style="display:flex;gap:10px;margin-top:20px">
-                    <button id="ed-cancelar" class="det-btn-volver" style="flex:1">Cancelar</button>
-                    <button id="ed-eliminar" style="flex:1;padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:#f87171;font-weight:700;cursor:pointer">Eliminar equipo</button>
-                    <button id="ed-guardar" style="flex:1;padding:10px;background:#bef264;border:none;border-radius:10px;color:#000;font-weight:900;cursor:pointer">Guardar</button>
-                </div>
-            </div>`;
-
-        document.body.appendChild(overlay);
-
-        overlay.querySelector('#ed-cancelar').onclick = () => document.body.removeChild(overlay);
-        overlay.addEventListener('click', e => { if (e.target === overlay) document.body.removeChild(overlay); });
-
-        // Toggle form incidencia
-        overlay.querySelector('#ed-btn-inc').onclick = () => {
-            const wrap = overlay.querySelector('#inc-form-wrap');
-            wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
-        };
-        overlay.querySelector('#inc-cancelar-form').onclick = () => {
-            overlay.querySelector('#inc-form-wrap').style.display = 'none';
-        };
-
-        overlay.querySelector('#inc-guardar-form').onclick = async () => {
-            const tipo        = overlay.querySelector('#inc-tipo').value;
-            const prioridad   = overlay.querySelector('#inc-prioridad').value;
-            const descripcion = overlay.querySelector('#inc-descripcion').value.trim();
-            if (!descripcion) { alert('Ingresá una descripción.'); return; }
-
-            const res = await fetch(`/api/equipos/${id}/incidencias`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tipo, prioridad, descripcion })
-            });
-            if (res.ok) {
-                const nuevas = await fetch(`/api/equipos/${id}/incidencias`).then(r => r.json());
-                overlay.querySelector('#inc-lista').innerHTML = renderIncidencias(nuevas);
-                overlay.querySelector('#inc-form-wrap').style.display = 'none';
-                overlay.querySelector('#inc-descripcion').value = '';
-                await actualizarAlertasDesdeAPI();
-            } else {
-                alert('Error al registrar la incidencia.');
-            }
-        };
-
-        overlay.querySelector('#ed-guardar').onclick = async () => {
-            const actualizado = {
-                nombre:        overlay.querySelector('#ed-nombre').value.trim(),
-                categoria:     overlay.querySelector('#ed-categoria').value,
-                estado:        overlay.querySelector('#ed-estado').value,
-                sector:        overlay.querySelector('#ed-sector').value.trim(),
-                responsable:   overlay.querySelector('#ed-responsable').value.trim(),
-                mantenimiento: overlay.querySelector('#ed-mantenimiento').value.trim(),
-            };
-            const res = await fetch(`/api/equipos/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(actualizado)
-            });
-            if (res.ok) { document.body.removeChild(overlay); await cargarEquipos(); }
-            else alert('Error al guardar los cambios.');
-        };
-
-        overlay.querySelector('#ed-eliminar').onclick = async () => {
-            if (!confirm(`¿Eliminar "${eq.nombre}"? Esta acción no se puede deshacer.`)) return;
-            await fetch(`/api/equipos/${id}`, { method: 'DELETE' });
-            document.body.removeChild(overlay);
-            await cargarEquipos();
-        };
-
-        // Resolver / eliminar incidencia desde dentro del modal
-        window.resolverIncidencia = async function(eqId, incId) {
-            const resolucion = prompt('Descripción de la resolución (opcional):') || '';
-            const res = await fetch(`/api/equipos/${eqId}/incidencias/${incId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: 'Resuelta', resolucion })
-            });
-            if (res.ok) {
-                const nuevas = await fetch(`/api/equipos/${eqId}/incidencias`).then(r => r.json());
-                overlay.querySelector('#inc-lista').innerHTML = renderIncidencias(nuevas);
-                await actualizarAlertasDesdeAPI();
-            }
-        };
-
-        window.eliminarIncidencia = async function(eqId, incId) {
-            if (!confirm('¿Eliminar esta incidencia?')) return;
-            await fetch(`/api/equipos/${eqId}/incidencias/${incId}`, { method: 'DELETE' });
-            const nuevas = await fetch(`/api/equipos/${eqId}/incidencias`).then(r => r.json());
-            overlay.querySelector('#inc-lista').innerHTML = renderIncidencias(nuevas);
-            await actualizarAlertasDesdeAPI();
-        };
+        await cargarEquipos();
+        limpiarFormulario();
+        activarTab('inventario');
     };
 
-    cargarEquipos();
+    // ── Mantenimientos ────────────────────────────────────────────────────
+
+    function renderMantenimientos() {
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
+        const sorted = [...equiposData]
+            .filter(e => e.mantenimiento && e.mantenimiento !== '—')
+            .map(e => ({ ...e, _mantDate: new Date(toInputDate(e.mantenimiento) + 'T00:00:00') }))
+            .sort((a, b) => a._mantDate - b._mantDate);
+
+        const list = document.getElementById('eqv2-mant-list');
+        if (!sorted.length) {
+            list.innerHTML = `<div class="eqv2-empty"><div class="eqv2-empty-icon">🔧</div><p>No hay mantenimientos registrados.</p></div>`;
+            return;
+        }
+
+        list.innerHTML = sorted.map(e => {
+            const diff  = Math.ceil((e._mantDate - hoy) / 86400000);
+            const cls   = diff < 0 ? 'urgente' : diff <= 14 ? 'proximo' : 'ok';
+            const label = diff < 0 ? `Vencido hace ${Math.abs(diff)} días` : diff === 0 ? 'Hoy' : `En ${diff} días`;
+            return `
+            <div class="eqv2-mant-item">
+                <div class="eqv2-mant-icon">🔧</div>
+                <div class="eqv2-mant-info">
+                    <div class="eqv2-mant-nombre">${e.nombre}</div>
+                    <div class="eqv2-mant-meta">${e.categoria||''} · ${e.sector||''} · Resp: ${e.responsable||'—'}</div>
+                </div>
+                <div class="eqv2-mant-fecha ${cls}">${e.mantenimiento}<br><small>${label}</small></div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Incidencias ───────────────────────────────────────────────────────
+
+    function renderIncidencias() {
+        const filtro = document.getElementById('inc-filtro').value;
+        const lista  = filtro ? incidenciasData.filter(i => i.estado === filtro) : [...incidenciasData];
+        const list   = document.getElementById('eqv2-inc-list');
+
+        if (!lista.length) {
+            list.innerHTML = `<div class="eqv2-empty"><div class="eqv2-empty-icon">✅</div><p>Sin incidencias ${filtro ? 'con ese estado' : 'registradas'}.</p></div>`;
+            return;
+        }
+
+        const pillEst = { 'Abierta': 'eqv2-pill-abierta', 'En progreso': 'eqv2-pill-proceso', 'Resuelta': 'eqv2-pill-resuelta' };
+        const pillPrio = { 'Alta': 'eqv2-pill-alta', 'Media': 'eqv2-pill-media', 'Baja': 'eqv2-pill-baja' };
+
+        list.innerHTML = lista.map(i => {
+            const eq = equiposData.find(e => e.id === i.equipoId);
+            return `
+            <div class="eqv2-inc-item">
+                <div class="eqv2-inc-top">
+                    <div class="eqv2-inc-icon">⚠️</div>
+                    <div style="flex:1">
+                        <div class="eqv2-inc-titulo">${i.tipo}</div>
+                        <div class="eqv2-inc-equipo">${eq ? eq.nombre : 'Equipo desconocido'} · ${eq ? (eq.sector||'') : ''}</div>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+                        <span class="eqv2-pill ${pillPrio[i.prioridad]||'eqv2-pill-media'}">${i.prioridad||'Media'}</span>
+                        <span class="eqv2-pill ${pillEst[i.estado]||'eqv2-pill-abierta'}">${i.estado}</span>
+                    </div>
+                </div>
+                <div class="eqv2-inc-desc">${i.descripcion||'—'}</div>
+                ${i.estado === 'Resuelta' && i.resolucion ? `<div class="eqv2-inc-resolucion">Resolución: ${i.resolucion}</div>` : ''}
+                <div class="eqv2-inc-footer">
+                    <span class="eqv2-inc-fecha">📅 ${i.fecha}</span>
+                    ${i.estado !== 'Resuelta' ? `<button class="eqv2-btn-ghost" style="padding:6px 12px;font-size:.78rem" onclick="eqv2ResolverInc(${i.equipoId},${i.id})">✔ Marcar resuelta</button>` : ''}
+                    <button class="eqv2-btn-danger" style="padding:6px 12px" onclick="eqv2EliminarInc(${i.equipoId},${i.id})">🗑️</button>
+                </div>
+            </div>`;
+        }).join('');
+
+        actualizarBadgeInc();
+    }
+
+    document.getElementById('inc-filtro').addEventListener('change', renderIncidencias);
+
+    window.eqv2ResolverInc = async function(eqId, incId) {
+        const resolucion = prompt('Descripción de la resolución (opcional):') || '';
+        await fetch(`/api/equipos/${eqId}/incidencias/${incId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: 'Resuelta', resolucion })
+        });
+        await cargarIncidencias();
+        renderIncidencias();
+    };
+
+    window.eqv2EliminarInc = async function(eqId, incId) {
+        if (!confirm('¿Eliminar esta incidencia?')) return;
+        await fetch(`/api/equipos/${eqId}/incidencias/${incId}`, { method: 'DELETE' });
+        await cargarIncidencias();
+        renderIncidencias();
+    };
+
+    // ── Modal nueva incidencia ────────────────────────────────────────────
+
+    document.getElementById('eqv2-btn-nueva-inc').onclick = function() {
+        const sel = document.getElementById('inc-equipo-sel');
+        sel.innerHTML = equiposData.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+        document.getElementById('inc-desc-inp').value = '';
+        document.getElementById('eqv2-modal-inc').style.display = 'flex';
+    };
+
+    document.getElementById('eqv2-modal-cancelar').onclick = () => {
+        document.getElementById('eqv2-modal-inc').style.display = 'none';
+    };
+
+    document.getElementById('eqv2-modal-inc').addEventListener('click', e => {
+        if (e.target === document.getElementById('eqv2-modal-inc'))
+            document.getElementById('eqv2-modal-inc').style.display = 'none';
+    });
+
+    document.getElementById('eqv2-modal-guardar').onclick = async function() {
+        const equipoId   = parseInt(document.getElementById('inc-equipo-sel').value);
+        const tipo       = document.getElementById('inc-tipo-sel').value;
+        const prioridad  = document.getElementById('inc-prio-sel').value;
+        const descripcion = document.getElementById('inc-desc-inp').value.trim();
+        if (!descripcion) { alert('Ingresá una descripción.'); return; }
+
+        await fetch(`/api/equipos/${equipoId}/incidencias`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo, prioridad, descripcion })
+        });
+
+        document.getElementById('eqv2-modal-inc').style.display = 'none';
+        await cargarIncidencias();
+        renderIncidencias();
+    };
+
+    // ── Función global para alertas del dashboard ─────────────────────────
+    // (llamada desde actualizarAlertasDesdeAPI en el panel de alertas)
+    window.gestionarEquipo = function(id) { eqv2EditarEquipo(id); };
+
+    // ── Exportar CSV ──────────────────────────────────────────────────────
+    // Reutilizamos el botón de exportar si existe
+    const btnExp = document.getElementById('eq-btn-exportar');
+    if (btnExp) {
+        btnExp.onclick = () => {
+            const csv = ['Nombre,Categoría,Sector,Estado,Mantenimiento,Responsable,Serie',
+                ...equiposData.map(e => `${e.nombre},${e.categoria},${e.sector},${e.estado},${e.mantenimiento},${e.responsable},${e.serie}`)
+            ].join('\n');
+            const a = document.createElement('a');
+            a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            a.download = 'inventario_equipos.csv';
+            a.click();
+        };
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    async function init() {
+        await cargarEquipos();
+        await cargarIncidencias();
+        renderInventario();
+    }
+
+    init();
 })();
 </script>
