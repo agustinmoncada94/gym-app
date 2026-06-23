@@ -777,6 +777,26 @@
                 set('kpi-equipos',       operativos);
                 set('kpi-equipos-delta', conAlerta > 0 ? `${conAlerta} con alerta técnica` : 'Todos operativos');
 
+                // ── Alerta mantenimiento vencido ────────────────────────
+                const vencidosMant = equipos.filter(e => {
+                    if (!e.mantenimiento || e.mantenimiento === '—') return false;
+                    const p = String(e.mantenimiento).split('/');
+                    if (p.length !== 3) return false;
+                    const fecha = new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+                    return fecha < hoy;
+                });
+                const elMantTitle = document.getElementById('alerta-mant-title');
+                const elMantDesc  = document.getElementById('alerta-mant-desc');
+                if (elMantTitle) {
+                    if (vencidosMant.length === 0) {
+                        elMantTitle.innerText = 'Sin equipos con mantenimiento vencido';
+                        if (elMantDesc) elMantDesc.innerText = 'Todos los mantenimientos están al día.';
+                    } else {
+                        elMantTitle.innerText = `${vencidosMant.length} equipo${vencidosMant.length > 1 ? 's' : ''} con mantenimiento vencido`;
+                        if (elMantDesc) elMantDesc.innerText = vencidosMant.slice(0, 3).map(e => e.nombre).join(', ') + (vencidosMant.length > 3 ? ` y ${vencidosMant.length - 3} más.` : '.');
+                    }
+                }
+
                 // ── Pagos: calcular últimos 6 meses ─────────────────────
                 const todosPagos = await Promise.all(
                     socios.map(s => fetch(`/api/socios/${s.dni}/pagos`).then(r => r.json()).catch(() => []))
