@@ -358,7 +358,15 @@
 
     window.eqv2EliminarEquipo = async function(id) {
         const e = equiposData.find(x => x.id === id);
-        if (!confirm(`¿Eliminar "${e?.nombre}"? Esta acción no se puede deshacer.`)) return;
+        const ok = await confirmar({
+            icono: '🗑️',
+            titulo: '¿Eliminar equipo?',
+            detalle: `Se eliminará <strong>${e?.nombre||'este equipo'}</strong> del inventario.<br>Esta acción no se puede deshacer.`,
+            labelOk: 'Sí, eliminar',
+            colorOk: '#ef4444',
+            colorOkText: '#fff'
+        });
+        if (!ok) return;
         await fetch(`/api/equipos/${id}`, { method: 'DELETE' });
         await cargarEquipos();
         await cargarIncidencias();
@@ -371,6 +379,20 @@
         const nombre = document.getElementById('eq-nombre').value.trim();
         const cat    = document.getElementById('eq-cat').value;
         if (!nombre || !cat) { alert('Completá al menos el nombre y la categoría.'); return; }
+
+        const esNuevo = !modoEdicion;
+        const ok = await confirmar(esNuevo ? {
+            icono: '✅',
+            titulo: '¿Registrar equipo?',
+            detalle: `Se agregará <strong>${nombre}</strong> al inventario.`,
+            labelOk: 'Sí, registrar'
+        } : {
+            icono: '💾',
+            titulo: '¿Guardar cambios?',
+            detalle: `Se actualizarán los datos de <strong>${nombre}</strong>.`,
+            labelOk: 'Sí, guardar'
+        });
+        if (!ok) return;
 
         const datos = {
             nombre,
@@ -488,7 +510,15 @@
     };
 
     window.eqv2EliminarInc = async function(eqId, incId) {
-        if (!confirm('¿Eliminar esta incidencia?')) return;
+        const ok = await confirmar({
+            icono: '🗑️',
+            titulo: '¿Eliminar incidencia?',
+            detalle: 'Se eliminará este registro de incidencia permanentemente.',
+            labelOk: 'Sí, eliminar',
+            colorOk: '#ef4444',
+            colorOkText: '#fff'
+        });
+        if (!ok) return;
         await fetch(`/api/equipos/${eqId}/incidencias/${incId}`, { method: 'DELETE' });
         await cargarIncidencias();
         renderIncidencias();
@@ -518,6 +548,15 @@
         const prioridad  = document.getElementById('inc-prio-sel').value;
         const descripcion = document.getElementById('inc-desc-inp').value.trim();
         if (!descripcion) { alert('Ingresá una descripción.'); return; }
+
+        const eq = equiposData.find(e => e.id === equipoId);
+        const ok = await confirmar({
+            icono: '⚠️',
+            titulo: '¿Registrar incidencia?',
+            detalle: `Se creará una incidencia de tipo <strong>${tipo}</strong> (prioridad ${prioridad}) para <strong>${eq?.nombre||'el equipo'}</strong>.`,
+            labelOk: 'Sí, registrar'
+        });
+        if (!ok) return;
 
         await fetch(`/api/equipos/${equipoId}/incidencias`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },

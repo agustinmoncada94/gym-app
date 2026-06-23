@@ -250,6 +250,13 @@
                         form.addEventListener('submit', async function (e) {
                             e.preventDefault();
                             const datos = leerFormulario();
+                            const ok = await confirmar({
+                                icono: '✅',
+                                titulo: '¿Registrar nuevo socio?',
+                                detalle: `Se creará el perfil de <strong>${(datos.nombre||'').toUpperCase()}</strong> con DNI ${datos.dni||'—'}.`,
+                                labelOk: 'Sí, registrar'
+                            });
+                            if (!ok) return;
                             if (!datos.fechaInicio) datos.fechaInicio = new Date().toISOString();
                             await guardarSocio('POST', '/api/registrar', datos);
                         });
@@ -544,31 +551,41 @@
             });
         }
 
+        // ── Confirmación global reutilizable ─────────────────────────────────
+        window.confirmar = function({ icono = '❓', titulo, detalle = '', labelOk = 'Confirmar', colorOk = '#c5e061', colorOkText = '#000' }) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal-box" style="max-width:400px;text-align:center">
+                        <div style="font-size:2.2rem;margin-bottom:12px">${icono}</div>
+                        <h3 class="modal-titulo" style="margin-bottom:10px">${titulo}</h3>
+                        ${detalle ? `<p style="font-size:.88rem;color:var(--text-muted);margin-bottom:24px;line-height:1.5">${detalle}</p>` : '<div style="margin-bottom:24px"></div>'}
+                        <div style="display:flex;gap:10px;justify-content:center">
+                            <button id="conf-no"  class="det-btn-volver" style="flex:1">Cancelar</button>
+                            <button id="conf-si"  style="flex:1;padding:10px 20px;background:${colorOk};border:none;border-radius:10px;color:${colorOkText};font-weight:700;cursor:pointer;font-size:.9rem">${labelOk}</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(overlay);
+                const cerrar = (val) => { document.body.removeChild(overlay); resolve(val); };
+                overlay.querySelector('#conf-no').onclick  = () => cerrar(false);
+                overlay.querySelector('#conf-si').onclick  = () => cerrar(true);
+                overlay.addEventListener('click', e => { if (e.target === overlay) cerrar(false); });
+            });
+        };
+
        async function borrarSocio(dni) {
     const dniLimpio = String(dni).trim();
     const socio = sociosMap.get(dniLimpio);
     const nombre = socio ? socio.nombre : `DNI ${dniLimpio}`;
 
-    // Modal de confirmación
-    const confirmado = await new Promise(resolve => {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        overlay.innerHTML = `
-            <div class="modal-box" style="max-width:420px;text-align:center">
-                <div style="font-size:2.2rem;margin-bottom:12px">🗑️</div>
-                <h3 class="modal-titulo" style="color:#f87171">Eliminar socio</h3>
-                <p style="font-size:.95rem;color:var(--text-muted);margin:8px 0 4px">Estás por eliminar a:</p>
-                <p style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:6px">${nombre.toUpperCase()}</p>
-                <p style="font-size:.8rem;color:var(--text-faint);margin-bottom:24px">DNI ${dniLimpio} · Esta acción no se puede deshacer.</p>
-                <div style="display:flex;gap:10px;justify-content:center">
-                    <button id="conf-cancelar" class="det-btn-volver" style="flex:1">Cancelar</button>
-                    <button id="conf-eliminar" style="flex:1;padding:10px 20px;background:#ef4444;border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;font-size:.9rem">Sí, eliminar</button>
-                </div>
-            </div>`;
-        document.body.appendChild(overlay);
-        overlay.querySelector('#conf-cancelar').onclick  = () => { document.body.removeChild(overlay); resolve(false); };
-        overlay.querySelector('#conf-eliminar').onclick  = () => { document.body.removeChild(overlay); resolve(true); };
-        overlay.addEventListener('click', e => { if (e.target === overlay) { document.body.removeChild(overlay); resolve(false); } });
+    const confirmado = await confirmar({
+        icono: '🗑️',
+        titulo: 'Eliminar socio',
+        detalle: `Estás por eliminar a <strong>${nombre.toUpperCase()}</strong><br>DNI ${dniLimpio} · Esta acción no se puede deshacer.`,
+        labelOk: 'Sí, eliminar',
+        colorOk: '#ef4444',
+        colorOkText: '#fff'
     });
 
     if (!confirmado) return;
@@ -635,7 +652,15 @@
             if (m) m.remove();
         }
         async function borradoEmergencia(identificador) {
-    if (!confirm(`¿Forzar la eliminación de: ${identificador}?`)) return;
+    const ok = await confirmar({
+        icono: '⚠️',
+        titulo: '¿Forzar eliminación?',
+        detalle: `Se eliminará el registro: <strong>${identificador}</strong>. Esta acción no se puede deshacer.`,
+        labelOk: 'Sí, forzar',
+        colorOk: '#ef4444',
+        colorOkText: '#fff'
+    });
+    if (!ok) return;
     
     // Obtenemos todos los socios primero para encontrar el ID real
     const response = await fetch('/api/socios/todos');
