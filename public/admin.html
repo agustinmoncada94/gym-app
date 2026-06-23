@@ -888,7 +888,11 @@
                     if (legend) legend.innerHTML = estadoData.map(d => `<div class="dash-donut-item"><span class="dash-donut-dot" style="background:${d.color}"></span><span>${d.name}</span><b>${d.value}</b></div>`).join('');
                 }
 
-                // ── Chart 3: Asistencia semanal (real) ─────────────────
+                // ── Resumen ejecutivo: Promedio diario asistencia ───────
+                const totalAsist = asistencia.reduce((s, d) => s + d.cantidad, 0);
+                const diasConDatos = asistencia.filter(d => d.cantidad > 0).length || 1;
+                const promAsist = (totalAsist / diasConDatos).toFixed(1);
+                set('dash-prom-asist', promAsist % 1 === 0 ? `${parseInt(promAsist)} ingresos` : `${promAsist} ingresos`);
                 const ctxAsist = document.getElementById('chart-asistencia');
                 if (ctxAsist) {
                     const labAsist  = asistencia.map(d => d.dia);
@@ -926,6 +930,23 @@
                         options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{boxWidth:12,padding:16}},tooltip:{...tooltipStyle}}, scales:{x:{stacked:true,grid:{display:false},border:{display:false}},y:{stacked:true,grid:{color:gridColor},border:{display:false}}} }
                     });
                 }
+
+                // ── Resumen ejecutivo: ticket promedio, mant pendiente, mejor plan ──
+                const pagosMes = todosPagos.flat().filter(p => {
+                    if (!p.monto || p.monto === '—' || !p.fecha || p.fecha === '—') return false;
+                    const pts = String(p.fecha).split('/');
+                    if (pts.length !== 3) return false;
+                    return parseInt(pts[1],10) - 1 === mesActual && parseInt(pts[2],10) === anioActual;
+                });
+                const ticketProm = pagosMes.length > 0
+                    ? Math.round(pagosMes.reduce((s, p) => s + parseFloat(String(p.monto).replace(/[^0-9]/g,'')||0), 0) / pagosMes.length)
+                    : 0;
+                set('dash-ticket-prom', ticketProm > 0 ? '$' + ticketProm.toLocaleString('es-AR') : '—');
+
+                set('dash-mant-pendiente', vencidosMant.length > 0 ? `${vencidosMant.length} equipo${vencidosMant.length > 1 ? 's' : ''}` : 'Sin pendientes');
+
+                const mejorPlan = Object.entries(planCount).sort((a,b) => b[1] - a[1])[0];
+                set('dash-mejor-plan', mejorPlan ? mejorPlan[0] : '—');
 
                 // ── Chart 5: Socios por plan (real) ────────────────────
                 const ctxPlanes = document.getElementById('chart-planes');
