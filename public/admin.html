@@ -920,6 +920,7 @@
                 }
 
                 // ── Pagos: calcular últimos 6 meses ─────────────────────
+                const parseMonto = m => parseFloat(String(m||0).replace(/[^0-9,]/g,'').replace(',','.')) || 0;
                 const todosPagos = await Promise.all(
                     socios.map(s => fetch(`/api/socios/${s.dni}/pagos`).then(r => r.json()).catch(() => []))
                 );
@@ -1070,21 +1071,51 @@
                 const mejorPlan = Object.entries(planCount).sort((a,b) => b[1] - a[1])[0];
                 set('dash-mejor-plan', mejorPlan ? mejorPlan[0] : '—');
 
-                // ── Chart 5: Socios por plan (real) ────────────────────
-                const ctxPlanes = document.getElementById('chart-planes');
-                if (ctxPlanes) {
-                    const planesLabels = Object.keys(planCount);
-                    const planesData   = planesLabels.map(k => planCount[k]);
-                    _dashCharts.planes = new Chart(ctxPlanes, {
-                        type:'bar',
-                        data:{ labels:planesLabels, datasets:[{ data:planesData, backgroundColor:'#bef264', borderRadius:8, borderSkipped:false }] },
-                        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{...tooltipStyle,callbacks:{label:ctx=>' '+ctx.raw+' socios'}}}, scales:{x:{grid:{color:gridColor},border:{display:false}},y:{grid:{display:false},border:{display:false}}} }
+                // ── Chart 5: Ingresos por método de pago (mes actual) ───
+                const metodos     = ['Efectivo', 'Transferencia', 'QR'];
+                const metodoColor = ['#84cc16', '#60a5fa', '#a78bfa'];
+                const metodoTotales = metodos.map(met =>
+                    pagosMes.filter(p => (p.metodo||'Efectivo') === met)
+                            .reduce((s, p) => s + parseMonto(p.monto), 0)
+                );
+
+                const ctxMetodos = document.getElementById('chart-metodos');
+                if (ctxMetodos) {
+                    _dashCharts.metodos = new Chart(ctxMetodos, {
+                        type: 'doughnut',
+                        data: {
+                            labels: metodos,
+                            datasets: [{
+                                data: metodoTotales,
+                                backgroundColor: metodoColor,
+                                borderWidth: 0,
+                                hoverOffset: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, cutout: '60%',
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { ...tooltipStyle, callbacks: { label: ctx => ` $${ctx.raw.toLocaleString('es-AR')}` } }
+                            }
+                        }
                     });
-                    // Panel planes más elegidos
-                    const dashPlanes = document.getElementById('dash-planes');
-                    if (dashPlanes) {
-                        const sorted = planesLabels.map((k,i) => ({nombre:k, valor:planesData[i]})).sort((a,b)=>b.valor-a.valor);
-                        dashPlanes.innerHTML = sorted.slice(0,3).map(p => `<div class="dash-summary-row" style="align-items:flex-start"><div><p style="font-weight:700;font-size:.9rem;color:var(--text)">${p.nombre}</p></div><b style="color:var(--primary);white-space:nowrap">${p.valor} socios</b></div>`).join('');
+
+                    const detalle = document.getElementById('metodos-detalle');
+                    if (detalle) {
+                        const totalGeneral = metodoTotales.reduce((s, v) => s + v, 0);
+                        detalle.innerHTML = metodos.map((m, i) => {
+                            const pct = totalGeneral > 0 ? ((metodoTotales[i] / totalGeneral) * 100).toFixed(0) : 0;
+                            return `
+                            <div style="flex:1;min-width:120px;background:rgba(255,255,255,0.03);border:1px solid var(--panel-border);border-radius:12px;padding:14px 16px">
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                                    <span style="width:10px;height:10px;border-radius:50%;background:${metodoColor[i]};flex-shrink:0"></span>
+                                    <span style="font-size:.78rem;font-weight:600;color:var(--text-soft)">${m}</span>
+                                </div>
+                                <p style="font-size:1.1rem;font-weight:800;color:var(--text);margin:0">$${metodoTotales[i].toLocaleString('es-AR')}</p>
+                                <p style="font-size:.75rem;color:var(--text-faint);margin-top:2px">${pct}% del total</p>
+                            </div>`;
+                        }).join('');
                     }
                 }
 

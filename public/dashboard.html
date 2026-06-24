@@ -140,17 +140,17 @@
         </div>
     </div>
 
-    <!-- Fila 3: Socios por plan (horizontal) + Resumen ejecutivo -->
+    <!-- Fila 3: Ingresos por método + Resumen ejecutivo -->
     <div class="dash-row dash-row-6040">
         <div class="det-card">
             <div class="dash-chart-header">
                 <div>
-                    <p class="dash-chart-title">Socios por plan</p>
-                    <p class="dash-chart-sub">Cantidad actual por tipo de membresía</p>
+                    <p class="dash-chart-title">Ingresos por método de pago</p>
+                    <p class="dash-chart-sub">Total del mes actual · Efectivo, Transferencia y QR</p>
                 </div>
-                <button class="det-btn-volver" style="font-size:.8rem;padding:7px 14px">Administrar planes</button>
             </div>
-            <div class="dash-chart-box"><canvas id="chart-planes"></canvas></div>
+            <div class="dash-chart-box"><canvas id="chart-metodos"></canvas></div>
+            <div id="metodos-detalle" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px"></div>
         </div>
 
         <div class="det-card">
