@@ -714,12 +714,14 @@
                 return `<span style="font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:20px;background:${color}22;color:${color};border:1px solid ${color}44">${m||'—'}</span>`;
             };
 
+            const parseMonto = m => parseFloat(String(m||0).replace(/[^0-9,]/g,'').replace(',','.')) || 0;
+
             const totalMes = (() => {
                 const hoy = new Date();
                 return pagos.filter(p => {
                     const pts = String(p.fecha||'').split('/');
                     return pts.length === 3 && parseInt(pts[1],10)-1 === hoy.getMonth() && parseInt(pts[2],10) === hoy.getFullYear();
-                }).reduce((s,p) => s + (parseFloat(String(p.monto||0).replace(/[^0-9.]/g,''))||0), 0);
+                }).reduce((s,p) => s + parseMonto(p.monto), 0);
             })();
 
             const filas = pagos.length
@@ -727,7 +729,7 @@
                     <div style="display:grid;grid-template-columns:90px 1fr 100px 90px 80px;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--panel-border);font-size:.84rem">
                         <span style="color:var(--text-soft)">${p.fecha||'—'}</span>
                         <span style="font-weight:600">${p.concepto||'—'}</span>
-                        <span style="font-weight:800;color:var(--primary)">$${parseFloat(String(p.monto||0).replace(/[^0-9.]/g,'')).toLocaleString('es-AR')}</span>
+                        <span style="font-weight:800;color:var(--primary)">$${parseMonto(p.monto).toLocaleString('es-AR')}</span>
                         ${metodoPill(p.metodo)}
                         <span style="font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:20px;background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.25)">${p.estado||'Pagado'}</span>
                     </div>`).join('')
