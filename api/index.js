@@ -20,11 +20,18 @@ async function conectar() {
 // AUTH LOGIN
 app.post('/api/auth/login', (req, res) => {
     const { usuario, password } = req.body;
-    const adminUser = process.env.ADMIN_USER || 'Admin';
-    const adminPass = process.env.ADMIN_PASS || 'mateomartino';
+    const adminUser = process.env.ADMIN_USER  || 'Admin';
+    const adminPass = process.env.ADMIN_PASS  || 'mateomartino';
+    const profUser  = process.env.PROFESOR_USER || 'Profesor';
+    const profPass  = process.env.PROFESOR_PASS || 'profesor123';
+
+    const token = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const expiry = Date.now() + 8 * 60 * 60 * 1000;
+
     if (usuario === adminUser && password === adminPass) {
-        const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
-        res.json({ ok: true, token, expiry: Date.now() + 8 * 60 * 60 * 1000 });
+        res.json({ ok: true, token: token(), expiry, role: 'admin' });
+    } else if (usuario === profUser && password === profPass) {
+        res.json({ ok: true, token: token(), expiry, role: 'profesor' });
     } else {
         res.status(401).json({ ok: false, message: 'Usuario o contraseña incorrectos.' });
     }

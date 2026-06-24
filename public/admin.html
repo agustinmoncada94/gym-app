@@ -42,21 +42,24 @@
                     <span>Registrar Socio</span>
                 </button>
 
-                <button class="nav-link" onclick="switchTab('equipos')">
+                <button class="nav-link" id="nav-equipos" onclick="switchTab('equipos')">
                     <i class="fas fa-dumbbell"></i>
                     <span>Equipamiento</span>
                 </button>
 
-                <button class="nav-link" onclick="switchTab('dashboard')">
+                <button class="nav-link" id="nav-dashboard" onclick="switchTab('dashboard')">
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard KPI</span>
                 </button>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="status-box">
-                    <span class="status-dot"></span>
-                    <span>Sistema activo</span>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div class="status-box" style="margin-bottom:0">
+                        <span class="status-dot"></span>
+                        <span>Sistema activo</span>
+                    </div>
+                    <span id="rol-badge" style="font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase"></span>
                 </div>
                 <button onclick="cerrarSesion()" style="margin-top:10px;width:100%;padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;color:#f87171;font-weight:700;font-size:0.8rem;cursor:pointer;letter-spacing:1px">
                     🔒 CERRAR SESIÓN
@@ -88,11 +91,41 @@
         let sociosGlobal = [];
         const sociosMap = new Map();
 
+        // ── Rol del usuario ──────────────────────────────────────────────────
+        const _session = JSON.parse(localStorage.getItem('gym_session') || '{}');
+        const ROL      = (_session.role || 'admin').toLowerCase();
+        const esAdmin  = ROL === 'admin';
+
+        // Aplicar restricciones de sidebar según rol
+        (function aplicarRol() {
+            // Badge de rol en sidebar
+            const rolBadge = document.getElementById('rol-badge');
+            if (rolBadge) {
+                rolBadge.textContent = esAdmin ? 'Admin' : 'Profesor';
+                rolBadge.style.background = esAdmin ? 'rgba(197,224,97,0.12)' : 'rgba(96,165,250,0.12)';
+                rolBadge.style.color      = esAdmin ? '#c5e061' : '#60a5fa';
+                rolBadge.style.border     = esAdmin ? '1px solid rgba(197,224,97,0.25)' : '1px solid rgba(96,165,250,0.25)';
+            }
+            if (!esAdmin) {
+                // Ocultar tabs que Profesor no puede ver
+                ['nav-equipos','nav-dashboard'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+            }
+        })();
+
         // ── Carga de tabs generales ──────────────────────────────────────────
         async function verDetalle(dni) {
             const container = document.getElementById('view-container');
             const html = await (await fetch('socio_detalle.html')).text();
             container.innerHTML = html;
+
+            // Ocultar acciones de admin para Profesor
+            if (!esAdmin) {
+                const btnBaja = document.getElementById('det-btn-eliminar');
+                if (btnBaja) btnBaja.style.display = 'none';
+            }
 
             const s = sociosMap.get(dni);
             if (!s) return;
@@ -220,6 +253,18 @@
         }
 
         async function switchTab(tabName) {
+            // Bloquear acceso a tabs restringidos para Profesor
+            if (!esAdmin && (tabName === 'equipos' || tabName === 'dashboard')) {
+                await confirmar({
+                    icono: '🔒',
+                    titulo: 'Acceso restringido',
+                    detalle: 'Tu rol de <strong>Profesor</strong> no tiene permiso para acceder a esta sección.',
+                    labelOk: 'Entendido',
+                    colorOk: '#60a5fa',
+                    colorOkText: '#000'
+                });
+                return;
+            }
             const container = document.getElementById('view-container');
             try {
                 const html = await (await fetch(`${tabName}.html`)).text();
@@ -635,7 +680,8 @@
             b3.innerHTML = '<i class="fas fa-trash"></i> Eliminar';
             b3.onclick = (e) => { e.stopPropagation(); borrarSocio(dni); cerrarMenu(); };
 
-            menu.append(b1, b2, b3);
+            menu.append(b1, b2);
+            if (esAdmin) menu.append(b3);
             document.body.appendChild(menu);
 
             const r = event.currentTarget.getBoundingClientRect();
