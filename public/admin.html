@@ -108,7 +108,7 @@
             }
             if (!esAdmin) {
                 // Ocultar tabs que Profesor no puede ver
-                ['nav-equipos','nav-dashboard'].forEach(id => {
+                ['nav-dashboard'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.style.display = 'none';
                 });
@@ -254,7 +254,7 @@
 
         async function switchTab(tabName) {
             // Bloquear acceso a tabs restringidos para Profesor
-            if (!esAdmin && (tabName === 'equipos' || tabName === 'dashboard')) {
+            if (!esAdmin && (tabName === 'dashboard')) {
                 await confirmar({
                     icono: '🔒',
                     titulo: 'Acceso restringido',
