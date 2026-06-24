@@ -671,6 +671,10 @@
             b1.innerHTML = '<i class="fas fa-money-bill-wave"></i> Cobrar Mes';
             b1.onclick = (e) => { e.stopPropagation(); cobrarMes(dni); cerrarMenu(); };
 
+            const bH = document.createElement('button');
+            bH.innerHTML = '<i class="fas fa-history"></i> Historial de pagos';
+            bH.onclick = (e) => { e.stopPropagation(); verHistorialPagos(dni); cerrarMenu(); };
+
             const b2 = document.createElement('button');
             b2.innerHTML = '<i class="fas fa-edit"></i> Editar Datos';
             b2.onclick = (e) => { e.stopPropagation(); prepararEdicion(socio); cerrarMenu(); };
@@ -680,7 +684,7 @@
             b3.innerHTML = '<i class="fas fa-trash"></i> Eliminar';
             b3.onclick = (e) => { e.stopPropagation(); borrarSocio(dni); cerrarMenu(); };
 
-            menu.append(b1, b2);
+            menu.append(b1, bH, b2);
             if (esAdmin) menu.append(b3);
             document.body.appendChild(menu);
 
@@ -696,6 +700,76 @@
         function cerrarMenu() {
             const m = document.getElementById('global-dropdown');
             if (m) m.remove();
+        }
+
+        async function verHistorialPagos(dni) {
+            const socio = sociosMap.get(String(dni));
+            const nombre = socio ? socio.nombre : `DNI ${dni}`;
+
+            const pagos = await fetch(`/api/socios/${dni}/pagos`).then(r => r.json()).catch(() => []);
+
+            const metodoPill = m => {
+                const map = { 'Efectivo':'#84cc16', 'Transferencia':'#60a5fa', 'Débito':'#a78bfa', 'Crédito':'#f59e0b' };
+                const color = map[m] || '#94a3b8';
+                return `<span style="font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:20px;background:${color}22;color:${color};border:1px solid ${color}44">${m||'—'}</span>`;
+            };
+
+            const totalMes = (() => {
+                const hoy = new Date();
+                return pagos.filter(p => {
+                    const pts = String(p.fecha||'').split('/');
+                    return pts.length === 3 && parseInt(pts[1],10)-1 === hoy.getMonth() && parseInt(pts[2],10) === hoy.getFullYear();
+                }).reduce((s,p) => s + (parseFloat(String(p.monto||0).replace(/[^0-9.]/g,''))||0), 0);
+            })();
+
+            const filas = pagos.length
+                ? pagos.map(p => `
+                    <div style="display:grid;grid-template-columns:90px 1fr 100px 90px 80px;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--panel-border);font-size:.84rem">
+                        <span style="color:var(--text-soft)">${p.fecha||'—'}</span>
+                        <span style="font-weight:600">${p.concepto||'—'}</span>
+                        <span style="font-weight:800;color:var(--primary)">$${parseFloat(String(p.monto||0).replace(/[^0-9.]/g,'')).toLocaleString('es-AR')}</span>
+                        ${metodoPill(p.metodo)}
+                        <span style="font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:20px;background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.25)">${p.estado||'Pagado'}</span>
+                    </div>`).join('')
+                : `<div style="text-align:center;padding:32px;color:var(--text-faint);font-size:.88rem">Sin pagos registrados</div>`;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-box" style="max-width:620px;padding:0;overflow:hidden">
+                    <div style="padding:24px 28px 20px;border-bottom:1px solid var(--panel-border)">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div>
+                                <p style="font-size:.7rem;font-weight:700;letter-spacing:2px;color:var(--primary);text-transform:uppercase;margin-bottom:4px">Historial de pagos</p>
+                                <h3 style="font-size:1.1rem;font-weight:800;margin:0">${nombre.toUpperCase()}</h3>
+                                <p style="font-size:.8rem;color:var(--text-soft);margin-top:2px">DNI ${dni} · ${pagos.length} registro${pagos.length !== 1 ? 's' : ''}</p>
+                            </div>
+                            <div style="text-align:right">
+                                <p style="font-size:.7rem;color:var(--text-soft);margin-bottom:2px">Total este mes</p>
+                                <p style="font-size:1.4rem;font-weight:900;color:var(--primary)">$${totalMes.toLocaleString('es-AR')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${pagos.length ? `
+                    <div style="display:grid;grid-template-columns:90px 1fr 100px 90px 80px;gap:10px;padding:10px 16px;border-bottom:1px solid var(--panel-border)">
+                        <span style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;color:var(--text-faint);text-transform:uppercase">Fecha</span>
+                        <span style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;color:var(--text-faint);text-transform:uppercase">Concepto</span>
+                        <span style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;color:var(--text-faint);text-transform:uppercase">Monto</span>
+                        <span style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;color:var(--text-faint);text-transform:uppercase">Método</span>
+                        <span style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;color:var(--text-faint);text-transform:uppercase">Estado</span>
+                    </div>` : ''}
+
+                    <div style="max-height:360px;overflow-y:auto">${filas}</div>
+
+                    <div style="padding:16px 28px;display:flex;justify-content:flex-end">
+                        <button id="hist-cerrar" class="det-btn-volver">Cerrar</button>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(overlay);
+            overlay.querySelector('#hist-cerrar').onclick = () => document.body.removeChild(overlay);
+            overlay.addEventListener('click', e => { if (e.target === overlay) document.body.removeChild(overlay); });
         }
         async function borradoEmergencia(identificador) {
     const ok = await confirmar({
